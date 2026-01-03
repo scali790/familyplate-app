@@ -1,0 +1,162 @@
+import { useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, Alert } from "react-native";
+import { router } from "expo-router";
+import { ScreenContainer } from "@/components/screen-container";
+import { trpc } from "@/lib/trpc";
+import type { Meal } from "@/drizzle/schema";
+import * as Haptics from "expo-haptics";
+
+export default function DashboardScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getCurrentPlan.useQuery();
+  const voteMutation = trpc.mealPlanning.vote.useMutation();
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  const handleVote = async (mealDay: string, voteType: "up" | "down") => {
+    if (!mealPlan) return;
+
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      await voteMutation.mutateAsync({
+        mealPlanId: mealPlan.id,
+        mealDay,
+        voteType,
+      });
+      await refetch();
+    } catch (error) {
+      Alert.alert("Error", "Failed to save vote");
+      console.error(error);
+    }
+  };
+
+  const handleGenerateNew = () => {
+    router.push("/generate-plan");
+  };
+
+  if (isLoading) {
+    return (
+      <ScreenContainer className="justify-center items-center">
+        <ActivityIndicator size="large" color="#FF8C42" />
+      </ScreenContainer>
+    );
+  }
+
+  if (!mealPlan) {
+    return (
+      <ScreenContainer className="justify-center items-center p-6">
+        <View className="items-center gap-6 max-w-md">
+          <Text className="text-6xl">🍽️</Text>
+          <Text className="text-2xl font-bold text-foreground text-center">
+            No Meal Plan Yet
+          </Text>
+          <Text className="text-muted text-center">
+            Generate your first AI-powered meal plan to get started!
+          </Text>
+          <TouchableOpacity
+            onPress={handleGenerateNew}
+            className="bg-primary px-8 py-4 rounded-full active:opacity-80"
+          >
+            <Text className="text-white font-semibold text-lg">
+              Generate Meal Plan
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  return (
+    <ScreenContainer>
+      <ScrollView
+        className="flex-1"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF8C42" />
+        }
+      >
+        <View className="p-6 gap-6">
+          {/* Header */}
+          <View className="flex-row items-center justify-between">
+            <View>
+              <Text className="text-3xl font-bold text-foreground">This Week's Plan</Text>
+              <Text className="text-muted">Week of {mealPlan.weekStartDate}</Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleGenerateNew}
+              className="bg-success px-4 py-2 rounded-full active:opacity-80"
+            >
+              <Text className="text-white font-semibold">New Plan</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Meal Cards */}
+          <View className="gap-4">
+            {mealPlan.meals.map((meal) => (
+              <MealCard
+                key={meal.day}
+                meal={meal}
+                onVote={(voteType) => handleVote(meal.day, voteType)}
+              />
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    </ScreenContainer>
+  );
+}
+
+function MealCard({ meal, onVote }: { meal: Meal; onVote: (voteType: "up" | "down") => void }) {
+  return (
+    <View className="bg-surface rounded-2xl p-5 border border-border">
+      {/* Day & Name */}
+      <View className="mb-3">
+        <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
+        <Text className="text-xl font-bold text-foreground mt-1">{meal.name}</Text>
+      </View>
+
+      {/* Description */}
+      <Text className="text-muted mb-3">{meal.description}</Text>
+
+      {/* Meta Info */}
+      <View className="flex-row gap-4 mb-4">
+        <View className="flex-row items-center gap-1">
+          <Text className="text-muted">⏱️ {meal.prepTime}</Text>
+        </View>
+        <View className="flex-row items-center gap-1">
+          <Text className="text-muted">
+            {meal.difficulty === "Easy" && "🟢"}
+            {meal.difficulty === "Medium" && "🟡"}
+            {meal.difficulty === "Hard" && "🔴"}
+            {" "}{meal.difficulty}
+          </Text>
+        </View>
+      </View>
+
+      {/* Voting */}
+      <View className="flex-row items-center justify-between pt-3 border-t border-border">
+        <Text className="text-muted font-medium">Family Votes</Text>
+        <View className="flex-row gap-3">
+          <TouchableOpacity
+            onPress={() => onVote("up")}
+            className="flex-row items-center gap-1 bg-success/10 px-3 py-2 rounded-full active:opacity-70"
+          >
+            <Text className="text-lg">👍</Text>
+            <Text className="text-success font-semibold">{meal.upvotes}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => onVote("down")}
+            className="flex-row items-center gap-1 bg-error/10 px-3 py-2 rounded-full active:opacity-70"
+          >
+            <Text className="text-lg">👎</Text>
+            <Text className="text-error font-semibold">{meal.downvotes}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+}
