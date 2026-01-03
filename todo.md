@@ -344,3 +344,9 @@
 - [x] Add visual hint "👆 Tap here to view full recipe" to meal cards
 - [x] Remove conflicting Pressable wrapper from MealCard
 - [x] Test both fixes on mobile and web
+
+## Recipe Modal Content Not Showing on Mobile
+- [x] Investigate why ingredients and instructions don't display on mobile
+- [x] Fix RecipeModal component to show full content on mobile
+- [x] Ensure modal content matches between web and mobile platforms
+- [ ] Test recipe modal displays all sections on Samsung S24

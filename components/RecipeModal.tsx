@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, ScrollView, Pressable } from 'react-native';
+import { Modal, View, Text, ScrollView, Pressable, Platform } from 'react-native';
 import { Meal } from '../drizzle/schema';
 import { useColors } from '@/hooks/use-colors';
 import { getIconsForTags } from '@/src/utils/iconMapping';
@@ -13,6 +13,20 @@ interface RecipeModalProps {
 export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
   const colors = useColors();
   
+  // Debug logging
+  React.useEffect(() => {
+    if (meal && visible) {
+      console.log('[RecipeModal] Meal data:', {
+        name: meal.name,
+        hasIngredients: !!meal.ingredients,
+        ingredientsLength: meal.ingredients?.length || 0,
+        hasInstructions: !!meal.instructions,
+        instructionsLength: meal.instructions?.length || 0,
+        platform: Platform.OS
+      });
+    }
+  }, [meal, visible]);
+  
   if (!meal) return null;
 
   return (
@@ -22,98 +36,118 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
       transparent={true}
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}>
-        <View className="rounded-t-3xl max-h-[85%]" style={{ backgroundColor: colors.background }}>
+      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0, 0, 0, 0.7)' }}>
+        <View style={{ 
+          backgroundColor: colors.background, 
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          maxHeight: '90%',
+          height: '90%'
+        }}>
           {/* Header */}
-          <View className="flex-row justify-between items-center p-6" style={{ borderBottomWidth: 1, borderBottomColor: colors.border }}>
-            <View className="flex-1 pr-4">
-              <View className="flex-row items-center gap-2 mb-1">
+          <View style={{ 
+            flexDirection: 'row', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            padding: 24,
+            borderBottomWidth: 1, 
+            borderBottomColor: colors.border 
+          }}>
+            <View style={{ flex: 1, paddingRight: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 {meal.tags && meal.tags.length > 0 && (
-                  <Text className="text-2xl">{getIconsForTags(meal.tags).join(" ")}</Text>
+                  <Text style={{ fontSize: 24 }}>{getIconsForTags(meal.tags).join(" ")}</Text>
                 )}
-                <Text className="text-2xl font-bold flex-1" style={{ color: colors.text }}>{meal.name}</Text>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', flex: 1, color: colors.text }}>{meal.name}</Text>
               </View>
-                <Text className="text-sm mt-1" style={{ color: colors.muted }}>{meal.description}</Text>
+              <Text style={{ fontSize: 14, marginTop: 4, color: colors.muted }}>{meal.description}</Text>
             </View>
             <Pressable
               onPress={onClose}
-              style={({ pressed }) => [
-                {
-                  opacity: pressed ? 0.6 : 1,
-                }
-              ]}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.6 : 1,
+              })}
             >
-              <Text className="text-3xl" style={{ color: colors.muted }}>×</Text>
+              <Text style={{ fontSize: 32, color: colors.muted }}>×</Text>
             </Pressable>
           </View>
 
-          {/* Content */}
-          <ScrollView className="flex-1">
-            <View className="p-6">
-              {/* Meal Info */}
-              <View className="flex-row gap-4 mb-6">
-                <View className="px-4 py-2 rounded-full" style={{ backgroundColor: colors.surface }}>
-                  <Text className="font-semibold" style={{ color: colors.primary }}>⏱️ Prep: {meal.prepTime}</Text>
-                </View>
-                <View className="px-4 py-2 rounded-full" style={{ backgroundColor: colors.surface }}>
-                  <Text className="font-semibold" style={{ color: colors.success }}>🍳 Cook: {meal.cookTime}</Text>
-                </View>
-                <View className="px-4 py-2 rounded-full" style={{ backgroundColor: colors.surface }}>
-                  <Text className="font-semibold" style={{ color: colors.muted }}>{meal.difficulty}</Text>
-                </View>
+          {/* Scrollable Content */}
+          <ScrollView 
+            style={{ flex: 1 }}
+            contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+            showsVerticalScrollIndicator={true}
+          >
+            {/* Meal Info */}
+            <View style={{ flexDirection: 'row', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+              <View style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: colors.surface }}>
+                <Text style={{ fontWeight: '600', color: colors.primary }}>⏱️ Prep: {meal.prepTime}</Text>
               </View>
-
-              {/* Ingredients */}
-              <View className="mb-6">
-                <Text className="text-xl font-bold mb-3" style={{ color: colors.text }}>🛒 Ingredients</Text>
-                <View className="rounded-2xl p-4" style={{ backgroundColor: colors.surface }}>
-                  {meal.ingredients && meal.ingredients.length > 0 ? (
-                    meal.ingredients.map((ingredient, index) => (
-                      <View key={index} className="flex-row items-start mb-2">
-                        <Text className="mr-2" style={{ color: colors.primary }}>•</Text>
-                        <Text className="flex-1" style={{ color: colors.text }}>{ingredient}</Text>
-                      </View>
-                    ))
-                  ) : (
-                    <Text className="italic" style={{ color: colors.muted }}>No ingredients listed</Text>
-                  )}
-                </View>
+              <View style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: colors.surface }}>
+                <Text style={{ fontWeight: '600', color: colors.success }}>🍳 Cook: {meal.cookTime}</Text>
               </View>
+              <View style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: colors.surface }}>
+                <Text style={{ fontWeight: '600', color: colors.muted }}>{meal.difficulty}</Text>
+              </View>
+            </View>
 
-              {/* Instructions */}
-              <View className="mb-6">
-                <Text className="text-xl font-bold mb-3" style={{ color: colors.text }}>👨‍🍳 Instructions</Text>
-                <View className="gap-3">
-                  {meal.instructions && meal.instructions.length > 0 ? (
-                    meal.instructions.map((instruction, index) => (
-                      <View key={index} className="flex-row items-start">
-                        <View className="w-8 h-8 rounded-full items-center justify-center mr-3" style={{ backgroundColor: colors.primary }}>
-                          <Text className="font-bold" style={{ color: colors.background }}>{index + 1}</Text>
-                        </View>
-                        <Text className="flex-1 pt-1" style={{ color: colors.text }}>{instruction}</Text>
+            {/* Ingredients */}
+            <View style={{ marginBottom: 24 }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12, color: colors.text }}>🛒 Ingredients</Text>
+              <View style={{ borderRadius: 16, padding: 16, backgroundColor: colors.surface }}>
+                {meal.ingredients && meal.ingredients.length > 0 ? (
+                  meal.ingredients.map((ingredient, index) => (
+                    <View key={index} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <Text style={{ marginRight: 8, color: colors.primary }}>•</Text>
+                      <Text style={{ flex: 1, color: colors.text }}>{ingredient}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={{ fontStyle: 'italic', color: colors.muted }}>No ingredients listed</Text>
+                )}
+              </View>
+            </View>
+
+            {/* Instructions */}
+            <View style={{ marginBottom: 24 }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12, color: colors.text }}>👨‍🍳 Instructions</Text>
+              <View style={{ gap: 12 }}>
+                {meal.instructions && meal.instructions.length > 0 ? (
+                  meal.instructions.map((instruction, index) => (
+                    <View key={index} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                      <View style={{ 
+                        width: 32, 
+                        height: 32, 
+                        borderRadius: 16, 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        marginRight: 12,
+                        backgroundColor: colors.primary 
+                      }}>
+                        <Text style={{ fontWeight: 'bold', color: colors.background }}>{index + 1}</Text>
                       </View>
-                    ))
-                  ) : (
-                    <Text className="italic" style={{ color: colors.muted }}>No instructions available</Text>
-                  )}
-                </View>
+                      <Text style={{ flex: 1, paddingTop: 4, color: colors.text }}>{instruction}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={{ fontStyle: 'italic', color: colors.muted }}>No instructions available</Text>
+                )}
               </View>
             </View>
           </ScrollView>
 
           {/* Close Button */}
-          <View className="p-6" style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
+          <View style={{ padding: 24, borderTopWidth: 1, borderTopColor: colors.border }}>
             <Pressable
               onPress={onClose}
-              className="rounded-full py-4"
-              style={({ pressed }) => [
-                {
-                  backgroundColor: colors.primary,
-                  opacity: pressed ? 0.8 : 1,
-                }
-              ]}
+              style={({ pressed }) => ({
+                backgroundColor: colors.primary,
+                opacity: pressed ? 0.8 : 1,
+                borderRadius: 24,
+                paddingVertical: 16,
+              })}
             >
-              <Text className="text-white text-center font-bold text-lg">Close</Text>
+              <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 18 }}>Close</Text>
             </Pressable>
           </View>
         </View>
