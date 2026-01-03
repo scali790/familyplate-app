@@ -322,3 +322,8 @@
 - [ ] Meal detail modal has dark background in light mode
 - [ ] Ingredients and instructions text barely visible
 - [ ] Update modal to use proper theme colors (bg-surface, text-foreground)
+
+## Fix Magic Link URL Domain
+- [ ] Magic link uses wrong domain (c66dmgpz3i-qdu5dato2a-uk.a.run.app)
+- [ ] Should use dev server domain (8081-...sg1.manus.computer)
+- [ ] Update EXPO_PUBLIC_WEB_URL environment variable

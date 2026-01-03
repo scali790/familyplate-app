@@ -113,7 +113,7 @@ export const appRouter = router({
         // Generate magic link URL
         // Always use HTTPS URLs for email links (clickable in all email clients)
         // The /auth/verify page will automatically try to open the app on mobile
-        const baseUrl = ctx.req.headers.origin || `https://${ctx.req.headers.host}`;
+        const baseUrl = process.env.EXPO_PUBLIC_WEB_URL || ctx.req.headers.origin || `https://${ctx.req.headers.host}`;
         const magicLink = `${baseUrl}/auth/verify?token=${token}`;
 
          // Send magic link via Mailjet
