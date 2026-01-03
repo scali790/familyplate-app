@@ -58,3 +58,7 @@
 - [x] Allow anonymous voting via shared link
 - [x] Create shared meal plan view page
 - [x] Add API endpoints for shared viewing and voting
+
+## Share Link Bug Fix
+- [x] Fix share button to generate direct link to shared meal plan view (/shared/[id])
+- [x] Test that shared link opens directly to the meal plan for voting
