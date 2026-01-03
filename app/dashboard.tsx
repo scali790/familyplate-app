@@ -236,6 +236,7 @@ export default function DashboardScreen() {
                 meal={meal}
                 onVote={(voteType) => handleVote(meal.day, voteType)}
                 onPress={() => {
+                  console.log("MealCard onPress called for:", meal.name);
                   setSelectedMeal(meal);
                   setModalVisible(true);
                 }}
@@ -272,13 +273,7 @@ function MealCard({
   isRegenerating: boolean;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        opacity: pressed ? 0.7 : 1,
-      })}
-    >
-      <View className="bg-surface rounded-2xl p-5 border border-border">
+    <View className="bg-surface rounded-2xl p-5 border border-border">
       {/* Day & Name with Regenerate Button */}
       <View className="mb-3 flex-row items-start justify-between">
         <View className="flex-1">
@@ -302,23 +297,33 @@ function MealCard({
         </TouchableOpacity>
       </View>
 
-      {/* Description */}
-      <Text className="text-muted mb-3">{meal.description}</Text>
+      {/* Description - Tappable area for recipe details */}
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        <Text className="text-muted mb-3">{meal.description}</Text>
+      </TouchableOpacity>
 
-      {/* Meta Info */}
-      <View className="flex-row gap-4 mb-4">
-        <View className="flex-row items-center gap-1">
-          <Text className="text-muted">⏱️ {meal.prepTime}</Text>
+      {/* Meta Info - Tappable area for recipe details */}
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        <View className="flex-row gap-4 mb-4">
+          <View className="flex-row items-center gap-1">
+            <Text className="text-muted">⏱️ {meal.prepTime}</Text>
+          </View>
+          <View className="flex-row items-center gap-1">
+            <Text className="text-muted">
+              {meal.difficulty === "Easy" && "🟢"}
+              {meal.difficulty === "Medium" && "🟡"}
+              {meal.difficulty === "Hard" && "🔴"}
+              {" "}{meal.difficulty}
+            </Text>
+          </View>
         </View>
-        <View className="flex-row items-center gap-1">
-          <Text className="text-muted">
-            {meal.difficulty === "Easy" && "🟢"}
-            {meal.difficulty === "Medium" && "🟡"}
-            {meal.difficulty === "Hard" && "🔴"}
-            {" "}{meal.difficulty}
+        {/* View Recipe hint */}
+        <View className="mb-3 px-3 py-2 bg-primary/10 rounded-lg">
+          <Text className="text-primary text-center text-sm font-semibold">
+            👆 Tap here to view full recipe
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Voting */}
       <View className="flex-row items-center justify-between pt-3 border-t border-border">
@@ -341,6 +346,5 @@ function MealCard({
         </View>
       </View>
     </View>
-    </Pressable>
   );
 }

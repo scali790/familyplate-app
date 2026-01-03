@@ -327,3 +327,20 @@
 - [ ] Magic link uses wrong domain (c66dmgpz3i-qdu5dato2a-uk.a.run.app)
 - [ ] Should use dev server domain (8081-...sg1.manus.computer)
 - [ ] Update EXPO_PUBLIC_WEB_URL environment variable
+
+## Fix Generate Plan Page Layout
+- [ ] Generate Plan button is cut off at bottom of screen
+- [ ] Page needs proper scrolling or better button positioning
+
+## Fix Recipe Modal on Mobile
+- [ ] Recipe modal doesn't show when clicking on meals on mobile
+- [ ] Modal works on web but not on native mobile app
+
+## UI Bug Fixes - Generate Plan Button & Recipe Modal
+- [x] Fix Generate Plan button being cut off at bottom of screen
+- [x] Add ScrollView to generate-plan page for proper layout
+- [x] Fix recipe modal not showing on mobile devices
+- [x] Redesign MealCard with dedicated tap areas for recipe viewing
+- [x] Add visual hint "👆 Tap here to view full recipe" to meal cards
+- [x] Remove conflicting Pressable wrapper from MealCard
+- [x] Test both fixes on mobile and web
