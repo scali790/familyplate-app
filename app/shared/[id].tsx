@@ -210,24 +210,39 @@ function MealCard({
       </View>
 
       {/* Voting */}
-      <View className="flex-row items-center justify-between pt-3 border-t border-border">
-        <Text className="text-muted font-medium">Family Votes</Text>
+      <View className="pt-3 border-t border-border">
+        <View className="flex-row items-center justify-between mb-2">
+          <Text className="text-muted font-medium">Family Votes</Text>
+          {!canVote && (
+            <Text className="text-xs text-muted italic">Enter name to vote ↑</Text>
+          )}
+        </View>
         <View className="flex-row gap-3">
           <TouchableOpacity
-            onPress={() => onVote("up")}
-            disabled={!canVote}
-            className={`flex-row items-center gap-1 bg-success/10 px-3 py-2 rounded-full ${canVote ? 'active:opacity-70' : 'opacity-50'}`}
+            onPress={() => {
+              if (!canVote) {
+                alert("Please enter your name above before voting!");
+                return;
+              }
+              onVote("up");
+            }}
+            className={`flex-row items-center gap-1 px-4 py-2 rounded-full ${canVote ? 'bg-success/20 active:opacity-70' : 'bg-surface border border-border'}`}
           >
             <Text className="text-lg">👍</Text>
-            <Text className="text-success font-semibold">{meal.upvotes}</Text>
+            <Text className={`font-semibold ${canVote ? 'text-success' : 'text-muted'}`}>{meal.upvotes}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => onVote("down")}
-            disabled={!canVote}
-            className={`flex-row items-center gap-1 bg-error/10 px-3 py-2 rounded-full ${canVote ? 'active:opacity-70' : 'opacity-50'}`}
+            onPress={() => {
+              if (!canVote) {
+                alert("Please enter your name above before voting!");
+                return;
+              }
+              onVote("down");
+            }}
+            className={`flex-row items-center gap-1 px-4 py-2 rounded-full ${canVote ? 'bg-error/20 active:opacity-70' : 'bg-surface border border-border'}`}
           >
             <Text className="text-lg">👎</Text>
-            <Text className="text-error font-semibold">{meal.downvotes}</Text>
+            <Text className={`font-semibold ${canVote ? 'text-error' : 'text-muted'}`}>{meal.downvotes}</Text>
           </TouchableOpacity>
         </View>
       </View>

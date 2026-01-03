@@ -147,3 +147,13 @@
 - [x] Add instruction text above Talabat button explaining area confirmation and search process
 - [x] Display ingredient-specific search term in instruction (e.g., "search for: 'Onion'")
 - [x] Test instruction display on shopping list
+
+## Family Voting Functionality Fix
+- [x] Test shared meal plan link to reproduce voting issue
+- [x] Identify why thumbs up/down buttons are not clickable
+- [x] Fix voting mutation/handler in shared view (already working)
+- [x] Ensure votes are properly saved to database (already working)
+- [x] Improve button styling to show interactive state clearly
+- [x] Add visual feedback when buttons are disabled
+- [x] Show helper text when user tries to vote without entering name
+- [x] Test improved UX on shared link
