@@ -1,0 +1,26 @@
+{
+  "query": "SHOW CREATE TABLE user_preferences;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3HwhU55c9ykAFSx.root --database PWe3aXVRBZJqm34KdWoMVL --execute SHOW CREATE TABLE user_preferences;",
+  "rows": [
+    {
+      "Table": "user_preferences",
+      "Create Table": "CREATE TABLE `user_preferences` ("
+    }
+  ],
+  "messages": [
+    "  `id` int(11) NOT NULL AUTO_INCREMENT,",
+    "  `user_id` int(11) NOT NULL,",
+    "  `family_size` int(11) NOT NULL,",
+    "  `cuisines` text NOT NULL,",
+    "  `flavors` text NOT NULL,",
+    "  `dietary_restrictions` text DEFAULT NULL,",
+    "  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+    "  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,",
+    "  `country` varchar(3) DEFAULT 'UAE',",
+    "  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */",
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=90001"
+  ],
+  "stdout": "Table\tCreate Table\nuser_preferences\tCREATE TABLE `user_preferences` (\n  `id` int(11) NOT NULL AUTO_INCREMENT,\n  `user_id` int(11) NOT NULL,\n  `family_size` int(11) NOT NULL,\n  `cuisines` text NOT NULL,\n  `flavors` text NOT NULL,\n  `dietary_restrictions` text DEFAULT NULL,\n  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  `country` varchar(3) DEFAULT 'UAE',\n  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=90001\n",
+  "stderr": "",
+  "execution_time_ms": 1501
+}

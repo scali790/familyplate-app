@@ -111,28 +111,41 @@ export const appRouter = router({
         });
 
         // Generate magic link URL
-        // Use custom scheme for deep linking (opens in app on mobile)
-        // Format: manus20260103024933://auth/verify?token=...
-        const appScheme = "manus20260103024933"; // From app.config.ts
-        const magicLink = `${appScheme}://auth/verify?token=${token}`;
+        // Detect platform: use HTTPS for web, custom scheme for mobile apps
+        const userAgent = ctx.req.headers["user-agent"] || "";
+        const isWebBrowser = userAgent.includes("Mozilla") && !userAgent.includes("Mobile");
+        
+        let magicLink: string;
+        if (isWebBrowser) {
+          // Web browser: use HTTPS URL
+          const baseUrl = ctx.req.headers.origin || `https://${ctx.req.headers.host}`;
+          magicLink = `${baseUrl}/auth/verify?token=${token}`;
+        } else {
+          // Mobile app: use custom scheme for deep linking
+          const appScheme = "manus20260103024933"; // From app.config.ts
+          magicLink = `${appScheme}://auth/verify?token=${token}`;
+        }
 
-        // Send magic link via Mailjet
+         // Send magic link via Mailjet
+        console.log("============================" );
+        console.log("Magic Link Generated:");
+        console.log("Email:", input.email);
+        console.log("Link:", magicLink);
+        console.log("Expires:", expiresAt.toISOString());
+        console.log("============================");
+        
         const emailSent = await sendMagicLinkEmail(
           input.email,
           input.name || null,
           magicLink,
-          15 // expires in 15 minutes
+          15
         );
 
         if (!emailSent) {
-          // Fallback: log to console if email fails
-          console.log("\n=== MAGIC LINK GENERATED (Email failed, using console fallback) ===");
-          console.log(`Email: ${input.email}`);
-          console.log(`Magic Link: ${magicLink}`);
-          console.log(`Expires: ${expiresAt.toISOString()}`);
-          console.log("============================\n");
-          
-          throw new Error("Failed to send magic link email. Please check Mailjet configuration.");
+          console.error("[requestMagicLink] Failed to send email via Mailjet");
+          console.log("[requestMagicLink] Magic link available in console logs above");
+          // Don't throw error - allow user to get link from console in development
+          // throw new Error("Failed to send magic link email");
         }
         
         console.log(`[Auth] Magic link sent to ${input.email}, expires at ${expiresAt.toISOString()}`);

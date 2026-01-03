@@ -294,3 +294,20 @@
 - [x] Update magic link generation to use custom scheme (manus20260103024933://)
 - [x] Verify /auth/verify route exists for deep link handling
 - [ ] Test magic link flow on Android device (requires rebuilding APK)
+
+## Fix Preferences Save Failure in Web
+- [ ] Investigate "Failed to save preferences" error in web preview
+- [ ] Check server logs for API errors
+- [ ] Verify savePreferences endpoint is working correctly
+- [ ] Test preferences save flow end-to-end
+
+## Fix Magic Link Platform Detection
+- [ ] Magic link fails on web after deep linking change (uses custom scheme instead of HTTPS)
+- [ ] Update requestMagicLink to detect platform (web vs mobile)
+- [ ] Use HTTPS URL for web, custom scheme for mobile
+- [ ] Test magic link on both web and mobile platforms
+
+## Fix Preferences Save SQL Syntax Error
+- [ ] SQL query uses single quotes instead of backticks for column names
+- [ ] Fix Drizzle ORM database configuration
+- [ ] Test preferences save functionality

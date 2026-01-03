@@ -140,10 +140,17 @@ export default function OnboardingScreen() {
 
       console.log("Preferences saved successfully!");
       router.replace("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save preferences:", error);
+      console.error("Error details:", {
+        message: error?.message,
+        data: error?.data,
+        shape: error?.shape,
+        cause: error?.cause,
+      });
       if (Platform.OS === 'web') {
-        alert("Failed to save preferences. Please try again.");
+        const errorMsg = error?.message || error?.data?.message || "Unknown error";
+        alert(`Failed to save preferences: ${errorMsg}\n\nPlease try again.`);
       }
     } finally {
       setIsSubmitting(false);
