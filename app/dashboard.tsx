@@ -156,7 +156,7 @@ export default function DashboardScreen() {
                   backgroundColor: 'rgba(0,0,0,0.05)',
                 }}
               >
-                <Text style={{ fontSize: 24 }}>←</Text>
+                <Text style={{ fontSize: 24, color: '#11181C' }} className="dark:text-[#ECEDEE]">←</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => router.push('/settings')}

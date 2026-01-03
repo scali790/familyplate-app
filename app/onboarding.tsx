@@ -25,7 +25,7 @@ const COUNTRY_OPTIONS = [
 ];
 
 export default function OnboardingScreen() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [familySize, setFamilySize] = useState("2");
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
@@ -49,13 +49,13 @@ export default function OnboardingScreen() {
   const saveMutation = trpc.mealPlanning.savePreferences.useMutation();
   const { data: existingPreferences, isLoading: isLoadingPreferences } = trpc.mealPlanning.getPreferences.useQuery();
 
-  // Redirect to welcome if not authenticated
+  // Redirect to welcome if not authenticated (only after auth has loaded)
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       console.log("User not authenticated, redirecting to welcome");
       router.replace("/welcome");
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   // Load existing preferences when data is fetched
   useEffect(() => {
@@ -164,7 +164,7 @@ export default function OnboardingScreen() {
               alignSelf: 'flex-start',
             }}
           >
-            <Text style={{ fontSize: 24 }}>←</Text>
+            <Text style={{ fontSize: 24, color: '#11181C' }} className="dark:text-[#ECEDEE]">←</Text>
           </TouchableOpacity>
           
           {/* Header */}

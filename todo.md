@@ -278,3 +278,11 @@
 - [x] Fix link colors in reset page for dark mode
 - [x] Ensure all text has proper contrast in both light and dark modes
 - [x] Use explicit color values for links and interactive text
+
+
+## Fix Authentication & Navigation Issues
+- [x] Fix authentication persistence - logged in users redirected to login when clicking "Edit Preferences"
+- [x] Fix back arrow visibility in dark mode (black arrows on black background)
+- [x] Update onboarding to wait for auth loading before redirecting
+- [x] Fix back arrows in settings, onboarding, dashboard, generate-plan, and shopping-list pages
+- [x] Use explicit color values with dark mode class for proper contrast

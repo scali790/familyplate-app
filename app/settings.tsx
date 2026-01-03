@@ -46,7 +46,7 @@ export default function SettingsScreen() {
               alignSelf: 'flex-start',
             }}
           >
-            <Text style={{ fontSize: 24 }}>←</Text>
+            <Text style={{ fontSize: 24, color: '#11181C' }} className="dark:text-[#ECEDEE]">←</Text>
           </TouchableOpacity>
           
           {/* Header */}

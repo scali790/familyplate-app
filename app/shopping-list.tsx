@@ -138,7 +138,7 @@ export default function ShoppingListScreen() {
               marginBottom: 16,
             }}
           >
-            <Text style={{ fontSize: 24 }}>←</Text>
+            <Text style={{ fontSize: 24, color: '#11181C' }} className="dark:text-[#ECEDEE]">←</Text>
           </TouchableOpacity>
           
           <View className="flex-row items-center justify-between">

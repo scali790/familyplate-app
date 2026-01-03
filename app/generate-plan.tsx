@@ -45,7 +45,7 @@ export default function GeneratePlanScreen() {
           marginBottom: 20,
         }}
       >
-        <Text style={{ fontSize: 24 }}>←</Text>
+        <Text style={{ fontSize: 24, color: '#11181C' }} className="dark:text-[#ECEDEE]">←</Text>
       </TouchableOpacity>
       
       <View className="flex-1 justify-center items-center">
