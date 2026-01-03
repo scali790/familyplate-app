@@ -81,3 +81,9 @@
 - [x] Add tap handler to meal cards on shared view
 - [x] Test recipe modal on web preview
 - [x] Verify all recipe details display correctly
+
+## Recipe Modal Styling Fixes
+- [x] Add solid background color to modal overlay
+- [x] Improve modal content background and contrast
+- [x] Ensure modal is properly centered and scrollable
+- [x] Test modal visibility and readability on web preview
