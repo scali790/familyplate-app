@@ -33,8 +33,23 @@ export default function GeneratePlanScreen() {
   };
 
   return (
-    <ScreenContainer className="justify-center items-center p-6">
-      <View className="items-center gap-8 max-w-md">
+    <ScreenContainer className="p-6">
+      {/* Back Button */}
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={{
+          padding: 8,
+          borderRadius: 8,
+          backgroundColor: 'rgba(0,0,0,0.05)',
+          alignSelf: 'flex-start',
+          marginBottom: 20,
+        }}
+      >
+        <Text style={{ fontSize: 24 }}>←</Text>
+      </TouchableOpacity>
+      
+      <View className="flex-1 justify-center items-center">
+        <View className="items-center gap-8 max-w-md">
         {/* Icon */}
         <View className="w-32 h-32 bg-primary/10 rounded-full items-center justify-center">
           <Text className="text-6xl">🤖</Text>
@@ -85,6 +100,7 @@ export default function GeneratePlanScreen() {
             <Text className="text-muted">Cancel</Text>
           </TouchableOpacity>
         )}
+        </View>
       </View>
     </ScreenContainer>
   );

@@ -62,3 +62,12 @@
 ## Share Link Bug Fix
 - [x] Fix share button to generate direct link to shared meal plan view (/shared/[id])
 - [x] Test that shared link opens directly to the meal plan for voting
+
+## Navigation Improvements
+- [x] Audit all screens for navigation issues
+- [x] Add back button to dashboard header
+- [x] Add back button to onboarding screen
+- [x] Add back button to settings screen
+- [x] Add back button to generate-plan screen
+- [x] Test navigation flow from all screens
+- [x] Ensure users can always return to main menu/dashboard

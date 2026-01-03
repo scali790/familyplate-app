@@ -118,6 +118,28 @@ export default function DashboardScreen() {
         <View className="p-6 gap-6">
           {/* Header */}
           <View className="gap-4">
+            <View className="flex-row items-center justify-between mb-2">
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{
+                  padding: 8,
+                  borderRadius: 8,
+                  backgroundColor: 'rgba(0,0,0,0.05)',
+                }}
+              >
+                <Text style={{ fontSize: 24 }}>←</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.push('/settings')}
+                style={{
+                  padding: 8,
+                  borderRadius: 8,
+                  backgroundColor: 'rgba(0,0,0,0.05)',
+                }}
+              >
+                <Text style={{ fontSize: 24 }}>⚙️</Text>
+              </TouchableOpacity>
+            </View>
             <View className="flex-row items-center justify-between">
               <View>
                 <Text className="text-3xl font-bold text-foreground">This Week's Plan</Text>

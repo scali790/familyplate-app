@@ -36,6 +36,19 @@ export default function SettingsScreen() {
     <ScreenContainer>
       <ScrollView className="flex-1 p-6">
         <View className="gap-6">
+          {/* Back Button */}
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{
+              padding: 8,
+              borderRadius: 8,
+              backgroundColor: 'rgba(0,0,0,0.05)',
+              alignSelf: 'flex-start',
+            }}
+          >
+            <Text style={{ fontSize: 24 }}>←</Text>
+          </TouchableOpacity>
+          
           {/* Header */}
           <View className="items-center gap-2 mb-4">
             <View className="w-20 h-20 bg-primary rounded-full items-center justify-center">
