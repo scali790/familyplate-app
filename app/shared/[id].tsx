@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, Platform, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, Pressable, ScrollView, RefreshControl, ActivityIndicator, Platform, TextInput } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { RecipeModal } from "@/components/RecipeModal";
 import { trpc } from "@/lib/trpc";
 import type { Meal } from "@/drizzle/schema";
 
@@ -10,6 +11,8 @@ export default function SharedMealPlanScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [voterName, setVoterName] = useState("");
   const [hasVoted, setHasVoted] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getSharedPlan.useQuery(
     { planId: id! },
@@ -132,6 +135,10 @@ export default function SharedMealPlanScreen() {
                 meal={meal}
                 onVote={(voteType) => handleVote(meal.day, voteType)}
                 canVote={!!voterName.trim()}
+                onPress={() => {
+                  setSelectedMeal(meal);
+                  setModalVisible(true);
+                }}
               />
             ))}
           </View>
@@ -147,6 +154,14 @@ export default function SharedMealPlanScreen() {
           </View>
         </View>
       </ScrollView>
+      <RecipeModal
+        visible={modalVisible}
+        meal={selectedMeal}
+        onClose={() => {
+          setModalVisible(false);
+          setSelectedMeal(null);
+        }}
+      />
     </ScreenContainer>
   );
 }
@@ -154,14 +169,22 @@ export default function SharedMealPlanScreen() {
 function MealCard({ 
   meal, 
   onVote,
-  canVote 
+  canVote,
+  onPress
 }: { 
   meal: Meal; 
   onVote: (voteType: "up" | "down") => void;
   canVote: boolean;
+  onPress: () => void;
 }) {
   return (
-    <View className="bg-surface rounded-2xl p-5 border border-border">
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.7 : 1,
+      })}
+    >
+      <View className="bg-surface rounded-2xl p-5 border border-border">
       {/* Day & Name */}
       <View className="mb-3">
         <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
@@ -209,5 +232,6 @@ function MealCard({
         </View>
       </View>
     </View>
+    </Pressable>
   );
 }

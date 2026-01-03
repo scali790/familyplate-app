@@ -169,7 +169,10 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
 - name: string
 - description: string (1-2 sentences)
 - prepTime: string (e.g. "30 mins")
-- difficulty: string (Easy, Medium, or Hard)`;
+- cookTime: string (e.g. "45 mins")
+- difficulty: string (Easy, Medium, or Hard)
+- ingredients: array of strings (list all ingredients with quantities)
+- instructions: array of strings (step-by-step cooking instructions)`;
 
       const response = await invokeLLM({
         messages: [

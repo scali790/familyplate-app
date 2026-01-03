@@ -86,7 +86,10 @@ export interface Meal {
   name: string;
   description: string;
   prepTime: string;
+  cookTime: string;
   difficulty: string;
+  ingredients: string[];
+  instructions: string[];
   upvotes: number;
   downvotes: number;
 }

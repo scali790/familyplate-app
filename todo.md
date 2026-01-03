@@ -71,3 +71,13 @@
 - [x] Add back button to generate-plan screen
 - [x] Test navigation flow from all screens
 - [x] Ensure users can always return to main menu/dashboard
+
+## Recipe Details Modal Feature
+- [x] Update database schema to include recipe details (ingredients, instructions, prep/cook time)
+- [x] Push updated schema to database
+- [x] Update AI meal generation prompt to include recipe details
+- [x] Create RecipeModal component with full recipe information
+- [x] Add tap handler to meal cards on dashboard
+- [x] Add tap handler to meal cards on shared view
+- [x] Test recipe modal on web preview
+- [x] Verify all recipe details display correctly

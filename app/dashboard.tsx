@@ -2,12 +2,15 @@ import { useState } from "react";
 import { View, Text, TouchableOpacity, Pressable, ScrollView, RefreshControl, ActivityIndicator, Platform } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { RecipeModal } from "@/components/RecipeModal";
 import { trpc } from "@/lib/trpc";
 import type { Meal } from "@/drizzle/schema";
 import * as Haptics from "expo-haptics";
 
 export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getCurrentPlan.useQuery();
   const voteMutation = trpc.mealPlanning.vote.useMutation();
@@ -185,18 +188,36 @@ export default function DashboardScreen() {
                 key={meal.day}
                 meal={meal}
                 onVote={(voteType) => handleVote(meal.day, voteType)}
+                onPress={() => {
+                  setSelectedMeal(meal);
+                  setModalVisible(true);
+                }}
               />
             ))}
           </View>
         </View>
       </ScrollView>
+      <RecipeModal
+        visible={modalVisible}
+        meal={selectedMeal}
+        onClose={() => {
+          setModalVisible(false);
+          setSelectedMeal(null);
+        }}
+      />
     </ScreenContainer>
   );
 }
 
-function MealCard({ meal, onVote }: { meal: Meal; onVote: (voteType: "up" | "down") => void }) {
+function MealCard({ meal, onVote, onPress }: { meal: Meal; onVote: (voteType: "up" | "down") => void; onPress: () => void }) {
   return (
-    <View className="bg-surface rounded-2xl p-5 border border-border">
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.7 : 1,
+      })}
+    >
+      <View className="bg-surface rounded-2xl p-5 border border-border">
       {/* Day & Name */}
       <View className="mb-3">
         <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
@@ -242,5 +263,6 @@ function MealCard({ meal, onVote }: { meal: Meal; onVote: (voteType: "up" | "dow
         </View>
       </View>
     </View>
+    </Pressable>
   );
 }
