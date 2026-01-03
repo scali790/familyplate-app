@@ -72,6 +72,7 @@ export const appRouter = router({
 
         return {
           success: true,
+          sessionToken, // Return token so frontend can store it
           user: {
             id: user.id,
             openId: user.openId,

@@ -2,4 +2,5 @@
 import { Pressable } from "react-native";
 import { remapProps } from "nativewind";
 
-remapProps(Pressable, { className: false });
+// Temporarily commented out to test if this is causing onPress to not work
+// remapProps(Pressable, { className: false });

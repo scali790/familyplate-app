@@ -209,3 +209,26 @@
 - [x] Verify user authentication is working (user ID is available) - added auth check to redirect unauthenticated users
 - [x] Fixed routing: new users go to onboarding after login, existing users go to home
 - [x] Test complete save/load cycle end-to-end
+
+## Fix Login Button Not Working
+- [x] Check simpleLogin mutation implementation in server
+- [x] Add console logging to handleLogin function
+- [x] Verify login mutation is being called (button click counter confirmed it works)
+- [x] Check for JavaScript errors in browser console (found "Not authenticated" errors)
+- [ ] Add better error handling and user feedback
+- [ ] Test complete login flow
+
+## Fix Cookie Sharing Between Metro and API Server
+- [x] Investigate why cookies set by API server (3000) aren't sent to subsequent requests (cookie domain was too broad)
+- [x] Fix cookie domain configuration to work across port-based subdomains (8081-xxx vs 3000-xxx)
+- [ ] Test that login cookie persists across API calls
+- [ ] Verify user can successfully log in and navigate to onboarding/home
+
+## Simplify Authentication - Remove Cookie Dependency
+- [x] Update useAuth hook to use localStorage token for web instead of cookie-based API calls
+- [x] Modify auth flow to work entirely with Authorization header
+- [x] Add comprehensive logging to handleLogin for debugging
+- [x] Verify tRPC client sends Authorization header with token
+- [x] Verify protectedProcedure accepts Authorization header
+- [ ] Manual testing required (browser automation cannot trigger React events properly)
+- [ ] Remove debug logging after manual testing confirms it works
