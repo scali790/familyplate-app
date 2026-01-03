@@ -111,20 +111,10 @@ export const appRouter = router({
         });
 
         // Generate magic link URL
-        // Detect platform: use HTTPS for web, custom scheme for mobile apps
-        const userAgent = ctx.req.headers["user-agent"] || "";
-        const isWebBrowser = userAgent.includes("Mozilla") && !userAgent.includes("Mobile");
-        
-        let magicLink: string;
-        if (isWebBrowser) {
-          // Web browser: use HTTPS URL
-          const baseUrl = ctx.req.headers.origin || `https://${ctx.req.headers.host}`;
-          magicLink = `${baseUrl}/auth/verify?token=${token}`;
-        } else {
-          // Mobile app: use custom scheme for deep linking
-          const appScheme = "manus20260103024933"; // From app.config.ts
-          magicLink = `${appScheme}://auth/verify?token=${token}`;
-        }
+        // Always use HTTPS URLs for email links (clickable in all email clients)
+        // The /auth/verify page will automatically try to open the app on mobile
+        const baseUrl = ctx.req.headers.origin || `https://${ctx.req.headers.host}`;
+        const magicLink = `${baseUrl}/auth/verify?token=${token}`;
 
          // Send magic link via Mailjet
         console.log("============================" );

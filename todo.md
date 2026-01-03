@@ -311,3 +311,9 @@
 - [ ] SQL query uses single quotes instead of backticks for column names
 - [ ] Fix Drizzle ORM database configuration
 - [ ] Test preferences save functionality
+
+## Fix Magic Link Universal Links
+- [ ] Custom scheme links (manus20260103024933://) are not clickable in email
+- [ ] Create web redirect page that detects mobile and opens app
+- [ ] Update magic link to always use HTTPS URLs
+- [ ] Test magic link opens app on mobile devices

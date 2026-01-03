@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator } from "react-native";
+import { Text, View, ActivityIndicator, Platform } from "react-native";
 import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -20,6 +20,23 @@ export default function VerifyMagicLinkScreen() {
       setStatus("error");
       setErrorMessage("Invalid magic link - no token provided");
       return;
+    }
+
+    // On mobile web, try to open the app first
+    const isMobileWeb = Platform.OS === 'web' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobileWeb) {
+      const appScheme = "manus20260103024933";
+      const deepLink = `${appScheme}://auth/verify?token=${token}`;
+      
+      console.log("[VerifyMagicLink] Mobile web detected, attempting to open app:", deepLink);
+      
+      // Try to open the app
+      window.location.href = deepLink;
+      
+      // If app doesn't open within 2 seconds, continue with web verification
+      setTimeout(() => {
+        console.log("[VerifyMagicLink] App didn't open, continuing with web verification");
+      }, 2000);
     }
 
     // Verify the magic link token
