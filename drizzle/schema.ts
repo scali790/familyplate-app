@@ -38,6 +38,7 @@ export const userPreferences = mysqlTable(
     cuisines: text("cuisines"), // JSON string
     flavors: text("flavors"), // JSON string
     dietaryRestrictions: text("dietary_restrictions"),
+    country: varchar("country", { length: 3 }).default("UAE"), // ISO country code for shopping list localization
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },

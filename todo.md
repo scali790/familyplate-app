@@ -93,3 +93,17 @@
 - [x] Fix prep/cook time badge text colors for dark mode
 - [x] Ensure all modal text uses theme-aware colors
 - [x] Test modal in dark mode on web preview
+
+## Shopping List Generator Feature
+- [x] Add country field to user preferences schema
+- [x] Add country selector dropdown to preferences screen (UAE, US, India, UK, Saudi Arabia)
+- [x] Create shopping list generation API endpoint
+- [x] Implement AI-powered ingredient consolidation and localization
+- [x] Add country-specific unit conversion (metric/imperial)
+- [x] Add local brand/product suggestions
+- [x] Group ingredients by category (produce, dairy, meat, pantry)
+- [x] Create shopping list screen UI
+- [x] Add deep links to local grocery stores (Noon, Carrefour, Amazon for UAE)
+- [x] Add "Generate Shopping List" button to dashboard
+- [x] Test shopping list generation for different countries
+- [x] Push updated schema to database

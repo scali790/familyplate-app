@@ -111,6 +111,7 @@ export const appRouter = router({
           cuisines: z.array(z.string()).max(5),
           flavors: z.array(z.string()),
           dietaryRestrictions: z.string().optional(),
+          country: z.string().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -126,6 +127,7 @@ export const appRouter = router({
               cuisines: JSON.stringify(input.cuisines),
               flavors: JSON.stringify(input.flavors),
               dietaryRestrictions: input.dietaryRestrictions || null,
+              country: input.country || "UAE",
               updatedAt: new Date(),
             })
             .where(eq(userPreferences.id, existing[0].id));
@@ -137,6 +139,7 @@ export const appRouter = router({
             cuisines: JSON.stringify(input.cuisines),
             flavors: JSON.stringify(input.flavors),
             dietaryRestrictions: input.dietaryRestrictions || null,
+            country: input.country || "UAE",
           });
           return { success: true };
         }
@@ -376,6 +379,95 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
         }
         
         return { success: true };
+      }),
+
+    // Generate shopping list from meal plan
+    generateShoppingList: protectedProcedure
+      .input(
+        z.object({
+          mealPlanId: z.number(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        // Get meal plan
+        const planResult = await db.select().from(mealPlans).where(eq(mealPlans.id, input.mealPlanId)).limit(1);
+        const plan = planResult[0];
+        if (!plan) throw new Error("Meal plan not found");
+        
+        // Get user preferences for country
+        const prefsResult = await db.select().from(userPreferences).where(eq(userPreferences.userId, ctx.user.id)).limit(1);
+        const prefs = prefsResult[0];
+        const country = prefs?.country || "UAE";
+        
+        // Parse meals
+        const meals: Meal[] = JSON.parse(plan.meals);
+        
+        // Extract all ingredients
+        const allIngredients = meals.flatMap(meal => meal.ingredients);
+        
+        // Use AI to consolidate, localize, and categorize ingredients
+        const prompt = `You are a shopping list assistant. Given a list of ingredients from a weekly meal plan, your task is to:
+
+1. Consolidate duplicate ingredients (e.g., "2 onions" + "1 onion" = "3 onions")
+2. Localize ingredients for ${country} (adjust units to metric/imperial based on country, suggest local brands/products)
+3. Group ingredients into categories: Produce, Dairy & Eggs, Meat & Seafood, Pantry & Spices, Other
+4. For ${country}, suggest where to buy (e.g., Noon, Carrefour, Amazon.ae for UAE)
+
+Ingredients:
+${allIngredients.map((ing, i) => `${i + 1}. ${ing}`).join('\n')}
+
+Return a JSON object with this structure:
+{
+  "categories": [
+    {
+      "name": "Produce",
+      "items": [
+        {
+          "name": "Tomatoes",
+          "quantity": "2 kg",
+          "localNote": "Fresh UAE tomatoes",
+          "estimatedPrice": "AED 8-12"
+        }
+      ]
+    }
+  ],
+  "storeLinks": [
+    {
+      "storeName": "Noon",
+      "url": "https://www.noon.com/uae-en/search?q=groceries"
+    }
+  ]
+}
+
+IMPORTANT: Return ONLY the JSON object, no markdown formatting, no code blocks, no explanations.`;
+        
+        const aiResponse = await invokeLLM({
+          messages: [
+            { role: "user", content: prompt },
+          ],
+        });
+        
+        const content = aiResponse.choices[0]?.message?.content || "{}";
+        let shoppingList;
+        try {
+          // Handle multimodal content (extract text if array)
+          const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+          // Remove markdown code blocks if present
+          const jsonStr = contentStr.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          shoppingList = JSON.parse(jsonStr);
+        } catch (e) {
+          console.error("Failed to parse AI response:", content);
+          throw new Error("Failed to generate shopping list");
+        }
+        
+        return {
+          success: true,
+          shoppingList,
+          country,
+        };
       }),
   }),
 });

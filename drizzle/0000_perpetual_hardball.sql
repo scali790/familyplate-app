@@ -1,0 +1,1 @@
+ALTER TABLE `user_preferences` ADD `country` varchar(3) DEFAULT 'UAE';

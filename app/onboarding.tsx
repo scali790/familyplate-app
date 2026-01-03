@@ -13,11 +13,20 @@ const FLAVOR_OPTIONS = [
   "Sweet", "Savory", "Spicy", "Mild", "Tangy", "Umami",
 ];
 
+const COUNTRY_OPTIONS = [
+  { code: "UAE", name: "United Arab Emirates" },
+  { code: "USA", name: "United States" },
+  { code: "IND", name: "India" },
+  { code: "GBR", name: "United Kingdom" },
+  { code: "SAU", name: "Saudi Arabia" },
+];
+
 export default function OnboardingScreen() {
   const [familySize, setFamilySize] = useState("2");
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
   const [dietaryRestrictions, setDietaryRestrictions] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("UAE");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const saveMutation = trpc.mealPlanning.savePreferences.useMutation();
@@ -76,6 +85,7 @@ export default function OnboardingScreen() {
         cuisines: selectedCuisines,
         flavors: selectedFlavors,
         dietaryRestrictions: dietaryRestrictions.trim() || undefined,
+        country: selectedCountry,
       });
 
       console.log("Preferences saved successfully!");
@@ -181,6 +191,39 @@ export default function OnboardingScreen() {
                     }`}
                   >
                     {flavor}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Country Location */}
+          <View className="gap-2">
+            <Text className="text-lg font-semibold text-foreground">
+              Country Location
+            </Text>
+            <Text className="text-sm text-muted mb-2">
+              Used for shopping list localization (stores, brands, units)
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              {COUNTRY_OPTIONS.map(country => (
+                <TouchableOpacity
+                  key={country.code}
+                  onPress={() => setSelectedCountry(country.code)}
+                  className={`px-4 py-2 rounded-full ${
+                    selectedCountry === country.code
+                      ? "bg-primary"
+                      : "bg-surface border border-border"
+                  }`}
+                >
+                  <Text
+                    className={`font-medium ${
+                      selectedCountry === country.code
+                        ? "text-white"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {country.name}
                   </Text>
                 </TouchableOpacity>
               ))}

@@ -179,6 +179,27 @@ export default function DashboardScreen() {
               <Text style={{ fontSize: 24 }}>👨‍👩‍👧‍👦</Text>
               <Text style={{ color: '#FF8C42', fontWeight: '600' }}>Share with Family to Vote</Text>
             </Pressable>
+
+            {/* Shopping List Button */}
+            <Pressable
+              onPress={() => router.push(`/shopping-list?mealPlanId=${mealPlan.id}`)}
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? 'rgba(74, 222, 128, 0.2)' : 'rgba(74, 222, 128, 0.1)',
+                borderWidth: 1,
+                borderColor: '#4ADE80',
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                cursor: 'pointer',
+              })}
+            >
+              <Text style={{ fontSize: 24 }}>🛒</Text>
+              <Text style={{ color: '#4ADE80', fontWeight: '600' }}>Generate Shopping List</Text>
+            </Pressable>
           </View>
 
           {/* Meal Cards */}
