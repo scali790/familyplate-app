@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -45,6 +45,30 @@ export default function OnboardingScreen() {
 
   const { colorScheme, setColorScheme } = useThemeContext();
   const saveMutation = trpc.mealPlanning.savePreferences.useMutation();
+  const { data: existingPreferences, isLoading: isLoadingPreferences } = trpc.mealPlanning.getPreferences.useQuery();
+
+  // Load existing preferences when data is fetched
+  useEffect(() => {
+    if (existingPreferences) {
+      setFamilySize(existingPreferences.familySize.toString());
+      setSelectedCuisines(existingPreferences.cuisines || []);
+      setSelectedFlavors(existingPreferences.flavors || []);
+      setDietaryRestrictions(existingPreferences.dietaryRestrictions || "");
+      setSelectedCountry(existingPreferences.country || "UAE");
+      
+      // Load food frequency preferences
+      setFoodPreferences({
+        meatFrequency: existingPreferences.meatFrequency ?? 3,
+        chickenFrequency: existingPreferences.chickenFrequency ?? 3,
+        fishFrequency: existingPreferences.fishFrequency ?? 3,
+        vegetarianFrequency: existingPreferences.vegetarianFrequency ?? 2,
+        veganFrequency: existingPreferences.veganFrequency ?? 1,
+        spicyFrequency: existingPreferences.spicyFrequency ?? 2,
+        kidFriendlyFrequency: existingPreferences.kidFriendlyFrequency ?? 2,
+        healthyFrequency: existingPreferences.healthyFrequency ?? 3,
+      });
+    }
+  }, [existingPreferences]);
 
   const toggleCuisine = (cuisine: string) => {
     if (selectedCuisines.includes(cuisine)) {

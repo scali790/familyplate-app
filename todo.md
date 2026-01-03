@@ -193,3 +193,10 @@
 - [x] Add 5 dots (● ● ○ ○ ○) under frequency label
 - [x] Fill dots left to right based on current frequency level
 - [x] Test visual feedback when tapping +/- buttons
+
+## Fix Preferences Not Loading from Database
+- [x] Add getPreferences query to API to fetch existing user preferences (already existed)
+- [x] Fetch existing preferences on onboarding screen load
+- [x] Populate form fields with fetched preferences (family size, cuisines, flavors, food frequencies)
+- [x] Test that saved preferences persist after page reload
+- [x] Verify all preference fields load correctly (family size, cuisines, flavors, food frequencies, dietary restrictions, country)
