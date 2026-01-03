@@ -11,13 +11,21 @@ export default function WelcomeScreen() {
   const [name, setName] = useState("");
   
   const loginMutation = trpc.auth.simpleLogin.useMutation();
+  const { data: existingPreferences } = trpc.mealPlanning.getPreferences.useQuery(undefined, {
+    enabled: !!user, // Only fetch if user is logged in
+  });
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      router.replace("/(tabs)");
+    if (user && existingPreferences !== undefined) {
+      // If user has preferences, go to home; otherwise go to onboarding
+      if (existingPreferences) {
+        router.replace("/(tabs)");
+      } else {
+        router.replace("/onboarding");
+      }
     }
-  }, [user]);
+  }, [user, existingPreferences]);
 
   const handleLogin = async () => {
     if (!email.trim()) {

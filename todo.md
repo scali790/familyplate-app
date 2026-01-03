@@ -200,3 +200,12 @@
 - [x] Populate form fields with fetched preferences (family size, cuisines, flavors, food frequencies)
 - [x] Test that saved preferences persist after page reload
 - [x] Verify all preference fields load correctly (family size, cuisines, flavors, food frequencies, dietary restrictions, country)
+
+## Debug Preferences Save Not Working
+- [x] Check server logs for save mutation errors (found "Invalid session cookie" errors)
+- [x] Add console logging to onboarding handleSave function (already exists)
+- [x] Verify save mutation is being called with correct data
+- [x] Check database to see if data is actually being written
+- [x] Verify user authentication is working (user ID is available) - added auth check to redirect unauthenticated users
+- [x] Fixed routing: new users go to onboarding after login, existing users go to home
+- [x] Test complete save/load cycle end-to-end

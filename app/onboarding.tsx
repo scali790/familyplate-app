@@ -5,6 +5,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useThemeContext } from "@/lib/theme-provider";
 import { FOOD_PREFERENCES, FREQUENCY_LABELS } from "@/src/utils/iconMapping";
+import { useAuth } from "@/hooks/use-auth";
 
 const CUISINE_OPTIONS = [
   "Italian", "Mexican", "Chinese", "Japanese", "Indian",
@@ -24,6 +25,7 @@ const COUNTRY_OPTIONS = [
 ];
 
 export default function OnboardingScreen() {
+  const { user } = useAuth();
   const [familySize, setFamilySize] = useState("2");
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
@@ -46,6 +48,14 @@ export default function OnboardingScreen() {
   const { colorScheme, setColorScheme } = useThemeContext();
   const saveMutation = trpc.mealPlanning.savePreferences.useMutation();
   const { data: existingPreferences, isLoading: isLoadingPreferences } = trpc.mealPlanning.getPreferences.useQuery();
+
+  // Redirect to welcome if not authenticated
+  useEffect(() => {
+    if (!user) {
+      console.log("User not authenticated, redirecting to welcome");
+      router.replace("/welcome");
+    }
+  }, [user]);
 
   // Load existing preferences when data is fetched
   useEffect(() => {
