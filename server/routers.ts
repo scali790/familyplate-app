@@ -112,6 +112,15 @@ export const appRouter = router({
           flavors: z.array(z.string()),
           dietaryRestrictions: z.string().optional(),
           country: z.string().optional(),
+          // Food preference toggles
+          includeMeat: z.boolean().optional(),
+          includeChicken: z.boolean().optional(),
+          includeFish: z.boolean().optional(),
+          includeVegetarian: z.boolean().optional(),
+          includeVegan: z.boolean().optional(),
+          includeSpicy: z.boolean().optional(),
+          includeKidFriendly: z.boolean().optional(),
+          includeHealthy: z.boolean().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -128,6 +137,14 @@ export const appRouter = router({
               flavors: JSON.stringify(input.flavors),
               dietaryRestrictions: input.dietaryRestrictions || null,
               country: input.country || "UAE",
+              includeMeat: input.includeMeat !== undefined ? (input.includeMeat ? 1 : 0) : 1,
+              includeChicken: input.includeChicken !== undefined ? (input.includeChicken ? 1 : 0) : 1,
+              includeFish: input.includeFish !== undefined ? (input.includeFish ? 1 : 0) : 1,
+              includeVegetarian: input.includeVegetarian !== undefined ? (input.includeVegetarian ? 1 : 0) : 1,
+              includeVegan: input.includeVegan !== undefined ? (input.includeVegan ? 1 : 0) : 1,
+              includeSpicy: input.includeSpicy !== undefined ? (input.includeSpicy ? 1 : 0) : 1,
+              includeKidFriendly: input.includeKidFriendly !== undefined ? (input.includeKidFriendly ? 1 : 0) : 1,
+              includeHealthy: input.includeHealthy !== undefined ? (input.includeHealthy ? 1 : 0) : 1,
               updatedAt: new Date(),
             })
             .where(eq(userPreferences.id, existing[0].id));
@@ -140,6 +157,14 @@ export const appRouter = router({
             flavors: JSON.stringify(input.flavors),
             dietaryRestrictions: input.dietaryRestrictions || null,
             country: input.country || "UAE",
+            includeMeat: input.includeMeat !== undefined ? (input.includeMeat ? 1 : 0) : 1,
+            includeChicken: input.includeChicken !== undefined ? (input.includeChicken ? 1 : 0) : 1,
+            includeFish: input.includeFish !== undefined ? (input.includeFish ? 1 : 0) : 1,
+            includeVegetarian: input.includeVegetarian !== undefined ? (input.includeVegetarian ? 1 : 0) : 1,
+            includeVegan: input.includeVegan !== undefined ? (input.includeVegan ? 1 : 0) : 1,
+            includeSpicy: input.includeSpicy !== undefined ? (input.includeSpicy ? 1 : 0) : 1,
+            includeKidFriendly: input.includeKidFriendly !== undefined ? (input.includeKidFriendly ? 1 : 0) : 1,
+            includeHealthy: input.includeHealthy !== undefined ? (input.includeHealthy ? 1 : 0) : 1,
           });
           return { success: true };
         }
@@ -160,12 +185,27 @@ export const appRouter = router({
       const cuisines = prefs.cuisines ? JSON.parse(prefs.cuisines) : [];
       const flavors = prefs.flavors ? JSON.parse(prefs.flavors) : [];
       
+      // Build food exclusions list based on user preferences
+      const exclusions: string[] = [];
+      if (!prefs.includeMeat) exclusions.push("red meat (beef, pork, lamb)");
+      if (!prefs.includeChicken) exclusions.push("chicken and poultry");
+      if (!prefs.includeFish) exclusions.push("fish and seafood");
+      if (!prefs.includeVegetarian) exclusions.push("vegetarian-only meals");
+      if (!prefs.includeVegan) exclusions.push("vegan-only meals");
+      if (!prefs.includeSpicy) exclusions.push("spicy dishes");
+      if (!prefs.includeKidFriendly) exclusions.push("kid-friendly specific meals");
+      if (!prefs.includeHealthy) exclusions.push("explicitly healthy/light meals");
+      
+      const exclusionText = exclusions.length > 0 
+        ? `\n- EXCLUDE these categories: ${exclusions.join(", ")}`
+        : "";
+      
       const prompt = `Generate a 7-day meal plan for a family of ${prefs.familySize}.
 
 Preferences:
 - Cuisines: ${cuisines.join(", ") || "Any"}
 - Flavors: ${flavors.join(", ") || "Balanced"}
-- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}
+- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${exclusionText}
 
 Return a JSON object with a "meals" array containing exactly 7 meal objects with these fields:
 - day: string (Monday through Sunday)
@@ -175,7 +215,13 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
 - cookTime: string (e.g. "45 mins")
 - difficulty: string (Easy, Medium, or Hard)
 - ingredients: array of strings (list all ingredients with quantities)
-- instructions: array of strings (step-by-step cooking instructions)`;
+- instructions: array of strings (step-by-step cooking instructions)
+- tags: array of strings (categorize each recipe with relevant tags from: meat, beef, pork, lamb, chicken, poultry, turkey, fish, seafood, shrimp, salmon, vegetarian, vegan, pasta, soup, stew, salad, breakfast, dessert, spicy, healthy, light, kid-friendly, vegetables, fruits)
+
+IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
+- A chicken curry would have tags: ["chicken", "spicy"]
+- A salmon pasta would have tags: ["fish", "pasta", "healthy"]
+- A vegetable soup would have tags: ["vegetarian", "soup", "vegetables", "healthy"]`;
 
       const response = await invokeLLM({
         messages: [
@@ -191,6 +237,7 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
       const parsed = JSON.parse(content);
       const meals: Meal[] = (Array.isArray(parsed) ? parsed : parsed.meals || []).map((m: any) => ({
         ...m,
+        tags: m.tags || [],
         upvotes: 0,
         downvotes: 0,
       }));
@@ -409,6 +456,21 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
         const cuisines = prefs.cuisines ? JSON.parse(prefs.cuisines) : [];
         const flavors = prefs.flavors ? JSON.parse(prefs.flavors) : [];
         
+        // Build food exclusions list based on user preferences
+        const exclusions: string[] = [];
+        if (!prefs.includeMeat) exclusions.push("red meat (beef, pork, lamb)");
+        if (!prefs.includeChicken) exclusions.push("chicken and poultry");
+        if (!prefs.includeFish) exclusions.push("fish and seafood");
+        if (!prefs.includeVegetarian) exclusions.push("vegetarian-only meals");
+        if (!prefs.includeVegan) exclusions.push("vegan-only meals");
+        if (!prefs.includeSpicy) exclusions.push("spicy dishes");
+        if (!prefs.includeKidFriendly) exclusions.push("kid-friendly specific meals");
+        if (!prefs.includeHealthy) exclusions.push("explicitly healthy/light meals");
+        
+        const exclusionText = exclusions.length > 0 
+          ? `\n- EXCLUDE these categories: ${exclusions.join(", ")}`
+          : "";
+        
         // Parse existing meals
         const meals: Meal[] = JSON.parse(plan.meals);
         const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -420,7 +482,7 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
 Preferences:
 - Cuisines: ${cuisines.join(", ") || "Any"}
 - Flavor profiles: ${flavors.join(", ") || "Any"}
-- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}
+- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${exclusionText}
 
 IMPORTANT:
 - Generate a DIFFERENT meal from the existing ones in the week
@@ -434,7 +496,8 @@ IMPORTANT:
     "cookTime": "X mins" or "X hour(s) Y mins",
     "difficulty": "Easy" or "Medium" or "Hard",
     "ingredients": ["ingredient 1", "ingredient 2", ...],
-    "instructions": ["step 1", "step 2", ...]
+    "instructions": ["step 1", "step 2", ...],
+    "tags": ["tag1", "tag2", ...] (categorize with 2-4 relevant tags from: meat, beef, pork, lamb, chicken, poultry, turkey, fish, seafood, shrimp, salmon, vegetarian, vegan, pasta, soup, stew, salad, breakfast, dessert, spicy, healthy, light, kid-friendly, vegetables, fruits)
   }
 }
 
@@ -460,7 +523,10 @@ Return ONLY the JSON object, no markdown formatting, no code blocks, no explanat
         }
         
         // Replace the meal at the specified day index
-        meals[input.dayIndex] = result.meal;
+        meals[input.dayIndex] = {
+          ...result.meal,
+          tags: result.meal.tags || [],
+        };
         
         // Update meal plan in database
         await db.update(mealPlans)

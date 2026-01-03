@@ -5,6 +5,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { RecipeModal } from "@/components/RecipeModal";
 import { trpc } from "@/lib/trpc";
 import type { Meal } from "@/drizzle/schema";
+import { getIconsForTags } from "@/src/utils/iconMapping";
 
 export default function SharedMealPlanScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -188,7 +189,12 @@ function MealCard({
       {/* Day & Name */}
       <View className="mb-3">
         <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
-        <Text className="text-xl font-bold text-foreground mt-1">{meal.name}</Text>
+        <View className="flex-row items-center gap-2 mt-1">
+          {meal.tags && meal.tags.length > 0 && (
+            <Text className="text-xl">{getIconsForTags(meal.tags).join(" ")}</Text>
+          )}
+          <Text className="text-xl font-bold text-foreground flex-1">{meal.name}</Text>
+        </View>
       </View>
 
       {/* Description */}

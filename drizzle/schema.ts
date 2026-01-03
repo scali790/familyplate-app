@@ -39,6 +39,15 @@ export const userPreferences = mysqlTable(
     flavors: text("flavors"), // JSON string
     dietaryRestrictions: text("dietary_restrictions"),
     country: varchar("country", { length: 3 }).default("UAE"), // ISO country code for shopping list localization
+    // Food preference toggles (true = include, false = exclude)
+    includeMeat: int("include_meat").notNull().default(1), // 1 = true, 0 = false
+    includeChicken: int("include_chicken").notNull().default(1),
+    includeFish: int("include_fish").notNull().default(1),
+    includeVegetarian: int("include_vegetarian").notNull().default(1),
+    includeVegan: int("include_vegan").notNull().default(1),
+    includeSpicy: int("include_spicy").notNull().default(1),
+    includeKidFriendly: int("include_kid_friendly").notNull().default(1),
+    includeHealthy: int("include_healthy").notNull().default(1),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },
@@ -91,6 +100,7 @@ export interface Meal {
   difficulty: string;
   ingredients: string[];
   instructions: string[];
+  tags: string[]; // e.g., ["chicken", "spicy", "healthy"]
   upvotes: number;
   downvotes: number;
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, View, Text, ScrollView, Pressable } from 'react-native';
 import { Meal } from '../drizzle/schema';
 import { useColors } from '@/hooks/use-colors';
+import { getIconsForTags } from '@/src/utils/iconMapping';
 
 interface RecipeModalProps {
   visible: boolean;
@@ -26,7 +27,12 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
           {/* Header */}
           <View className="flex-row justify-between items-center p-6" style={{ borderBottomWidth: 1, borderBottomColor: colors.border }}>
             <View className="flex-1 pr-4">
-              <Text className="text-2xl font-bold text-foreground">{meal.name}</Text>
+              <View className="flex-row items-center gap-2 mb-1">
+                {meal.tags && meal.tags.length > 0 && (
+                  <Text className="text-2xl">{getIconsForTags(meal.tags).join(" ")}</Text>
+                )}
+                <Text className="text-2xl font-bold text-foreground flex-1">{meal.name}</Text>
+              </View>
               <Text className="text-sm text-muted mt-1">{meal.description}</Text>
             </View>
             <Pressable

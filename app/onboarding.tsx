@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useThemeContext } from "@/lib/theme-provider";
+import { FOOD_PREFERENCES } from "@/src/utils/iconMapping";
 
 const CUISINE_OPTIONS = [
   "Italian", "Mexican", "Chinese", "Japanese", "Indian",
@@ -29,6 +30,18 @@ export default function OnboardingScreen() {
   const [dietaryRestrictions, setDietaryRestrictions] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("UAE");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Food preference toggles (all enabled by default)
+  const [foodPreferences, setFoodPreferences] = useState({
+    includeMeat: true,
+    includeChicken: true,
+    includeFish: true,
+    includeVegetarian: true,
+    includeVegan: true,
+    includeSpicy: true,
+    includeKidFriendly: true,
+    includeHealthy: true,
+  });
 
   const { colorScheme, setColorScheme } = useThemeContext();
   const saveMutation = trpc.mealPlanning.savePreferences.useMutation();
@@ -88,6 +101,7 @@ export default function OnboardingScreen() {
         flavors: selectedFlavors,
         dietaryRestrictions: dietaryRestrictions.trim() || undefined,
         country: selectedCountry,
+        ...foodPreferences,
       });
 
       console.log("Preferences saved successfully!");
@@ -265,6 +279,36 @@ export default function OnboardingScreen() {
             </View>
           </View>
 
+          {/* Food Preferences */}
+          <View className="gap-2">
+            <Text className="text-lg font-semibold text-foreground">
+              Food Preferences
+            </Text>
+            <Text className="text-sm text-muted mb-2">
+              Toggle off any categories you want to exclude from meal plans
+            </Text>
+            <View className="gap-3">
+              {FOOD_PREFERENCES.map(pref => (
+                <TouchableOpacity
+                  key={pref.key}
+                  onPress={() => setFoodPreferences(prev => ({
+                    ...prev,
+                    [pref.dbField]: !prev[pref.dbField],
+                  }))}
+                  className="flex-row items-center justify-between bg-surface border border-border rounded-xl px-4 py-3"
+                >
+                  <View className="flex-row items-center gap-3 flex-1">
+                    <Text className="text-2xl">{pref.icon}</Text>
+                    <Text className="text-foreground font-medium flex-1">{pref.label}</Text>
+                  </View>
+                  <View className={`w-12 h-6 rounded-full ${foodPreferences[pref.dbField] ? 'bg-success' : 'bg-border'} justify-center`}>
+                    <View className={`w-5 h-5 rounded-full bg-white ${foodPreferences[pref.dbField] ? 'self-end mr-0.5' : 'self-start ml-0.5'}`} />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
           {/* Dietary Restrictions */}
           <View className="gap-2">
             <Text className="text-lg font-semibold text-foreground">
@@ -272,7 +316,7 @@ export default function OnboardingScreen() {
             </Text>
             <TextInput
               className="bg-surface border border-border rounded-xl px-4 py-3 text-foreground"
-              placeholder="e.g., Vegetarian, Gluten-free, Nut allergy"
+              placeholder="e.g., Gluten-free, Nut allergy, Lactose intolerant"
               multiline
               numberOfLines={3}
               value={dietaryRestrictions}

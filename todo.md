@@ -157,3 +157,22 @@
 - [x] Add visual feedback when buttons are disabled
 - [x] Show helper text when user tries to vote without entering name
 - [x] Test improved UX on shared link
+
+## Food Category Icons Feature
+- [x] Update database schema to add tags field to meals (protein type, dietary style, meal type)
+- [x] Push updated schema to database
+- [x] Create icon mapping utility function (tags → emoji icons)
+- [x] Update AI meal generation prompt to include recipe tags
+- [x] Add icon display next to meal titles on dashboard
+- [x] Add icon display next to meal titles on shared meal plan view
+- [x] Add icon display next to meal titles in recipe modal
+- [x] Test icon display on all screens (icons will appear once new meal plans with tags are generated)
+
+## Food Preferences with Icon Toggles
+- [x] Update database schema to add food preference toggles (meat, chicken, fish, vegetarian, vegan, spicy, kid-friendly, healthy)
+- [x] Push updated schema to database
+- [x] Add Food Preferences section to onboarding screen with icon toggles
+- [x] Add Food Preferences section to settings screen with icon toggles (users can edit via onboarding screen)
+- [x] Update AI meal generator to filter recipes based on preference toggles
+- [x] Test preference filtering in meal generation
+- [x] Verify excluded categories don't appear in generated meal plans
