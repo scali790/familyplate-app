@@ -115,3 +115,7 @@
 - [x] Generate search-optimized ingredient names for better results
 - [x] Test ingredient search links on Noon
 - [x] Add "Copy List" button for manual shopping
+
+## Noon Supermarket Search Fix
+- [x] Update search URL to use Noon Supermarket section (https://www.noon.com/uae-en/noon-supermarket/search/)
+- [x] Test Noon Supermarket search links to verify grocery products appear

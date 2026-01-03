@@ -60,9 +60,9 @@ export default function ShoppingListScreen() {
   };
 
   const searchOnNoon = (itemName: string) => {
-    // Use full Noon search URL with referral parameters
+    // Use Noon Supermarket (grocery) search URL with referral parameters
     const searchQuery = encodeURIComponent(itemName);
-    const noonUrl = `https://www.noon.com/uae-en/search/?q=${searchQuery}&utm_source=C1000264L&utm_medium=AFF0cbe07af24de&utm_campaign=CMP2ce0b63a6a1anoon`;
+    const noonUrl = `https://www.noon.com/uae-en/noon-supermarket/search/?q=${searchQuery}&utm_source=C1000264L&utm_medium=AFF0cbe07af24de&utm_campaign=CMP2ce0b63a6a1anoon`;
     Linking.openURL(noonUrl);
   };
 
