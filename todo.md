@@ -176,3 +176,15 @@
 - [x] Update AI meal generator to filter recipes based on preference toggles
 - [x] Test preference filtering in meal generation
 - [x] Verify excluded categories don't appear in generated meal plans
+
+## Fix Food Preference Toggles → Replace with Frequency Sliders
+- [x] Fix toggle interaction issue (replaced toggles with sliders)
+- [x] Update database schema to use frequency values (0=Never, 1=Rarely, 2=Sometimes, 3=Often, 4=Always)
+- [x] Push updated schema to database
+- [x] Create slider component with visual feedback for preference levels
+- [x] Replace toggle UI with slider in onboarding screen
+- [x] Update API to accept frequency values instead of booleans
+- [x] Update AI meal generator prompt to use frequency preferences (e.g., "chicken often, red meat rarely")
+- [x] Test slider interaction and visual feedback
+- [x] Test preference filtering with frequency values
+- [x] Verify meal generation respects frequency preferences

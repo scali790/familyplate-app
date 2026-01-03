@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useThemeContext } from "@/lib/theme-provider";
-import { FOOD_PREFERENCES } from "@/src/utils/iconMapping";
+import { FOOD_PREFERENCES, FREQUENCY_LABELS } from "@/src/utils/iconMapping";
 
 const CUISINE_OPTIONS = [
   "Italian", "Mexican", "Chinese", "Japanese", "Indian",
@@ -31,16 +31,16 @@ export default function OnboardingScreen() {
   const [selectedCountry, setSelectedCountry] = useState("UAE");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Food preference toggles (all enabled by default)
+  // Food preference frequencies (0=Never, 1=Rarely, 2=Sometimes, 3=Often, 4=Always)
   const [foodPreferences, setFoodPreferences] = useState({
-    includeMeat: true,
-    includeChicken: true,
-    includeFish: true,
-    includeVegetarian: true,
-    includeVegan: true,
-    includeSpicy: true,
-    includeKidFriendly: true,
-    includeHealthy: true,
+    meatFrequency: 3, // Often
+    chickenFrequency: 3,
+    fishFrequency: 3,
+    vegetarianFrequency: 2, // Sometimes
+    veganFrequency: 1, // Rarely
+    spicyFrequency: 2,
+    kidFriendlyFrequency: 2,
+    healthyFrequency: 3,
   });
 
   const { colorScheme, setColorScheme } = useThemeContext();
@@ -287,25 +287,57 @@ export default function OnboardingScreen() {
             <Text className="text-sm text-muted mb-2">
               Toggle off any categories you want to exclude from meal plans
             </Text>
-            <View className="gap-3">
-              {FOOD_PREFERENCES.map(pref => (
-                <TouchableOpacity
-                  key={pref.key}
-                  onPress={() => setFoodPreferences(prev => ({
-                    ...prev,
-                    [pref.dbField]: !prev[pref.dbField],
-                  }))}
-                  className="flex-row items-center justify-between bg-surface border border-border rounded-xl px-4 py-3"
-                >
-                  <View className="flex-row items-center gap-3 flex-1">
-                    <Text className="text-2xl">{pref.icon}</Text>
-                    <Text className="text-foreground font-medium flex-1">{pref.label}</Text>
+            <View className="gap-4">
+              {FOOD_PREFERENCES.map(pref => {
+                const frequency = foodPreferences[pref.dbField];
+                const frequencyLabel = FREQUENCY_LABELS[frequency];
+                return (
+                  <View key={pref.key} className="bg-surface border border-border rounded-xl p-4">
+                    {/* Icon and Title */}
+                    <View className="flex-row items-center gap-3 mb-3">
+                      <Text className="text-2xl">{pref.icon}</Text>
+                      <View className="flex-1">
+                        <Text className="text-foreground font-semibold">{pref.label}</Text>
+                        <Text className="text-sm text-primary font-medium mt-0.5">{frequencyLabel}</Text>
+                      </View>
+                    </View>
+                    
+                    {/* Slider */}
+                    <View className="flex-row items-center gap-3">
+                      <TouchableOpacity
+                        onPress={() => setFoodPreferences(prev => ({
+                          ...prev,
+                          [pref.dbField]: Math.max(0, prev[pref.dbField] - 1),
+                        }))}
+                        disabled={frequency === 0}
+                        className="w-8 h-8 items-center justify-center rounded-full bg-surface border border-border"
+                        style={{ opacity: frequency === 0 ? 0.3 : 1 }}
+                      >
+                        <Text className="text-foreground font-bold">−</Text>
+                      </TouchableOpacity>
+                      
+                      <View className="flex-1 h-2 bg-border rounded-full overflow-hidden">
+                        <View 
+                          className="h-full bg-primary rounded-full"
+                          style={{ width: `${(frequency / 4) * 100}%` }}
+                        />
+                      </View>
+                      
+                      <TouchableOpacity
+                        onPress={() => setFoodPreferences(prev => ({
+                          ...prev,
+                          [pref.dbField]: Math.min(4, prev[pref.dbField] + 1),
+                        }))}
+                        disabled={frequency === 4}
+                        className="w-8 h-8 items-center justify-center rounded-full bg-surface border border-border"
+                        style={{ opacity: frequency === 4 ? 0.3 : 1 }}
+                      >
+                        <Text className="text-foreground font-bold">+</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                  <View className={`w-12 h-6 rounded-full ${foodPreferences[pref.dbField] ? 'bg-success' : 'bg-border'} justify-center`}>
-                    <View className={`w-5 h-5 rounded-full bg-white ${foodPreferences[pref.dbField] ? 'self-end mr-0.5' : 'self-start ml-0.5'}`} />
-                  </View>
-                </TouchableOpacity>
-              ))}
+                );
+              })}
             </View>
           </View>
 

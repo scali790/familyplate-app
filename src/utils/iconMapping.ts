@@ -83,24 +83,35 @@ export interface FoodPreference {
   label: string;
   icon: string;
   dbField: keyof {
-    includeMeat: number;
-    includeChicken: number;
-    includeFish: number;
-    includeVegetarian: number;
-    includeVegan: number;
-    includeSpicy: number;
-    includeKidFriendly: number;
-    includeHealthy: number;
+    meatFrequency: number;
+    chickenFrequency: number;
+    fishFrequency: number;
+    vegetarianFrequency: number;
+    veganFrequency: number;
+    spicyFrequency: number;
+    kidFriendlyFrequency: number;
+    healthyFrequency: number;
   };
 }
 
 export const FOOD_PREFERENCES: FoodPreference[] = [
-  { key: "meat", label: "Meat (Beef, Pork, Lamb)", icon: "🥩", dbField: "includeMeat" },
-  { key: "chicken", label: "Chicken & Poultry", icon: "🍗", dbField: "includeChicken" },
-  { key: "fish", label: "Fish & Seafood", icon: "🐟", dbField: "includeFish" },
-  { key: "vegetarian", label: "Vegetarian Meals", icon: "🌱", dbField: "includeVegetarian" },
-  { key: "vegan", label: "Vegan Meals", icon: "🥬", dbField: "includeVegan" },
-  { key: "spicy", label: "Spicy Dishes", icon: "🌶️", dbField: "includeSpicy" },
-  { key: "kid-friendly", label: "Kid-Friendly Meals", icon: "👶", dbField: "includeKidFriendly" },
-  { key: "healthy", label: "Lighter/Healthy Meals", icon: "🥗", dbField: "includeHealthy" },
+  { key: "meat", label: "Meat (Beef, Pork, Lamb)", icon: "🥩", dbField: "meatFrequency" },
+  { key: "chicken", label: "Chicken & Poultry", icon: "🍗", dbField: "chickenFrequency" },
+  { key: "fish", label: "Fish & Seafood", icon: "🐟", dbField: "fishFrequency" },
+  { key: "vegetarian", label: "Vegetarian Meals", icon: "🌱", dbField: "vegetarianFrequency" },
+  { key: "vegan", label: "Vegan Meals", icon: "🥬", dbField: "veganFrequency" },
+  { key: "spicy", label: "Spicy Dishes", icon: "🌶️", dbField: "spicyFrequency" },
+  { key: "kid-friendly", label: "Kid-Friendly Meals", icon: "👶", dbField: "kidFriendlyFrequency" },
+  { key: "healthy", label: "Lighter/Healthy Meals", icon: "🥗", dbField: "healthyFrequency" },
+];
+
+/**
+ * Frequency level labels
+ */
+export const FREQUENCY_LABELS = [
+  "Never",
+  "Rarely",
+  "Sometimes",
+  "Often",
+  "Always",
 ];

@@ -112,15 +112,15 @@ export const appRouter = router({
           flavors: z.array(z.string()),
           dietaryRestrictions: z.string().optional(),
           country: z.string().optional(),
-          // Food preference toggles
-          includeMeat: z.boolean().optional(),
-          includeChicken: z.boolean().optional(),
-          includeFish: z.boolean().optional(),
-          includeVegetarian: z.boolean().optional(),
-          includeVegan: z.boolean().optional(),
-          includeSpicy: z.boolean().optional(),
-          includeKidFriendly: z.boolean().optional(),
-          includeHealthy: z.boolean().optional(),
+          // Food preference frequencies (0-4)
+          meatFrequency: z.number().min(0).max(4).optional(),
+          chickenFrequency: z.number().min(0).max(4).optional(),
+          fishFrequency: z.number().min(0).max(4).optional(),
+          vegetarianFrequency: z.number().min(0).max(4).optional(),
+          veganFrequency: z.number().min(0).max(4).optional(),
+          spicyFrequency: z.number().min(0).max(4).optional(),
+          kidFriendlyFrequency: z.number().min(0).max(4).optional(),
+          healthyFrequency: z.number().min(0).max(4).optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -137,14 +137,14 @@ export const appRouter = router({
               flavors: JSON.stringify(input.flavors),
               dietaryRestrictions: input.dietaryRestrictions || null,
               country: input.country || "UAE",
-              includeMeat: input.includeMeat !== undefined ? (input.includeMeat ? 1 : 0) : 1,
-              includeChicken: input.includeChicken !== undefined ? (input.includeChicken ? 1 : 0) : 1,
-              includeFish: input.includeFish !== undefined ? (input.includeFish ? 1 : 0) : 1,
-              includeVegetarian: input.includeVegetarian !== undefined ? (input.includeVegetarian ? 1 : 0) : 1,
-              includeVegan: input.includeVegan !== undefined ? (input.includeVegan ? 1 : 0) : 1,
-              includeSpicy: input.includeSpicy !== undefined ? (input.includeSpicy ? 1 : 0) : 1,
-              includeKidFriendly: input.includeKidFriendly !== undefined ? (input.includeKidFriendly ? 1 : 0) : 1,
-              includeHealthy: input.includeHealthy !== undefined ? (input.includeHealthy ? 1 : 0) : 1,
+              meatFrequency: input.meatFrequency !== undefined ? input.meatFrequency : 3,
+              chickenFrequency: input.chickenFrequency !== undefined ? input.chickenFrequency : 3,
+              fishFrequency: input.fishFrequency !== undefined ? input.fishFrequency : 3,
+              vegetarianFrequency: input.vegetarianFrequency !== undefined ? input.vegetarianFrequency : 2,
+              veganFrequency: input.veganFrequency !== undefined ? input.veganFrequency : 1,
+              spicyFrequency: input.spicyFrequency !== undefined ? input.spicyFrequency : 2,
+              kidFriendlyFrequency: input.kidFriendlyFrequency !== undefined ? input.kidFriendlyFrequency : 2,
+              healthyFrequency: input.healthyFrequency !== undefined ? input.healthyFrequency : 3,
               updatedAt: new Date(),
             })
             .where(eq(userPreferences.id, existing[0].id));
@@ -157,14 +157,14 @@ export const appRouter = router({
             flavors: JSON.stringify(input.flavors),
             dietaryRestrictions: input.dietaryRestrictions || null,
             country: input.country || "UAE",
-            includeMeat: input.includeMeat !== undefined ? (input.includeMeat ? 1 : 0) : 1,
-            includeChicken: input.includeChicken !== undefined ? (input.includeChicken ? 1 : 0) : 1,
-            includeFish: input.includeFish !== undefined ? (input.includeFish ? 1 : 0) : 1,
-            includeVegetarian: input.includeVegetarian !== undefined ? (input.includeVegetarian ? 1 : 0) : 1,
-            includeVegan: input.includeVegan !== undefined ? (input.includeVegan ? 1 : 0) : 1,
-            includeSpicy: input.includeSpicy !== undefined ? (input.includeSpicy ? 1 : 0) : 1,
-            includeKidFriendly: input.includeKidFriendly !== undefined ? (input.includeKidFriendly ? 1 : 0) : 1,
-            includeHealthy: input.includeHealthy !== undefined ? (input.includeHealthy ? 1 : 0) : 1,
+            meatFrequency: input.meatFrequency !== undefined ? input.meatFrequency : 3,
+            chickenFrequency: input.chickenFrequency !== undefined ? input.chickenFrequency : 3,
+            fishFrequency: input.fishFrequency !== undefined ? input.fishFrequency : 3,
+            vegetarianFrequency: input.vegetarianFrequency !== undefined ? input.vegetarianFrequency : 2,
+            veganFrequency: input.veganFrequency !== undefined ? input.veganFrequency : 1,
+            spicyFrequency: input.spicyFrequency !== undefined ? input.spicyFrequency : 2,
+            kidFriendlyFrequency: input.kidFriendlyFrequency !== undefined ? input.kidFriendlyFrequency : 2,
+            healthyFrequency: input.healthyFrequency !== undefined ? input.healthyFrequency : 3,
           });
           return { success: true };
         }
@@ -185,19 +185,43 @@ export const appRouter = router({
       const cuisines = prefs.cuisines ? JSON.parse(prefs.cuisines) : [];
       const flavors = prefs.flavors ? JSON.parse(prefs.flavors) : [];
       
-      // Build food exclusions list based on user preferences
-      const exclusions: string[] = [];
-      if (!prefs.includeMeat) exclusions.push("red meat (beef, pork, lamb)");
-      if (!prefs.includeChicken) exclusions.push("chicken and poultry");
-      if (!prefs.includeFish) exclusions.push("fish and seafood");
-      if (!prefs.includeVegetarian) exclusions.push("vegetarian-only meals");
-      if (!prefs.includeVegan) exclusions.push("vegan-only meals");
-      if (!prefs.includeSpicy) exclusions.push("spicy dishes");
-      if (!prefs.includeKidFriendly) exclusions.push("kid-friendly specific meals");
-      if (!prefs.includeHealthy) exclusions.push("explicitly healthy/light meals");
+      // Build food frequency preferences (0=Never, 1=Rarely, 2=Sometimes, 3=Often, 4=Always)
+      const frequencyMap: Record<number, string> = {
+        0: "never",
+        1: "rarely",
+        2: "sometimes",
+        3: "often",
+        4: "always",
+      };
       
-      const exclusionText = exclusions.length > 0 
-        ? `\n- EXCLUDE these categories: ${exclusions.join(", ")}`
+      const preferences: string[] = [];
+      if (prefs.meatFrequency !== undefined && prefs.meatFrequency !== 3) {
+        preferences.push(`red meat (beef, pork, lamb): ${frequencyMap[prefs.meatFrequency]}`);
+      }
+      if (prefs.chickenFrequency !== undefined && prefs.chickenFrequency !== 3) {
+        preferences.push(`chicken and poultry: ${frequencyMap[prefs.chickenFrequency]}`);
+      }
+      if (prefs.fishFrequency !== undefined && prefs.fishFrequency !== 3) {
+        preferences.push(`fish and seafood: ${frequencyMap[prefs.fishFrequency]}`);
+      }
+      if (prefs.vegetarianFrequency !== undefined && prefs.vegetarianFrequency > 2) {
+        preferences.push(`vegetarian meals: ${frequencyMap[prefs.vegetarianFrequency]}`);
+      }
+      if (prefs.veganFrequency !== undefined && prefs.veganFrequency > 1) {
+        preferences.push(`vegan meals: ${frequencyMap[prefs.veganFrequency]}`);
+      }
+      if (prefs.spicyFrequency !== undefined && prefs.spicyFrequency !== 2) {
+        preferences.push(`spicy dishes: ${frequencyMap[prefs.spicyFrequency]}`);
+      }
+      if (prefs.kidFriendlyFrequency !== undefined && prefs.kidFriendlyFrequency > 2) {
+        preferences.push(`kid-friendly meals: ${frequencyMap[prefs.kidFriendlyFrequency]}`);
+      }
+      if (prefs.healthyFrequency !== undefined && prefs.healthyFrequency !== 3) {
+        preferences.push(`healthy/light meals: ${frequencyMap[prefs.healthyFrequency]}`);
+      }
+      
+      const frequencyText = preferences.length > 0 
+        ? `\n- Food frequency preferences: ${preferences.join(", ")}`
         : "";
       
       const prompt = `Generate a 7-day meal plan for a family of ${prefs.familySize}.
@@ -205,7 +229,7 @@ export const appRouter = router({
 Preferences:
 - Cuisines: ${cuisines.join(", ") || "Any"}
 - Flavors: ${flavors.join(", ") || "Balanced"}
-- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${exclusionText}
+- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${frequencyText}
 
 Return a JSON object with a "meals" array containing exactly 7 meal objects with these fields:
 - day: string (Monday through Sunday)
@@ -456,19 +480,43 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         const cuisines = prefs.cuisines ? JSON.parse(prefs.cuisines) : [];
         const flavors = prefs.flavors ? JSON.parse(prefs.flavors) : [];
         
-        // Build food exclusions list based on user preferences
-        const exclusions: string[] = [];
-        if (!prefs.includeMeat) exclusions.push("red meat (beef, pork, lamb)");
-        if (!prefs.includeChicken) exclusions.push("chicken and poultry");
-        if (!prefs.includeFish) exclusions.push("fish and seafood");
-        if (!prefs.includeVegetarian) exclusions.push("vegetarian-only meals");
-        if (!prefs.includeVegan) exclusions.push("vegan-only meals");
-        if (!prefs.includeSpicy) exclusions.push("spicy dishes");
-        if (!prefs.includeKidFriendly) exclusions.push("kid-friendly specific meals");
-        if (!prefs.includeHealthy) exclusions.push("explicitly healthy/light meals");
+        // Build food frequency preferences (0=Never, 1=Rarely, 2=Sometimes, 3=Often, 4=Always)
+        const frequencyMap: Record<number, string> = {
+          0: "never",
+          1: "rarely",
+          2: "sometimes",
+          3: "often",
+          4: "always",
+        };
         
-        const exclusionText = exclusions.length > 0 
-          ? `\n- EXCLUDE these categories: ${exclusions.join(", ")}`
+        const preferences: string[] = [];
+        if (prefs.meatFrequency !== undefined && prefs.meatFrequency !== 3) {
+          preferences.push(`red meat (beef, pork, lamb): ${frequencyMap[prefs.meatFrequency]}`);
+        }
+        if (prefs.chickenFrequency !== undefined && prefs.chickenFrequency !== 3) {
+          preferences.push(`chicken and poultry: ${frequencyMap[prefs.chickenFrequency]}`);
+        }
+        if (prefs.fishFrequency !== undefined && prefs.fishFrequency !== 3) {
+          preferences.push(`fish and seafood: ${frequencyMap[prefs.fishFrequency]}`);
+        }
+        if (prefs.vegetarianFrequency !== undefined && prefs.vegetarianFrequency > 2) {
+          preferences.push(`vegetarian meals: ${frequencyMap[prefs.vegetarianFrequency]}`);
+        }
+        if (prefs.veganFrequency !== undefined && prefs.veganFrequency > 1) {
+          preferences.push(`vegan meals: ${frequencyMap[prefs.veganFrequency]}`);
+        }
+        if (prefs.spicyFrequency !== undefined && prefs.spicyFrequency !== 2) {
+          preferences.push(`spicy dishes: ${frequencyMap[prefs.spicyFrequency]}`);
+        }
+        if (prefs.kidFriendlyFrequency !== undefined && prefs.kidFriendlyFrequency > 2) {
+          preferences.push(`kid-friendly meals: ${frequencyMap[prefs.kidFriendlyFrequency]}`);
+        }
+        if (prefs.healthyFrequency !== undefined && prefs.healthyFrequency !== 3) {
+          preferences.push(`healthy/light meals: ${frequencyMap[prefs.healthyFrequency]}`);
+        }
+        
+        const frequencyText = preferences.length > 0 
+          ? `\n- Food frequency preferences: ${preferences.join(", ")}`
           : "";
         
         // Parse existing meals
@@ -482,7 +530,7 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
 Preferences:
 - Cuisines: ${cuisines.join(", ") || "Any"}
 - Flavor profiles: ${flavors.join(", ") || "Any"}
-- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${exclusionText}
+- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${frequencyText}
 
 IMPORTANT:
 - Generate a DIFFERENT meal from the existing ones in the week

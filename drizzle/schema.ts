@@ -39,15 +39,15 @@ export const userPreferences = mysqlTable(
     flavors: text("flavors"), // JSON string
     dietaryRestrictions: text("dietary_restrictions"),
     country: varchar("country", { length: 3 }).default("UAE"), // ISO country code for shopping list localization
-    // Food preference toggles (true = include, false = exclude)
-    includeMeat: int("include_meat").notNull().default(1), // 1 = true, 0 = false
-    includeChicken: int("include_chicken").notNull().default(1),
-    includeFish: int("include_fish").notNull().default(1),
-    includeVegetarian: int("include_vegetarian").notNull().default(1),
-    includeVegan: int("include_vegan").notNull().default(1),
-    includeSpicy: int("include_spicy").notNull().default(1),
-    includeKidFriendly: int("include_kid_friendly").notNull().default(1),
-    includeHealthy: int("include_healthy").notNull().default(1),
+    // Food preference frequency (0=Never, 1=Rarely, 2=Sometimes, 3=Often, 4=Always)
+    meatFrequency: int("meat_frequency").notNull().default(3), // Default: Often
+    chickenFrequency: int("chicken_frequency").notNull().default(3),
+    fishFrequency: int("fish_frequency").notNull().default(3),
+    vegetarianFrequency: int("vegetarian_frequency").notNull().default(2), // Default: Sometimes
+    veganFrequency: int("vegan_frequency").notNull().default(1), // Default: Rarely
+    spicyFrequency: int("spicy_frequency").notNull().default(2),
+    kidFriendlyFrequency: int("kid_friendly_frequency").notNull().default(2),
+    healthyFrequency: int("healthy_frequency").notNull().default(3),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },
