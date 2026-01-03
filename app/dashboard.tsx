@@ -14,6 +14,8 @@ export default function DashboardScreen() {
   
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getCurrentPlan.useQuery();
   const voteMutation = trpc.mealPlanning.vote.useMutation();
+  const regenerateMutation = trpc.mealPlanning.regenerateMeal.useMutation();
+  const [regeneratingDay, setRegeneratingDay] = useState<string | null>(null);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -39,6 +41,29 @@ export default function DashboardScreen() {
       if (Platform.OS === 'web') {
         alert("Failed to save vote");
       }
+    }
+  };
+
+  const handleRegenerateMeal = async (dayIndex: number, dayName: string) => {
+    if (!mealPlan) return;
+
+    try {
+      setRegeneratingDay(dayName);
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+      await regenerateMutation.mutateAsync({
+        mealPlanId: mealPlan.id,
+        dayIndex,
+      });
+      await refetch();
+    } catch (error) {
+      console.error("Failed to regenerate meal:", error);
+      if (Platform.OS === 'web') {
+        alert("Failed to regenerate meal");
+      }
+    } finally {
+      setRegeneratingDay(null);
     }
   };
 
@@ -204,7 +229,7 @@ export default function DashboardScreen() {
 
           {/* Meal Cards */}
           <View className="gap-4">
-            {mealPlan.meals.map((meal) => (
+            {mealPlan.meals.map((meal, index) => (
               <MealCard
                 key={meal.day}
                 meal={meal}
@@ -213,6 +238,8 @@ export default function DashboardScreen() {
                   setSelectedMeal(meal);
                   setModalVisible(true);
                 }}
+                onRegenerate={() => handleRegenerateMeal(index, meal.day)}
+                isRegenerating={regeneratingDay === meal.day}
               />
             ))}
           </View>
@@ -230,7 +257,19 @@ export default function DashboardScreen() {
   );
 }
 
-function MealCard({ meal, onVote, onPress }: { meal: Meal; onVote: (voteType: "up" | "down") => void; onPress: () => void }) {
+function MealCard({ 
+  meal, 
+  onVote, 
+  onPress, 
+  onRegenerate, 
+  isRegenerating 
+}: { 
+  meal: Meal; 
+  onVote: (voteType: "up" | "down") => void; 
+  onPress: () => void;
+  onRegenerate: () => void;
+  isRegenerating: boolean;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -239,10 +278,22 @@ function MealCard({ meal, onVote, onPress }: { meal: Meal; onVote: (voteType: "u
       })}
     >
       <View className="bg-surface rounded-2xl p-5 border border-border">
-      {/* Day & Name */}
-      <View className="mb-3">
-        <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
-        <Text className="text-xl font-bold text-foreground mt-1">{meal.name}</Text>
+      {/* Day & Name with Regenerate Button */}
+      <View className="mb-3 flex-row items-start justify-between">
+        <View className="flex-1">
+          <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
+          <Text className="text-xl font-bold text-foreground mt-1">{meal.name}</Text>
+        </View>
+        <TouchableOpacity
+          onPress={onRegenerate}
+          disabled={isRegenerating}
+          className="ml-2 bg-primary/10 px-3 py-2 rounded-full active:opacity-70"
+          style={{ opacity: isRegenerating ? 0.5 : 1 }}
+        >
+          <Text className="text-sm font-semibold text-primary">
+            {isRegenerating ? "⏳" : "🔄"}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Description */}

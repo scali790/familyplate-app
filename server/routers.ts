@@ -381,6 +381,98 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
         return { success: true };
       }),
 
+    // Regenerate a single meal in a meal plan
+    regenerateMeal: protectedProcedure
+      .input(
+        z.object({
+          mealPlanId: z.number(),
+          dayIndex: z.number(), // 0-6 for Monday-Sunday
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        // Get existing meal plan
+        const planResult = await db.select().from(mealPlans).where(eq(mealPlans.id, input.mealPlanId)).limit(1);
+        const plan = planResult[0];
+        if (!plan) throw new Error("Meal plan not found");
+        
+        // Get user preferences
+        const prefsResult = await db.select().from(userPreferences).where(eq(userPreferences.userId, ctx.user.id)).limit(1);
+        const prefs = prefsResult[0];
+        
+        if (!prefs) {
+          throw new Error("Please set your preferences first");
+        }
+        
+        const cuisines = prefs.cuisines ? JSON.parse(prefs.cuisines) : [];
+        const flavors = prefs.flavors ? JSON.parse(prefs.flavors) : [];
+        
+        // Parse existing meals
+        const meals: Meal[] = JSON.parse(plan.meals);
+        const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        const dayName = dayNames[input.dayIndex];
+        
+        // Generate a single new meal
+        const prompt = `Generate 1 dinner recipe for ${dayName} for a family of ${prefs.familySize}.
+
+Preferences:
+- Cuisines: ${cuisines.join(", ") || "Any"}
+- Flavor profiles: ${flavors.join(", ") || "Any"}
+- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}
+
+IMPORTANT:
+- Generate a DIFFERENT meal from the existing ones in the week
+- Return a JSON object with this structure:
+{
+  "meal": {
+    "day": "${dayName}",
+    "name": "Recipe Name",
+    "description": "Brief description (2-3 sentences)",
+    "prepTime": "X mins",
+    "cookTime": "X mins" or "X hour(s) Y mins",
+    "difficulty": "Easy" or "Medium" or "Hard",
+    "ingredients": ["ingredient 1", "ingredient 2", ...],
+    "instructions": ["step 1", "step 2", ...]
+  }
+}
+
+Return ONLY the JSON object, no markdown formatting, no code blocks, no explanations.`;
+        
+        const aiResponse = await invokeLLM({
+          messages: [
+            { role: "user", content: prompt },
+          ],
+        });
+        
+        const content = aiResponse.choices[0]?.message?.content || "{}";
+        let result;
+        try {
+          // Handle multimodal content (extract text if array)
+          const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+          // Remove markdown code blocks if present
+          const jsonStr = contentStr.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          result = JSON.parse(jsonStr);
+        } catch (e) {
+          console.error("Failed to parse AI response:", content);
+          throw new Error("Failed to generate meal");
+        }
+        
+        // Replace the meal at the specified day index
+        meals[input.dayIndex] = result.meal;
+        
+        // Update meal plan in database
+        await db.update(mealPlans)
+          .set({ meals: JSON.stringify(meals) })
+          .where(eq(mealPlans.id, input.mealPlanId));
+        
+        return {
+          success: true,
+          meal: result.meal,
+        };
+      }),
+
     // Generate shopping list from meal plan
     generateShoppingList: protectedProcedure
       .input(

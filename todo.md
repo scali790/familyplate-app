@@ -129,3 +129,10 @@
 ## Shopping List Week Information
 - [x] Add week plan date range to shopping list header (e.g., "Week of Dec 29 - Jan 4")
 - [x] Display which meal plan the shopping list is generated from
+
+## Meal Swap Feature
+- [x] Create API endpoint for regenerating a single meal
+- [x] Add "🔄 Regenerate" button to each meal card on dashboard
+- [x] Implement meal regeneration logic that preserves other meals
+- [x] Update meal plan in database with new meal
+- [x] Test meal swap functionality on web preview
