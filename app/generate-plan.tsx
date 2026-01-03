@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -9,18 +9,24 @@ export default function GeneratePlanScreen() {
   const generateMutation = trpc.mealPlanning.generatePlan.useMutation();
 
   const handleGenerate = async () => {
+    console.log("handleGenerate called");
     setIsGenerating(true);
     try {
-      await generateMutation.mutateAsync();
-      Alert.alert(
-        "Success!",
-        "Your meal plan has been generated",
-        [{ text: "View Plan", onPress: () => router.replace("/dashboard") }]
-      );
+      console.log("Calling generatePlan mutation...");
+      const result = await generateMutation.mutateAsync();
+      console.log("Meal plan generated successfully:", result);
+      
+      if (Platform.OS === 'web') {
+        alert("Your meal plan has been generated!");
+      }
+      router.replace("/dashboard");
     } catch (error: any) {
       const message = error?.message || "Failed to generate meal plan";
-      Alert.alert("Error", message);
-      console.error(error);
+      console.error("Failed to generate meal plan:", error);
+      
+      if (Platform.OS === 'web') {
+        alert(`Error: ${message}`);
+      }
     } finally {
       setIsGenerating(false);
     }

@@ -46,3 +46,8 @@
 - [x] Fix "Get Started" button crash on mobile
 - [x] Fix OAuth authentication flow not working in browser preview
 - [x] Debug and fix login redirect issue
+
+## New Bugs to Fix
+- [x] Fix meal plan generation - loading but nothing happens after clicking Generate Plan
+- [x] Debug API endpoint for meal plan generation
+- [x] Test end-to-end meal plan generation flow
