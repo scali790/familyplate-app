@@ -136,3 +136,9 @@
 - [x] Implement meal regeneration logic that preserves other meals
 - [x] Update meal plan in database with new meal
 - [x] Test meal swap functionality on web preview
+
+## Talabat Grocery Store Integration
+- [x] Add "Find on Talabat" button next to each ingredient
+- [x] Use Talabat affiliate tracking URL (http://go.pjarabialinks.com/?t_c=No_pn=talabat_pt=r=lp)
+- [x] Add search parameter for each ingredient to Talabat URL
+- [x] Test Talabat search links with affiliate tracking

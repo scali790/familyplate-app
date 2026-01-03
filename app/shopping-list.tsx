@@ -68,6 +68,13 @@ export default function ShoppingListScreen() {
     Linking.openURL(noonUrl);
   };
 
+  const searchOnTalabat = (itemName: string) => {
+    // Use DCMNetwork affiliate tracking URL with Talabat Groceries destination
+    // This ensures proper commission tracking while directing users to groceries
+    const talabatUrl = `https://go.urtrackinglink.com/aff_c?offer_id=1889&aff_id=159792&url=${encodeURIComponent('https://www.talabat.com/uae/groceries')}`;
+    Linking.openURL(talabatUrl);
+  };
+
   const copyListToClipboard = async () => {
     let listText = `Shopping List for ${country}\n\n`;
     shoppingList?.categories.forEach(category => {
@@ -184,22 +191,42 @@ export default function ShoppingListScreen() {
                           </View>
                         )}
                       </View>
-                      <TouchableOpacity
-                        onPress={() => searchOnNoon(item.name)}
-                        style={{
-                          backgroundColor: '#FFD700',
-                          paddingHorizontal: 12,
-                          paddingVertical: 8,
-                          borderRadius: 8,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 6,
-                        }}
-                      >
-                        <Text style={{ fontSize: 16 }}>🛒</Text>
-                        <Text style={{ color: '#000', fontWeight: '600', fontSize: 14 }}>Find on Noon</Text>
-                      </TouchableOpacity>
+                      <View className="flex-row gap-2">
+                        <TouchableOpacity
+                          onPress={() => searchOnNoon(item.name)}
+                          style={{
+                            backgroundColor: '#FFD700',
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            flex: 1,
+                          }}
+                        >
+                          <Text style={{ fontSize: 16 }}>🛒</Text>
+                          <Text style={{ color: '#000', fontWeight: '600', fontSize: 14 }}>Noon</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => searchOnTalabat(item.name)}
+                          style={{
+                            backgroundColor: '#FF6B35',
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            flex: 1,
+                          }}
+                        >
+                          <Text style={{ fontSize: 16 }}>🛍️</Text>
+                          <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 14 }}>Talabat</Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   </View>
                 ))}
