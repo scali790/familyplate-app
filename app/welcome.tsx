@@ -1,12 +1,16 @@
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, TextInput, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect } from "react";
-import Constants from "expo-constants";
+import { useEffect, useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 export default function WelcomeScreen() {
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  
+  const loginMutation = trpc.auth.simpleLogin.useMutation();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -15,16 +19,35 @@ export default function WelcomeScreen() {
     }
   }, [user]);
 
-  const handleLogin = () => {
-    // Get the API base URL from expo constants
-    const apiUrl = Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
-    const loginUrl = `${apiUrl}/api/oauth/login`;
-    
-    // Open OAuth login in browser
-    if (typeof window !== "undefined") {
-      window.open(loginUrl, "_self");
+  const handleLogin = async () => {
+    if (!email.trim()) {
+      alert("Please enter your email");
+      return;
+    }
+
+    if (!name.trim()) {
+      alert("Please enter your name");
+      return;
+    }
+
+    try {
+      // Create or login user via API
+      await loginMutation.mutateAsync({
+        email: email.trim(),
+        name: name.trim(),
+      });
+
+      // Refresh auth state
+      await refresh();
+      
+      // Navigation will happen via useEffect when user is set
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert("Login failed. Please try again.");
     }
   };
+
+  const isLoading = loginMutation.isPending;
 
   return (
     <ScreenContainer className="justify-center items-center p-6">
@@ -60,18 +83,47 @@ export default function WelcomeScreen() {
           />
         </View>
 
-        {/* Login Button */}
-        <TouchableOpacity
-          onPress={handleLogin}
-          className="bg-primary w-full py-4 rounded-full active:opacity-80 mt-4"
-        >
-          <Text className="text-white text-center font-semibold text-lg">
-            Get Started
-          </Text>
-        </TouchableOpacity>
+        {/* Login Form */}
+        <View className="w-full gap-4">
+          <TextInput
+            className="bg-surface border border-border rounded-xl px-4 py-3 text-foreground"
+            placeholder="Your name"
+            placeholderTextColor="#9BA1A6"
+            value={name}
+            onChangeText={setName}
+            editable={!isLoading}
+            autoCapitalize="words"
+          />
+          
+          <TextInput
+            className="bg-surface border border-border rounded-xl px-4 py-3 text-foreground"
+            placeholder="Your email"
+            placeholderTextColor="#9BA1A6"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            editable={!isLoading}
+          />
+
+          <TouchableOpacity
+            onPress={handleLogin}
+            disabled={isLoading}
+            className="bg-primary w-full py-4 rounded-full active:opacity-80"
+            style={{ opacity: isLoading ? 0.6 : 1 }}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white text-center font-semibold text-lg">
+                Get Started
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
 
         <Text className="text-sm text-muted text-center">
-          Sign in with your account to start planning meals
+          Enter your details to start planning meals
         </Text>
       </View>
     </ScreenContainer>

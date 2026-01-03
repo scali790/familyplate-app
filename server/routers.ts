@@ -4,9 +4,10 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { getDb } from "./db";
-import { mealPlans, mealVotes, userPreferences, type Meal } from "../drizzle/schema";
+import { mealPlans, mealVotes, userPreferences, users, type Meal } from "../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
+import { sdk } from "./_core/sdk";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -20,6 +21,67 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+    simpleLogin: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          name: z.string().min(1),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Create a simple openId from email
+        const openId = `simple-${input.email}`;
+
+        // Upsert user
+        await db
+          .insert(users)
+          .values({
+            openId,
+            email: input.email,
+            name: input.name,
+            loginMethod: "simple",
+          })
+          .onDuplicateKeyUpdate({
+            set: {
+              name: input.name,
+              lastSignedIn: new Date(),
+            },
+          });
+
+        // Get the user
+        const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+        const user = result[0];
+
+        if (!user) throw new Error("Failed to create user");
+
+        // Create session token using SDK
+        const sessionToken = await sdk.createSessionToken(openId, {
+          name: input.name,
+          expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
+        });
+
+        // Set cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, {
+          ...cookieOptions,
+          maxAge: 365 * 24 * 60 * 60 * 1000,
+        });
+
+        return {
+          success: true,
+          user: {
+            id: user.id,
+            openId: user.openId,
+            name: user.name,
+            email: user.email,
+            loginMethod: user.loginMethod,
+            lastSignedIn: user.lastSignedIn,
+          },
+        };
+      }),
   }),
 
   // EasyPlate meal planning routes

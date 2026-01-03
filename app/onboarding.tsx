@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -29,7 +29,9 @@ export default function OnboardingScreen() {
       if (selectedCuisines.length < 5) {
         setSelectedCuisines([...selectedCuisines, cuisine]);
       } else {
-        Alert.alert("Limit Reached", "You can select up to 5 cuisines");
+        if (Platform.OS === 'web') {
+          alert("You can select up to 5 cuisines");
+        }
       }
     }
   };
@@ -43,24 +45,32 @@ export default function OnboardingScreen() {
   };
 
   const handleSave = async () => {
+    console.log("handleSave called");
     const size = parseInt(familySize);
-    if (isNaN(size) || size < 1 || size > 20) {
-      Alert.alert("Invalid Input", "Family size must be between 1 and 20");
+    if (isNaN(size) || size < 1) {
+      if (Platform.OS === 'web') {
+        alert("Please enter a valid family size");
+      }
       return;
     }
 
     if (selectedCuisines.length === 0) {
-      Alert.alert("Missing Selection", "Please select at least one cuisine");
+      if (Platform.OS === 'web') {
+        alert("Please select at least one cuisine");
+      }
       return;
     }
 
     if (selectedFlavors.length === 0) {
-      Alert.alert("Missing Selection", "Please select at least one flavor preference");
+      if (Platform.OS === 'web') {
+        alert("Please select at least one flavor preference");
+      }
       return;
     }
 
     setIsSubmitting(true);
     try {
+      console.log("Saving preferences...", { size, selectedCuisines, selectedFlavors, dietaryRestrictions });
       await saveMutation.mutateAsync({
         familySize: size,
         cuisines: selectedCuisines,
@@ -68,12 +78,13 @@ export default function OnboardingScreen() {
         dietaryRestrictions: dietaryRestrictions.trim() || undefined,
       });
 
-      Alert.alert("Success", "Preferences saved!", [
-        { text: "OK", onPress: () => router.replace("/dashboard") }
-      ]);
+      console.log("Preferences saved successfully!");
+      router.replace("/dashboard");
     } catch (error) {
-      Alert.alert("Error", "Failed to save preferences. Please try again.");
-      console.error(error);
+      console.error("Failed to save preferences:", error);
+      if (Platform.OS === 'web') {
+        alert("Failed to save preferences. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }

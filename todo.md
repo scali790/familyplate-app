@@ -41,3 +41,8 @@
 - [x] Add logout
 - [x] Test all flows end-to-end
 - [x] Create final checkpoint
+
+## Bug Fixes
+- [x] Fix "Get Started" button crash on mobile
+- [x] Fix OAuth authentication flow not working in browser preview
+- [x] Debug and fix login redirect issue
