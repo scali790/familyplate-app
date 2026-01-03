@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Pressable, ScrollView, RefreshControl, ActivityIndicator, Platform } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -22,7 +22,9 @@ export default function DashboardScreen() {
     if (!mealPlan) return;
 
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
       await voteMutation.mutateAsync({
         mealPlanId: mealPlan.id,
         mealDay,
@@ -30,8 +32,42 @@ export default function DashboardScreen() {
       });
       await refetch();
     } catch (error) {
-      Alert.alert("Error", "Failed to save vote");
-      console.error(error);
+      console.error("Failed to save vote:", error);
+      if (Platform.OS === 'web') {
+        alert("Failed to save vote");
+      }
+    }
+  };
+
+  const handleShare = () => {
+    console.log('handleShare called!');
+    if (!mealPlan) {
+      console.log('No meal plan');
+      return;
+    }
+    
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      console.log('Not in browser');
+      return;
+    }
+    
+    const shareUrl = `${window.location.origin}/shared/${mealPlan.id}`;
+    console.log('Share URL:', shareUrl);
+    
+    if (navigator.share) {
+      navigator.share({
+        title: "Vote on This Week's Meal Plan",
+        text: "Help choose our family meals for this week!",
+        url: shareUrl,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert(`Link copied to clipboard!\n\nShare this link with your family:\n${shareUrl}`);
+      }).catch((err) => {
+        console.error('Failed to copy:', err);
+        alert(`Share this link with your family:\n${shareUrl}`);
+      });
     }
   };
 
@@ -81,17 +117,43 @@ export default function DashboardScreen() {
       >
         <View className="p-6 gap-6">
           {/* Header */}
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-3xl font-bold text-foreground">This Week's Plan</Text>
-              <Text className="text-muted">Week of {mealPlan.weekStartDate}</Text>
+          <View className="gap-4">
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-3xl font-bold text-foreground">This Week's Plan</Text>
+                <Text className="text-muted">Week of {mealPlan.weekStartDate}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={handleGenerateNew}
+                className="bg-success px-4 py-2 rounded-full active:opacity-80"
+              >
+                <Text className="text-white font-semibold">New Plan</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={handleGenerateNew}
-              className="bg-success px-4 py-2 rounded-full active:opacity-80"
+            
+            {/* Share Button */}
+            <Pressable
+              onPress={() => {
+                console.log('Button pressed!');
+                handleShare();
+              }}
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? 'rgba(255, 140, 66, 0.2)' : 'rgba(255, 140, 66, 0.1)',
+                borderWidth: 1,
+                borderColor: '#FF8C42',
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                cursor: 'pointer',
+              })}
             >
-              <Text className="text-white font-semibold">New Plan</Text>
-            </TouchableOpacity>
+              <Text style={{ fontSize: 24 }}>👨‍👩‍👧‍👦</Text>
+              <Text style={{ color: '#FF8C42', fontWeight: '600' }}>Share with Family to Vote</Text>
+            </Pressable>
           </View>
 
           {/* Meal Cards */}

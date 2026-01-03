@@ -288,6 +288,92 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
         
         return { success: true };
       }),
+
+    // Get shared meal plan (public, no auth required)
+    getSharedPlan: publicProcedure
+      .input(z.object({ planId: z.string() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return null;
+        
+        const planId = parseInt(input.planId);
+        if (isNaN(planId)) return null;
+        
+        const planResult = await db.select().from(mealPlans).where(eq(mealPlans.id, planId)).limit(1);
+        const plan = planResult[0];
+        if (!plan) return null;
+        
+        const meals = JSON.parse(plan.meals);
+        const votes = await db.select().from(mealVotes).where(eq(mealVotes.mealPlanId, plan.id));
+        
+        const votesByDay: Record<string, { upvotes: number; downvotes: number }> = {};
+        votes.forEach(vote => {
+          if (!votesByDay[vote.mealDay]) {
+            votesByDay[vote.mealDay] = { upvotes: 0, downvotes: 0 };
+          }
+          if (vote.voteType === "up") {
+            votesByDay[vote.mealDay].upvotes++;
+          } else {
+            votesByDay[vote.mealDay].downvotes++;
+          }
+        });
+        
+        const mealsWithVotes = meals.map((meal: any) => ({
+          ...meal,
+          upvotes: votesByDay[meal.day]?.upvotes || 0,
+          downvotes: votesByDay[meal.day]?.downvotes || 0,
+        }));
+        
+        return {
+          id: plan.id,
+          weekStartDate: plan.weekStartDate,
+          meals: mealsWithVotes,
+        };
+      }),
+
+    // Vote on shared meal plan (public, no auth required)
+    voteShared: publicProcedure
+      .input(
+        z.object({
+          mealPlanId: z.number(),
+          mealDay: z.string(),
+          voteType: z.enum(["up", "down"]),
+          voterName: z.string(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        // For shared voting, we use voterName as a pseudo-userId
+        // We'll store it as a negative number hash to distinguish from real user IDs
+        const voterHash = -Math.abs(input.voterName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0));
+        
+        const existingVote = await db.select().from(mealVotes)
+          .where(
+            and(
+              eq(mealVotes.mealPlanId, input.mealPlanId),
+              eq(mealVotes.mealDay, input.mealDay),
+              eq(mealVotes.userId, voterHash),
+            )
+          )
+          .limit(1);
+        
+        if (existingVote[0]) {
+          await db.update(mealVotes)
+            .set({ voteType: input.voteType })
+            .where(eq(mealVotes.id, existingVote[0].id));
+        } else {
+          await db.insert(mealVotes).values({
+            mealPlanId: input.mealPlanId,
+            mealDay: input.mealDay,
+            userId: voterHash,
+            voteType: input.voteType,
+          });
+        }
+        
+        return { success: true };
+      }),
   }),
 });
 

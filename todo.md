@@ -51,3 +51,10 @@
 - [x] Fix meal plan generation - loading but nothing happens after clicking Generate Plan
 - [x] Debug API endpoint for meal plan generation
 - [x] Test end-to-end meal plan generation flow
+
+## Family Sharing Feature
+- [x] Add share button to dashboard
+- [x] Generate shareable link for meal plan
+- [x] Allow anonymous voting via shared link
+- [x] Create shared meal plan view page
+- [x] Add API endpoints for shared viewing and voting
