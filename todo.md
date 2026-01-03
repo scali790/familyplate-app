@@ -317,3 +317,8 @@
 - [ ] Create web redirect page that detects mobile and opens app
 - [ ] Update magic link to always use HTTPS URLs
 - [ ] Test magic link opens app on mobile devices
+
+## Fix Meal Detail Popup Theme Colors
+- [ ] Meal detail modal has dark background in light mode
+- [ ] Ingredients and instructions text barely visible
+- [ ] Update modal to use proper theme colors (bg-surface, text-foreground)

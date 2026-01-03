@@ -31,9 +31,9 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
                 {meal.tags && meal.tags.length > 0 && (
                   <Text className="text-2xl">{getIconsForTags(meal.tags).join(" ")}</Text>
                 )}
-                <Text className="text-2xl font-bold text-foreground flex-1">{meal.name}</Text>
+                <Text className="text-2xl font-bold flex-1" style={{ color: colors.text }}>{meal.name}</Text>
               </View>
-              <Text className="text-sm text-muted mt-1">{meal.description}</Text>
+                <Text className="text-sm mt-1" style={{ color: colors.muted }}>{meal.description}</Text>
             </View>
             <Pressable
               onPress={onClose}
@@ -43,7 +43,7 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
                 }
               ]}
             >
-              <Text className="text-3xl text-muted">×</Text>
+              <Text className="text-3xl" style={{ color: colors.muted }}>×</Text>
             </Pressable>
           </View>
 
@@ -59,30 +59,30 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
                   <Text className="font-semibold" style={{ color: colors.success }}>🍳 Cook: {meal.cookTime}</Text>
                 </View>
                 <View className="px-4 py-2 rounded-full" style={{ backgroundColor: colors.surface }}>
-                  <Text className="font-semibold text-muted">{meal.difficulty}</Text>
+                  <Text className="font-semibold" style={{ color: colors.muted }}>{meal.difficulty}</Text>
                 </View>
               </View>
 
               {/* Ingredients */}
               <View className="mb-6">
-                <Text className="text-xl font-bold text-foreground mb-3">🛒 Ingredients</Text>
+                <Text className="text-xl font-bold mb-3" style={{ color: colors.text }}>🛒 Ingredients</Text>
                 <View className="rounded-2xl p-4" style={{ backgroundColor: colors.surface }}>
                   {meal.ingredients && meal.ingredients.length > 0 ? (
                     meal.ingredients.map((ingredient, index) => (
                       <View key={index} className="flex-row items-start mb-2">
                         <Text className="mr-2" style={{ color: colors.primary }}>•</Text>
-                        <Text className="flex-1 text-foreground">{ingredient}</Text>
+                        <Text className="flex-1" style={{ color: colors.text }}>{ingredient}</Text>
                       </View>
                     ))
                   ) : (
-                    <Text className="italic text-muted">No ingredients listed</Text>
+                    <Text className="italic" style={{ color: colors.muted }}>No ingredients listed</Text>
                   )}
                 </View>
               </View>
 
               {/* Instructions */}
               <View className="mb-6">
-                <Text className="text-xl font-bold text-foreground mb-3">👨‍🍳 Instructions</Text>
+                <Text className="text-xl font-bold mb-3" style={{ color: colors.text }}>👨‍🍳 Instructions</Text>
                 <View className="gap-3">
                   {meal.instructions && meal.instructions.length > 0 ? (
                     meal.instructions.map((instruction, index) => (
@@ -90,11 +90,11 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
                         <View className="w-8 h-8 rounded-full items-center justify-center mr-3" style={{ backgroundColor: colors.primary }}>
                           <Text className="font-bold" style={{ color: colors.background }}>{index + 1}</Text>
                         </View>
-                        <Text className="flex-1 pt-1 text-foreground">{instruction}</Text>
+                        <Text className="flex-1 pt-1" style={{ color: colors.text }}>{instruction}</Text>
                       </View>
                     ))
                   ) : (
-                    <Text className="italic text-muted">No instructions available</Text>
+                    <Text className="italic" style={{ color: colors.muted }}>No instructions available</Text>
                   )}
                 </View>
               </View>
