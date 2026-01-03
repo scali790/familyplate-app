@@ -286,3 +286,11 @@
 - [x] Update onboarding to wait for auth loading before redirecting
 - [x] Fix back arrows in settings, onboarding, dashboard, generate-plan, and shopping-list pages
 - [x] Use explicit color values with dark mode class for proper contrast
+
+
+## Fix Magic Link Deep Linking for Android
+- [x] Fix malformed URL in magic link email (shows /auth&/verify instead of /auth/verify)
+- [x] Configure Android deep linking to open magic links in app instead of browser
+- [x] Update magic link generation to use custom scheme (manus20260103024933://)
+- [x] Verify /auth/verify route exists for deep link handling
+- [ ] Test magic link flow on Android device (requires rebuilding APK)

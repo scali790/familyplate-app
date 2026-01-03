@@ -111,8 +111,10 @@ export const appRouter = router({
         });
 
         // Generate magic link URL
-        const baseUrl = ctx.req.headers.origin || `https://${ctx.req.headers.host}`;
-        const magicLink = `${baseUrl}/auth/verify?token=${token}`;
+        // Use custom scheme for deep linking (opens in app on mobile)
+        // Format: manus20260103024933://auth/verify?token=...
+        const appScheme = "manus20260103024933"; // From app.config.ts
+        const magicLink = `${appScheme}://auth/verify?token=${token}`;
 
         // Send magic link via Mailjet
         const emailSent = await sendMagicLinkEmail(
