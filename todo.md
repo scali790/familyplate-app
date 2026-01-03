@@ -87,3 +87,9 @@
 - [x] Improve modal content background and contrast
 - [x] Ensure modal is properly centered and scrollable
 - [x] Test modal visibility and readability on web preview
+
+## Recipe Modal Dark Mode Text Fixes
+- [x] Fix meal name and description text colors for dark mode
+- [x] Fix prep/cook time badge text colors for dark mode
+- [x] Ensure all modal text uses theme-aware colors
+- [x] Test modal in dark mode on web preview

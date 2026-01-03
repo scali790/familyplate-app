@@ -46,14 +46,14 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
             <View className="p-6">
               {/* Meal Info */}
               <View className="flex-row gap-4 mb-6">
-                <View className="bg-orange-100 px-4 py-2 rounded-full">
-                  <Text className="text-orange-600 font-semibold">⏱️ Prep: {meal.prepTime}</Text>
+                <View className="px-4 py-2 rounded-full" style={{ backgroundColor: colors.surface }}>
+                  <Text className="font-semibold" style={{ color: colors.primary }}>⏱️ Prep: {meal.prepTime}</Text>
                 </View>
-                <View className="bg-green-100 px-4 py-2 rounded-full">
-                  <Text className="text-green-600 font-semibold">🍳 Cook: {meal.cookTime}</Text>
+                <View className="px-4 py-2 rounded-full" style={{ backgroundColor: colors.surface }}>
+                  <Text className="font-semibold" style={{ color: colors.success }}>🍳 Cook: {meal.cookTime}</Text>
                 </View>
-                <View className="bg-blue-100 px-4 py-2 rounded-full">
-                  <Text className="text-blue-600 font-semibold">{meal.difficulty}</Text>
+                <View className="px-4 py-2 rounded-full" style={{ backgroundColor: colors.surface }}>
+                  <Text className="font-semibold text-muted">{meal.difficulty}</Text>
                 </View>
               </View>
 
