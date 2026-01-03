@@ -246,3 +246,13 @@
 - [x] Test magic link generation and console output
 - [x] Test magic link verification and automatic login
 - [ ] Production: Integrate with email service (SendGrid, AWS SES, etc.)
+
+
+## Mailjet Email Integration for Magic Links
+- [x] Install Mailjet Node.js SDK (node-mailjet)
+- [x] Create email service module with Mailjet configuration
+- [x] Request Mailjet API credentials from user (API Key + Secret Key)
+- [x] Update requestMagicLink endpoint to send emails via Mailjet
+- [x] Create professional HTML email template for magic links
+- [x] Test email sending with real Mailjet credentials
+- [x] Add error handling for email delivery failures

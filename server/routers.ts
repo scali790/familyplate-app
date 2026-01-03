@@ -8,6 +8,7 @@ import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, type Mea
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
+import { sendMagicLinkEmail } from "./_core/mailjet";
 import { sdk } from "./_core/sdk";
 
 export const appRouter = router({
@@ -113,19 +114,30 @@ export const appRouter = router({
         const baseUrl = ctx.req.headers.origin || `https://${ctx.req.headers.host}`;
         const magicLink = `${baseUrl}/auth/verify?token=${token}`;
 
-        // Log magic link for development (in production, send via email service)
-        console.log("\n=== MAGIC LINK GENERATED ===");
-        console.log(`Email: ${input.email}`);
-        console.log(`Magic Link: ${magicLink}`);
-        console.log(`Expires: ${expiresAt.toISOString()}`);
-        console.log("============================\n");
+        // Send magic link via Mailjet
+        const emailSent = await sendMagicLinkEmail(
+          input.email,
+          input.name || null,
+          magicLink,
+          15 // expires in 15 minutes
+        );
+
+        if (!emailSent) {
+          // Fallback: log to console if email fails
+          console.log("\n=== MAGIC LINK GENERATED (Email failed, using console fallback) ===");
+          console.log(`Email: ${input.email}`);
+          console.log(`Magic Link: ${magicLink}`);
+          console.log(`Expires: ${expiresAt.toISOString()}`);
+          console.log("============================\n");
+          
+          throw new Error("Failed to send magic link email. Please check Mailjet configuration.");
+        }
         
-        // TODO: In production, integrate with email service (SendGrid, AWS SES, etc.)
-        // For now, magic link is logged to console for testing
+        console.log(`[Auth] Magic link sent to ${input.email}, expires at ${expiresAt.toISOString()}`);
 
         return {
           success: true,
-          message: "Magic link sent to your email",
+          message: `Magic link sent to ${input.email}. Check your inbox!`,
         };
       }),
     
