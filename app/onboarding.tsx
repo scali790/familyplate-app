@@ -298,7 +298,16 @@ export default function OnboardingScreen() {
                       <Text className="text-2xl">{pref.icon}</Text>
                       <View className="flex-1">
                         <Text className="text-foreground font-semibold">{pref.label}</Text>
-                        <Text className="text-sm text-primary font-medium mt-0.5">{frequencyLabel}</Text>
+                        <View className="flex-row items-center gap-2 mt-1">
+                          <Text className="text-sm text-primary font-medium">{frequencyLabel}</Text>
+                          <View className="flex-row gap-1">
+                            {[0, 1, 2, 3, 4].map(dotIndex => (
+                              <Text key={dotIndex} className="text-xs" style={{ opacity: dotIndex <= frequency ? 1 : 0.3 }}>
+                                {dotIndex <= frequency ? '●' : '○'}
+                              </Text>
+                            ))}
+                          </View>
+                        </View>
                       </View>
                     </View>
                     
