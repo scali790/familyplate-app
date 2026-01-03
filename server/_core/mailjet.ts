@@ -125,7 +125,7 @@ export async function sendMagicLinkEmail(
                 <td style="padding: 20px 40px;">
                   <h2 style="margin: 0 0 20px; color: #11181C; font-size: 24px; font-weight: 600;">Welcome${name ? `, ${name}` : ''}!</h2>
                   <p style="margin: 0 0 20px; color: #11181C; font-size: 16px; line-height: 1.5;">
-                    Click the button below to securely log in to your EasyPlate account:
+                    Click the button below to securely access your EasyPlate account. This link works for both login and account recovery - no password needed!
                   </p>
                   
                   <!-- CTA Button -->
@@ -151,6 +151,9 @@ export async function sendMagicLinkEmail(
                 <td style="padding: 20px 40px 40px; border-top: 1px solid #E5E7EB;">
                   <p style="margin: 0 0 10px; color: #687076; font-size: 14px;">
                     ⏱️ This link expires in <strong>${expiresInMinutes} minutes</strong>.
+                  </p>
+                  <p style="margin: 0 0 10px; color: #687076; font-size: 14px;">
+                    🔐 <strong>Passwordless Authentication:</strong> EasyPlate uses magic links instead of passwords for secure, hassle-free access.
                   </p>
                   <p style="margin: 0; color: #687076; font-size: 14px;">
                     🔒 If you didn't request this link, you can safely ignore this email.

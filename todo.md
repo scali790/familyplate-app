@@ -263,3 +263,11 @@
 - [x] Ensure session token is stored in localStorage
 - [x] Redirect to onboarding after successful magic link verification
 - [ ] Test complete magic link flow end-to-end (manual testing required)
+
+
+## Improve Magic Link UX for Login & Password Reset
+- [x] Add "Forgot Password?" / "Need a new link?" button on welcome screen
+- [x] Create dedicated password reset page explaining magic link process
+- [x] Update email template to clarify it works for both login and account recovery
+- [x] Add help text explaining passwordless authentication
+- [x] Add "How does this work?" links for user education
