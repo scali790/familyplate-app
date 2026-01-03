@@ -414,7 +414,7 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
 1. Consolidate duplicate ingredients (e.g., "2 onions" + "1 onion" = "3 onions")
 2. Localize ingredients for ${country} (adjust units to metric/imperial based on country, suggest local brands/products)
 3. Group ingredients into categories: Produce, Dairy & Eggs, Meat & Seafood, Pantry & Spices, Other
-4. For ${country}, suggest where to buy (e.g., Noon, Carrefour, Amazon.ae for UAE)
+4. Use simple, searchable ingredient names (e.g., "Tomatoes" not "Fresh UAE tomatoes", "Chicken Breast" not "Boneless skinless chicken breast")
 
 Ingredients:
 ${allIngredients.map((ing, i) => `${i + 1}. ${ing}`).join('\n')}
@@ -433,16 +433,14 @@ Return a JSON object with this structure:
         }
       ]
     }
-  ],
-  "storeLinks": [
-    {
-      "storeName": "Noon",
-      "url": "https://www.noon.com/uae-en/search?q=groceries"
-    }
   ]
 }
 
-IMPORTANT: Return ONLY the JSON object, no markdown formatting, no code blocks, no explanations.`;
+IMPORTANT: 
+- Keep ingredient "name" field simple and searchable (1-2 words max)
+- Use "localNote" for additional details
+- DO NOT include storeLinks in the response
+- Return ONLY the JSON object, no markdown formatting, no code blocks, no explanations.`;
         
         const aiResponse = await invokeLLM({
           messages: [

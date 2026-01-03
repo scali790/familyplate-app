@@ -107,3 +107,11 @@
 - [x] Add "Generate Shopping List" button to dashboard
 - [x] Test shopping list generation for different countries
 - [x] Push updated schema to database
+
+## Shopping List Store Links Improvement
+- [x] Remove generic store homepage links from top of shopping list
+- [x] Add individual "Find on Noon" button to each ingredient card
+- [x] Use Noon referral link (https://s.noon.com/EbUHWfvUeiU) with search parameters
+- [x] Generate search-optimized ingredient names for better results
+- [x] Test ingredient search links on Noon
+- [x] Add "Copy List" button for manual shopping

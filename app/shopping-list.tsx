@@ -59,6 +59,34 @@ export default function ShoppingListScreen() {
     Linking.openURL(url);
   };
 
+  const searchOnNoon = (itemName: string) => {
+    // Use full Noon search URL with referral parameters
+    const searchQuery = encodeURIComponent(itemName);
+    const noonUrl = `https://www.noon.com/uae-en/search/?q=${searchQuery}&utm_source=C1000264L&utm_medium=AFF0cbe07af24de&utm_campaign=CMP2ce0b63a6a1anoon`;
+    Linking.openURL(noonUrl);
+  };
+
+  const copyListToClipboard = async () => {
+    let listText = `Shopping List for ${country}\n\n`;
+    shoppingList?.categories.forEach(category => {
+      listText += `${category.name}:\n`;
+      category.items.forEach(item => {
+        listText += `• ${item.name} - ${item.quantity}\n`;
+      });
+      listText += '\n';
+    });
+    
+    // For web, use navigator.clipboard
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(listText);
+        alert('Shopping list copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <ScreenContainer>
@@ -105,31 +133,27 @@ export default function ShoppingListScreen() {
           </TouchableOpacity>
           
           <View className="flex-row items-center justify-between">
-            <View>
+            <View className="flex-1">
               <Text className="text-3xl font-bold text-foreground">Shopping List</Text>
               <Text className="text-muted mt-1">Localized for {country}</Text>
             </View>
+            <TouchableOpacity
+              onPress={copyListToClipboard}
+              style={{
+                backgroundColor: colors.surface,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+            >
+              <Text className="text-primary font-semibold">📋 Copy</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Store Links */}
-        {shoppingList.storeLinks && shoppingList.storeLinks.length > 0 && (
-          <View className="p-6 pb-4">
-            <Text className="text-lg font-bold text-foreground mb-3">🛒 Shop Online</Text>
-            <View className="flex-row flex-wrap gap-2">
-              {shoppingList.storeLinks.map((store, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => openStoreLink(store.url)}
-                  className="bg-primary px-4 py-2 rounded-full"
-                  style={{ opacity: 0.9 }}
-                >
-                  <Text className="text-white font-semibold">{store.storeName}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
+
 
         {/* Categories */}
         <View className="p-6 pt-2">
@@ -142,19 +166,37 @@ export default function ShoppingListScreen() {
                     key={itemIndex}
                     className="bg-surface rounded-xl p-4 border border-border"
                   >
-                    <View className="flex-row justify-between items-start">
-                      <View className="flex-1">
-                        <Text className="text-lg font-semibold text-foreground">{item.name}</Text>
-                        <Text className="text-primary font-medium mt-1">{item.quantity}</Text>
-                        {item.localNote && (
-                          <Text className="text-sm text-muted mt-1">{item.localNote}</Text>
+                    <View className="gap-3">
+                      <View className="flex-row justify-between items-start">
+                        <View className="flex-1">
+                          <Text className="text-lg font-semibold text-foreground">{item.name}</Text>
+                          <Text className="text-primary font-medium mt-1">{item.quantity}</Text>
+                          {item.localNote && (
+                            <Text className="text-sm text-muted mt-1">{item.localNote}</Text>
+                          )}
+                        </View>
+                        {item.estimatedPrice && (
+                          <View className="ml-4">
+                            <Text className="text-success font-semibold">{item.estimatedPrice}</Text>
+                          </View>
                         )}
                       </View>
-                      {item.estimatedPrice && (
-                        <View className="ml-4">
-                          <Text className="text-success font-semibold">{item.estimatedPrice}</Text>
-                        </View>
-                      )}
+                      <TouchableOpacity
+                        onPress={() => searchOnNoon(item.name)}
+                        style={{
+                          backgroundColor: '#FFD700',
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 8,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        <Text style={{ fontSize: 16 }}>🛒</Text>
+                        <Text style={{ color: '#000', fontWeight: '600', fontSize: 14 }}>Find on Noon</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 ))}
