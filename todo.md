@@ -271,3 +271,10 @@
 - [x] Update email template to clarify it works for both login and account recovery
 - [x] Add help text explaining passwordless authentication
 - [x] Add "How does this work?" links for user education
+
+
+## Fix Dark Mode Visibility Issues
+- [x] Fix navigation text colors in welcome screen for dark mode
+- [x] Fix link colors in reset page for dark mode
+- [x] Ensure all text has proper contrast in both light and dark modes
+- [x] Use explicit color values for links and interactive text

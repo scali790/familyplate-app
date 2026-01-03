@@ -160,13 +160,13 @@ export default function ResetPasswordScreen() {
               {/* Actions */}
               <View className="gap-3 w-full">
                 <Pressable onPress={() => setLinkSent(false)}>
-                  <Text className="text-primary text-center font-semibold">
+                  <Text className="text-center font-semibold" style={{ color: "#0a7ea4" }}>
                     Didn't receive it? Send again
                   </Text>
                 </Pressable>
                 
                 <Pressable onPress={() => router.back()}>
-                  <Text className="text-muted text-center text-sm">
+                  <Text className="text-center text-sm" style={{ color: "#9BA1A6" }}>
                     ← Back to login
                   </Text>
                 </Pressable>
@@ -177,7 +177,7 @@ export default function ResetPasswordScreen() {
           {/* Back Link */}
           {!linkSent && (
             <Pressable onPress={() => router.back()}>
-              <Text className="text-muted text-center text-sm">
+              <Text className="text-center text-sm" style={{ color: "#9BA1A6" }}>
                 ← Back to login
               </Text>
             </Pressable>

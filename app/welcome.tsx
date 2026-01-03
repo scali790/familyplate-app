@@ -293,7 +293,7 @@ export default function WelcomeScreen() {
             
             {/* Forgot Password / Need Help Link */}
             <Pressable onPress={() => router.push("/auth/reset")}>
-              <Text className="text-sm text-primary text-center" style={{ textDecorationLine: "underline" }}>
+              <Text className="text-sm text-primary text-center" style={{ textDecorationLine: "underline", color: "#0a7ea4" }}>
                 {loginMode === "simple" ? "Need help logging in?" : "How does this work?"}
               </Text>
             </Pressable>
@@ -303,13 +303,13 @@ export default function WelcomeScreen() {
         {magicLinkSent && (
           <View className="gap-2 items-center">
             <Pressable onPress={() => setMagicLinkSent(false)}>
-              <Text className="text-sm text-primary text-center">
+              <Text className="text-sm text-center" style={{ color: "#0a7ea4" }}>
                 Didn't receive it? Try again
               </Text>
             </Pressable>
             
             <Pressable onPress={() => router.push("/auth/reset")}>
-              <Text className="text-xs text-muted text-center" style={{ textDecorationLine: "underline" }}>
+              <Text className="text-xs text-center" style={{ textDecorationLine: "underline", color: "#9BA1A6" }}>
                 Learn more about magic links
               </Text>
             </Pressable>
