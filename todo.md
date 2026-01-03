@@ -232,3 +232,17 @@
 - [x] Verify protectedProcedure accepts Authorization header
 - [ ] Manual testing required (browser automation cannot trigger React events properly)
 - [ ] Remove debug logging after manual testing confirms it works
+
+## Magic Link Authentication Integration
+- [x] Design magic link authentication flow (request → email → verify → login)
+- [x] Create database table for magic link tokens (token, email, expiresAt, used)
+- [x] Push database schema changes
+- [x] Create API endpoint to request magic link (sendMagicLink)
+- [x] Create API endpoint to verify magic link token (verifyMagicLink)
+- [x] Update welcome screen to show both login options (simple login + magic link)
+- [x] Create magic link verification page (/auth/verify)
+- [x] Add expiration handling (links expire after 15 minutes)
+- [x] Add security: one-time use tokens
+- [x] Test magic link generation and console output
+- [x] Test magic link verification and automatic login
+- [ ] Production: Integrate with email service (SendGrid, AWS SES, etc.)

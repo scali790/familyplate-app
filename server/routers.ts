@@ -4,9 +4,10 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { getDb } from "./db";
-import { mealPlans, mealVotes, userPreferences, users, type Meal } from "../drizzle/schema";
+import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, type Meal } from "../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import { sdk } from "./_core/sdk";
 
 export const appRouter = router({
@@ -73,6 +74,139 @@ export const appRouter = router({
         return {
           success: true,
           sessionToken, // Return token so frontend can store it
+          user: {
+            id: user.id,
+            openId: user.openId,
+            name: user.name,
+            email: user.email,
+            loginMethod: user.loginMethod,
+            lastSignedIn: user.lastSignedIn,
+          },
+        };
+      }),
+    
+    // Request magic link
+    requestMagicLink: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          name: z.string().min(1).optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Generate secure random token
+        const token = randomBytes(32).toString("hex");
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+        // Store token in database
+        await db.insert(magicLinkTokens).values({
+          token,
+          email: input.email,
+          name: input.name || null,
+          expiresAt,
+        });
+
+        // Generate magic link URL
+        const baseUrl = ctx.req.headers.origin || `https://${ctx.req.headers.host}`;
+        const magicLink = `${baseUrl}/auth/verify?token=${token}`;
+
+        // Log magic link for development (in production, send via email service)
+        console.log("\n=== MAGIC LINK GENERATED ===");
+        console.log(`Email: ${input.email}`);
+        console.log(`Magic Link: ${magicLink}`);
+        console.log(`Expires: ${expiresAt.toISOString()}`);
+        console.log("============================\n");
+        
+        // TODO: In production, integrate with email service (SendGrid, AWS SES, etc.)
+        // For now, magic link is logged to console for testing
+
+        return {
+          success: true,
+          message: "Magic link sent to your email",
+        };
+      }),
+    
+    // Verify magic link token
+    verifyMagicLink: publicProcedure
+      .input(
+        z.object({
+          token: z.string(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Find token in database
+        const result = await db
+          .select()
+          .from(magicLinkTokens)
+          .where(eq(magicLinkTokens.token, input.token))
+          .limit(1);
+        
+        const tokenRecord = result[0];
+
+        if (!tokenRecord) {
+          throw new Error("Invalid or expired magic link");
+        }
+
+        // Check if token is expired
+        if (new Date() > tokenRecord.expiresAt) {
+          throw new Error("Magic link has expired");
+        }
+
+        // Check if token has been used
+        if (tokenRecord.used === 1) {
+          throw new Error("Magic link has already been used");
+        }
+
+        // Mark token as used
+        await db
+          .update(magicLinkTokens)
+          .set({ used: 1 })
+          .where(eq(magicLinkTokens.id, tokenRecord.id));
+
+        // Create or get user
+        const openId = `magic-${tokenRecord.email}`;
+        await db
+          .insert(users)
+          .values({
+            openId,
+            email: tokenRecord.email,
+            name: tokenRecord.name || tokenRecord.email.split("@")[0],
+            loginMethod: "magic-link",
+          })
+          .onDuplicateKeyUpdate({
+            set: {
+              lastSignedIn: new Date(),
+            },
+          });
+
+        // Get the user
+        const userResult = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+        const user = userResult[0];
+
+        if (!user) throw new Error("Failed to create user");
+
+        // Create session token using SDK
+        const sessionToken = await sdk.createSessionToken(openId, {
+          name: user.name || "",
+          expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
+        });
+
+        // Set cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, {
+          ...cookieOptions,
+          maxAge: 365 * 24 * 60 * 60 * 1000,
+        });
+
+        return {
+          success: true,
+          sessionToken,
           user: {
             id: user.id,
             openId: user.openId,

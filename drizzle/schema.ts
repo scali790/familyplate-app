@@ -91,6 +91,26 @@ export type NewMealPlan = typeof mealPlans.$inferInsert;
 export type MealVote = typeof mealVotes.$inferSelect;
 export type NewMealVote = typeof mealVotes.$inferInsert;
 
+/**
+ * Magic Link Tokens Table
+ * Stores one-time use tokens for passwordless email authentication
+ */
+export const magicLinkTokens = mysqlTable(
+  "magic_link_tokens",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    token: varchar("token", { length: 64 }).notNull().unique(),
+    email: varchar("email", { length: 320 }).notNull(),
+    name: text("name"), // Optional name provided during magic link request
+    used: int("used").notNull().default(0), // 0 = unused, 1 = used
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+);
+
+export type MagicLinkToken = typeof magicLinkTokens.$inferSelect;
+export type NewMagicLinkToken = typeof magicLinkTokens.$inferInsert;
+
 export interface Meal {
   day: string;
   name: string;
