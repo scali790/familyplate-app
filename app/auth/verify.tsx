@@ -59,9 +59,11 @@ export default function VerifyMagicLinkScreen() {
 
         setStatus("success");
 
-        // Redirect to onboarding or home after a brief success message
+        // Redirect to onboarding after successful login
+        // The onboarding screen will check if user has already completed it
         setTimeout(() => {
-          router.replace("/welcome");
+          console.log("[VerifyMagicLink] Redirecting to onboarding");
+          router.replace("/onboarding");
         }, 1500);
       } catch (error: any) {
         console.error("[VerifyMagicLink] Verification failed:", error);
