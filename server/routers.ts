@@ -408,6 +408,20 @@ Return a JSON object with a "meals" array containing exactly 7 meal objects with
         // Extract all ingredients
         const allIngredients = meals.flatMap(meal => meal.ingredients);
         
+        // Calculate week end date (6 days after start)
+        const startDate = new Date(plan.weekStartDate);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 6);
+        
+        // Format dates
+        const formatDate = (date: Date) => {
+          const month = date.toLocaleString('en-US', { month: 'short' });
+          const day = date.getDate();
+          return `${month} ${day}`;
+        };
+        
+        const weekRange = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+        
         // Use AI to consolidate, localize, and categorize ingredients
         const prompt = `You are a shopping list assistant. Given a list of ingredients from a weekly meal plan, your task is to:
 
@@ -465,6 +479,7 @@ IMPORTANT:
           success: true,
           shoppingList,
           country,
+          weekRange,
         };
       }),
   }),

@@ -34,6 +34,7 @@ export default function ShoppingListScreen() {
   
   const [shoppingList, setShoppingList] = useState<ShoppingList | null>(null);
   const [country, setCountry] = useState<string>("");
+  const [weekRange, setWeekRange] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   
   const generateMutation = trpc.mealPlanning.generateShoppingList.useMutation();
@@ -48,6 +49,7 @@ export default function ShoppingListScreen() {
       const result = await generateMutation.mutateAsync({ mealPlanId });
       setShoppingList(result.shoppingList);
       setCountry(result.country);
+      setWeekRange(result.weekRange);
     } catch (error) {
       console.error("Failed to generate shopping list:", error);
     } finally {
@@ -135,7 +137,8 @@ export default function ShoppingListScreen() {
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
               <Text className="text-3xl font-bold text-foreground">Shopping List</Text>
-              <Text className="text-muted mt-1">Localized for {country}</Text>
+              <Text className="text-muted mt-1">Week of {weekRange}</Text>
+              <Text className="text-muted text-sm">Localized for {country}</Text>
             </View>
             <TouchableOpacity
               onPress={copyListToClipboard}

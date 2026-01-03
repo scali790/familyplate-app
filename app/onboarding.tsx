@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, ActivityIndicator,
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
+import { useThemeContext } from "@/lib/theme-provider";
 
 const CUISINE_OPTIONS = [
   "Italian", "Mexican", "Chinese", "Japanese", "Indian",
@@ -29,6 +30,7 @@ export default function OnboardingScreen() {
   const [selectedCountry, setSelectedCountry] = useState("UAE");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { colorScheme, setColorScheme } = useThemeContext();
   const saveMutation = trpc.mealPlanning.savePreferences.useMutation();
 
   const toggleCuisine = (cuisine: string) => {
@@ -227,6 +229,39 @@ export default function OnboardingScreen() {
                   </Text>
                 </TouchableOpacity>
               ))}
+            </View>
+          </View>
+
+          {/* Theme Toggle */}
+          <View className="gap-2">
+            <Text className="text-lg font-semibold text-foreground">
+              Theme
+            </Text>
+            <View className="flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => setColorScheme("light")}
+                className={`flex-1 px-4 py-3 rounded-xl ${
+                  colorScheme === "light"
+                    ? "bg-primary"
+                    : "bg-surface border border-border"
+                }`}
+              >
+                <Text className={`text-center font-medium ${
+                  colorScheme === "light" ? "text-white" : "text-foreground"
+                }`}>☀️ Light</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setColorScheme("dark")}
+                className={`flex-1 px-4 py-3 rounded-xl ${
+                  colorScheme === "dark"
+                    ? "bg-primary"
+                    : "bg-surface border border-border"
+                }`}
+              >
+                <Text className={`text-center font-medium ${
+                  colorScheme === "dark" ? "text-white" : "text-foreground"
+                }`}>🌙 Dark</Text>
+              </TouchableOpacity>
             </View>
           </View>
 

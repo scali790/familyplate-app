@@ -119,3 +119,13 @@
 ## Noon Supermarket Search Fix
 - [x] Update search URL to use Noon Supermarket section (https://www.noon.com/uae-en/noon-supermarket/search/)
 - [x] Test Noon Supermarket search links to verify grocery products appear
+
+## Dark Mode Toggle & Text Color Fixes
+- [x] Add dark/light mode toggle switch to settings screen
+- [x] Fix unreadable text colors in dark mode (meal cards, buttons, badges)
+- [x] Ensure all text uses theme-aware colors (text-foreground, text-muted)
+- [x] Test dark mode across all screens (dashboard, settings, shopping list, recipe modal)
+
+## Shopping List Week Information
+- [x] Add week plan date range to shopping list header (e.g., "Week of Dec 29 - Jan 4")
+- [x] Display which meal plan the shopping list is generated from
