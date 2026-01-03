@@ -191,41 +191,46 @@ export default function ShoppingListScreen() {
                           </View>
                         )}
                       </View>
-                      <View className="flex-row gap-2">
-                        <TouchableOpacity
-                          onPress={() => searchOnNoon(item.name)}
-                          style={{
-                            backgroundColor: '#FFD700',
-                            paddingHorizontal: 12,
-                            paddingVertical: 8,
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                            flex: 1,
-                          }}
-                        >
-                          <Text style={{ fontSize: 16 }}>🛒</Text>
-                          <Text style={{ color: '#000', fontWeight: '600', fontSize: 14 }}>Noon</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => searchOnTalabat(item.name)}
-                          style={{
-                            backgroundColor: '#FF6B35',
-                            paddingHorizontal: 12,
-                            paddingVertical: 8,
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                            flex: 1,
-                          }}
-                        >
-                          <Text style={{ fontSize: 16 }}>🛍️</Text>
-                          <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 14 }}>Talabat</Text>
-                        </TouchableOpacity>
+                      <View className="gap-2">
+                        <View className="flex-row gap-2">
+                          <TouchableOpacity
+                            onPress={() => searchOnNoon(item.name)}
+                            style={{
+                              backgroundColor: '#FFD700',
+                              paddingHorizontal: 12,
+                              paddingVertical: 8,
+                              borderRadius: 8,
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 6,
+                              flex: 1,
+                            }}
+                          >
+                            <Text style={{ fontSize: 16 }}>🛒</Text>
+                            <Text style={{ color: '#000', fontWeight: '600', fontSize: 14 }}>Noon</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => searchOnTalabat(item.name)}
+                            style={{
+                              backgroundColor: '#FF6B35',
+                              paddingHorizontal: 12,
+                              paddingVertical: 8,
+                              borderRadius: 8,
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 6,
+                              flex: 1,
+                            }}
+                          >
+                            <Text style={{ fontSize: 16 }}>🛍️</Text>
+                            <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 14 }}>Talabat</Text>
+                          </TouchableOpacity>
+                        </View>
+                        <Text className="text-xs text-muted italic">
+                          💡 Talabat will first ask for your area. After you confirm it, search for: '{item.name}'
+                        </Text>
                       </View>
                     </View>
                   </View>

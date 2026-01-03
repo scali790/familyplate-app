@@ -142,3 +142,8 @@
 - [x] Use Talabat affiliate tracking URL (http://go.pjarabialinks.com/?t_c=No_pn=talabat_pt=r=lp)
 - [x] Add search parameter for each ingredient to Talabat URL
 - [x] Test Talabat search links with affiliate tracking
+
+## Talabat Instruction Text
+- [x] Add instruction text above Talabat button explaining area confirmation and search process
+- [x] Display ingredient-specific search term in instruction (e.g., "search for: 'Onion'")
+- [x] Test instruction display on shopping list
