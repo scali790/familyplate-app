@@ -92,3 +92,12 @@
 - [x] Document how to add OpenAI API key
 - [x] Document how to run via Expo Go
 - [x] Document deployment process
+
+## Bug Fixes
+- [ ] Fix Firebase configuration not found error in production APK
+- [ ] Ensure environment variables are properly embedded in build
+
+## Expo Go Setup
+- [x] Create QR code generation script
+- [x] Add Expo Go testing instructions
+- [x] Document how to access the app via Expo Go

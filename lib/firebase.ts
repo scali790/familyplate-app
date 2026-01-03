@@ -27,6 +27,22 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "",
 };
 
+// Validate Firebase configuration
+const isConfigValid = firebaseConfig.apiKey && 
+  firebaseConfig.authDomain && 
+  firebaseConfig.projectId && 
+  firebaseConfig.appId;
+
+if (!isConfigValid) {
+  console.error("Firebase configuration is missing. Please add your Firebase credentials.");
+  console.error("Current config:", {
+    apiKey: firebaseConfig.apiKey ? "Set" : "Missing",
+    authDomain: firebaseConfig.authDomain ? "Set" : "Missing",
+    projectId: firebaseConfig.projectId ? "Set" : "Missing",
+    appId: firebaseConfig.appId ? "Set" : "Missing",
+  });
+}
+
 // Initialize Firebase
 let app;
 if (getApps().length === 0) {
