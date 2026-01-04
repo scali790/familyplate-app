@@ -676,6 +676,12 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
         const dayName = dayNames[input.dayIndex];
         
+        // Get list of existing meal names to avoid duplicates
+        const existingMealNames = meals
+          .filter((_, idx) => idx !== input.dayIndex) // Exclude the meal being replaced
+          .map(m => m.name)
+          .join(", ");
+        
         // Generate a single new meal
         const prompt = `Generate 1 dinner recipe for ${dayName} for a family of ${prefs.familySize}.
 
@@ -685,7 +691,9 @@ Preferences:
 - Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${frequencyText}
 
 IMPORTANT:
-- Generate a DIFFERENT meal from the existing ones in the week
+- Generate a COMPLETELY DIFFERENT meal from these existing meals in the week: ${existingMealNames}
+- DO NOT generate any variation or similar version of the existing meals
+- Choose a different protein, cooking method, and cuisine style
 - Return a JSON object with this structure:
 {
   "meal": {

@@ -350,3 +350,9 @@
 - [x] Fix RecipeModal component to show full content on mobile
 - [x] Ensure modal content matches between web and mobile platforms
 - [ ] Test recipe modal displays all sections on Samsung S24
+
+## Critical Bug Fixes
+- [x] Fix share link crash - app crashes with no error when sharing meal plan
+- [x] Fix meal regeneration duplicates - prevent regenerated meals from being same as other days in the plan
+- [x] Add error handling and logging to share functionality
+- [x] Update AI prompt to ensure unique meals across all days

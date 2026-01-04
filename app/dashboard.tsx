@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, Pressable, ScrollView, RefreshControl, ActivityIndicator, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Pressable, ScrollView, RefreshControl, ActivityIndicator, Platform, Share } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { RecipeModal } from "@/components/RecipeModal";
@@ -68,35 +68,51 @@ export default function DashboardScreen() {
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     console.log('handleShare called!');
     if (!mealPlan) {
       console.log('No meal plan');
+      if (Platform.OS === 'web') {
+        alert('No meal plan available to share');
+      }
       return;
     }
     
-    // Check if we're in a browser environment
-    if (typeof window === 'undefined') {
-      console.log('Not in browser');
-      return;
-    }
-    
-    const shareUrl = `${window.location.origin}/shared/${mealPlan.id}`;
-    console.log('Share URL:', shareUrl);
-    
-    if (navigator.share) {
-      navigator.share({
-        title: "Vote on This Week's Meal Plan",
-        text: "Help choose our family meals for this week!",
-        url: shareUrl,
-      }).catch(console.error);
-    } else {
-      navigator.clipboard.writeText(shareUrl).then(() => {
+    try {
+      // For mobile (React Native)
+      if (Platform.OS !== 'web') {
+        const baseUrl = 'https://8081-i8v4ix5aa7f1zts081bl0-ce872828.sg1.manus.computer';
+        const shareUrl = `${baseUrl}/shared/${mealPlan.id}`;
+        console.log('Mobile share URL:', shareUrl);
+        
+        await Share.share({
+          message: `Vote on This Week's Meal Plan!\n\nHelp choose our family meals for this week:\n${shareUrl}`,
+          title: "Vote on This Week's Meal Plan",
+        });
+        return;
+      }
+      
+      // For web
+      const shareUrl = `${window.location.origin}/shared/${mealPlan.id}`;
+      console.log('Web share URL:', shareUrl);
+      
+      if (navigator.share) {
+        await navigator.share({
+          title: "Vote on This Week's Meal Plan",
+          text: "Help choose our family meals for this week!",
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
         alert(`Link copied to clipboard!\n\nShare this link with your family:\n${shareUrl}`);
-      }).catch((err) => {
-        console.error('Failed to copy:', err);
-        alert(`Share this link with your family:\n${shareUrl}`);
-      });
+      }
+    } catch (error: any) {
+      console.error('Share failed:', error);
+      if (error.message !== 'User did not share') {
+        if (Platform.OS === 'web') {
+          alert('Failed to share. Please try again.');
+        }
+      }
     }
   };
 
