@@ -620,3 +620,19 @@
 - [x] Test magic link email delivery
 - [x] Verify email appears from correct sender
 - [x] Create checkpoint with updated email configuration
+
+## Magic Link Email Sending Issue - Debug Mailjet
+- [x] Check server logs for Mailjet API errors
+- [x] Test magic link request from welcome screen
+- [x] Verify Mailjet API credentials are loaded correctly
+- [x] Check Mailjet sender address verification status (now Active)
+- [x] Re-add Mailjet API credentials to ensure correct configuration
+- [x] Restart server with new credentials
+- [x] Test end-to-end magic link email delivery to real email
+- [x] Check and configure SPF/DKIM DNS records for familyplate.ai
+- [x] Add SPF record to DNS
+- [x] Add DKIM records to DNS
+- [x] Verify DNS propagation
+- [x] Set MAILJET_FROM_EMAIL environment variable explicitly
+- [x] Test email delivery after configuration
+- [x] Verify email arrives in inbox with correct sender (SUCCESS!)
