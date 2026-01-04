@@ -24,7 +24,9 @@ export default function GeneratePlanScreen() {
       router.replace("/dashboard");
     } catch (error: any) {
       const message = error?.message || "Failed to generate meal plan";
-      console.error("Failed to generate meal plan:", error);
+      console.error("[GeneratePlan] Failed to generate meal plan:", error);
+      console.error("[GeneratePlan] Error details:", JSON.stringify(error, null, 2));
+      console.error("[GeneratePlan] Error stack:", error?.stack);
       
       if (Platform.OS === 'web') {
         alert(`Error: ${message}`);

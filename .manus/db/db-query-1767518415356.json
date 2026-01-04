@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE meal_votes ADD COLUMN voter_name VARCHAR(100);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3HwhU55c9ykAFSx.root --database PWe3aXVRBZJqm34KdWoMVL --execute ALTER TABLE meal_votes ADD COLUMN voter_name VARCHAR(100);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1922
+}
