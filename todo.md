@@ -549,3 +549,8 @@
 ## Navigation Bug - Dashboard Empty State
 - [x] Add back button to dashboard screen when no meal plan exists
 - [x] Test navigation from dashboard back to home/settings
+
+## Preferences Save SQL Error (Recurring Issue)
+- [x] Fix SQL syntax error in savePreferences mutation
+- [x] Investigate Drizzle ORM MySQL dialect configuration
+- [x] Test preferences save end-to-end
