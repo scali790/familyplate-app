@@ -849,6 +849,87 @@ IMPORTANT:
         };
       }),
   }),
+  
+  // Dish votes for personalization
+  dishVotes: router({
+    save: protectedProcedure
+      .input(
+        z.object({
+          dishName: z.string().min(1).max(255),
+          liked: z.boolean(),
+          context: z.enum(["onboarding", "meal_plan", "regenerate"]).default("meal_plan"),
+          metadata: z.object({
+            cuisine: z.string().optional(),
+            protein: z.string().optional(),
+            spice_level: z.enum(["low", "medium", "high"]).optional(),
+            cooking_time: z.string().optional(),
+            difficulty: z.enum(["Easy", "Medium", "Hard"]).optional(),
+          }).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { dishVoteService } = await import("./services/DishVoteService");
+        
+        if (!ctx.user) throw new Error("Not authenticated");
+        
+        const result = await dishVoteService.saveDishVote({
+          userId: ctx.user.id,
+          dishName: input.dishName,
+          liked: input.liked,
+          context: input.context,
+          metadata: input.metadata,
+        });
+        
+        return result;
+      }),
+      
+    getAll: protectedProcedure
+      .input(
+        z.object({
+          context: z.enum(["onboarding", "meal_plan", "regenerate"]).optional(),
+          limit: z.number().int().positive().max(100).optional(),
+          offset: z.number().int().nonnegative().optional(),
+        }).optional()
+      )
+      .query(async ({ ctx, input }) => {
+        const { dishVoteService } = await import("./services/DishVoteService");
+        
+        if (!ctx.user) throw new Error("Not authenticated");
+        
+        const votes = await dishVoteService.getDishVotes(ctx.user.id, input || {});
+        return votes;
+      }),
+      
+    getStats: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { dishVoteService } = await import("./services/DishVoteService");
+        
+        if (!ctx.user) throw new Error("Not authenticated");
+        
+        const stats = await dishVoteService.getVoteStats(ctx.user.id);
+        return stats;
+      }),
+      
+    getTasteProfile: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { dishVoteService } = await import("./services/DishVoteService");
+        
+        if (!ctx.user) throw new Error("Not authenticated");
+        
+        const profile = await dishVoteService.getTasteProfile(ctx.user.id);
+        return profile;
+      }),
+      
+    computeTasteProfile: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const { dishVoteService } = await import("./services/DishVoteService");
+        
+        if (!ctx.user) throw new Error("Not authenticated");
+        
+        const profile = await dishVoteService.updateTasteProfile(ctx.user.id);
+        return { success: true, profile };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE user_preferences \nADD COLUMN IF NOT EXISTS language VARCHAR(5) NOT NULL DEFAULT 'en',\nADD COLUMN IF NOT EXISTS units VARCHAR(10) NOT NULL DEFAULT 'metric',\nADD COLUMN IF NOT EXISTS currency VARCHAR(3) NOT NULL DEFAULT 'USD',\nADD COLUMN IF NOT EXISTS taste_profile TEXT;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3HwhU55c9ykAFSx.root --database PWe3aXVRBZJqm34KdWoMVL --execute ALTER TABLE user_preferences \nADD COLUMN IF NOT EXISTS language VARCHAR(5) NOT NULL DEFAULT 'en',\nADD COLUMN IF NOT EXISTS units VARCHAR(10) NOT NULL DEFAULT 'metric',\nADD COLUMN IF NOT EXISTS currency VARCHAR(3) NOT NULL DEFAULT 'USD',\nADD COLUMN IF NOT EXISTS taste_profile TEXT;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2660
+}

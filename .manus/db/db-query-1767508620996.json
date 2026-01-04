@@ -1,0 +1,28 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3HwhU55c9ykAFSx.root --database PWe3aXVRBZJqm34KdWoMVL --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_PWe3aXVRBZJqm34KdWoMVL": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_PWe3aXVRBZJqm34KdWoMVL": "magic_link_tokens"
+    },
+    {
+      "Tables_in_PWe3aXVRBZJqm34KdWoMVL": "meal_plans"
+    },
+    {
+      "Tables_in_PWe3aXVRBZJqm34KdWoMVL": "meal_votes"
+    },
+    {
+      "Tables_in_PWe3aXVRBZJqm34KdWoMVL": "user_preferences"
+    },
+    {
+      "Tables_in_PWe3aXVRBZJqm34KdWoMVL": "users"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_PWe3aXVRBZJqm34KdWoMVL\n__drizzle_migrations\nmagic_link_tokens\nmeal_plans\nmeal_votes\nuser_preferences\nusers\n",
+  "stderr": "",
+  "execution_time_ms": 1664
+}

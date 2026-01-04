@@ -389,3 +389,39 @@
 - [x] Move icons inline with meal title like on web version
 - [x] Make meal cards more compact to show more content
 - [x] Test layout on mobile to ensure icons fit properly with title
+
+## Taste Signals & Personalization System
+- [ ] Audit current database schema and voting systems
+- [ ] Design database schema for dish votes and taste profiles
+- [ ] Add auto-detect language and country in onboarding
+- [ ] Create "Confirm Your Style" onboarding step with 10 dish votes
+- [ ] Store dish votes persistently (dish_id, liked, timestamp)
+- [ ] Build taste profile derivation (cuisine weights, protein weights, spice level)
+- [ ] Track meal plan history (last 4 weeks)
+- [ ] Update LLM prompt to use taste signals + history for personalization
+- [ ] Test personalization improves meal suggestions over time
+
+## Personalization System Integration
+- [ ] Update database schema (drizzle/schema.ts) with dishVotes table and new userPreferences columns
+- [ ] Run database migration (pnpm db:push)
+- [ ] Integrate DishVoteRouter into main tRPC router
+- [ ] Test dish vote API endpoints
+- [ ] Verify taste profile computation works
+- [ ] Build onboarding taste calibration UI
+- [ ] Update meal generation to use taste signals
+
+## Personalization System Backend (Taste Signals)
+- [x] Design database schema for dish votes and taste profile
+- [x] Create dish_votes table with indexes
+- [x] Extend user_preferences table with language, units, currency, taste_profile fields
+- [x] Implement DishVoteService with business logic
+- [x] Add duplicate vote detection (1 hour window)
+- [x] Implement taste profile computation algorithm
+- [x] Create tRPC API endpoints (save, getAll, getStats, getTasteProfile, computeTasteProfile)
+- [x] Write comprehensive unit tests (6/6 passing)
+- [x] Test API endpoints and verify functionality
+- [ ] Create frontend components for dish voting
+- [ ] Add auto-detect language/country onboarding step
+- [ ] Build "Confirm Your Style" onboarding flow (10 dish votes)
+- [ ] Update LLM meal generation prompts to use taste signals and history
+- [ ] Display personalized meal recommendations based on taste profile

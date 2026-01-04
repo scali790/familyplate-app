@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS dish_votes (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  user_id INT NOT NULL,\n  dish_name VARCHAR(255) NOT NULL,\n  liked INT NOT NULL,\n  context VARCHAR(50) NOT NULL DEFAULT 'meal_plan',\n  metadata TEXT,\n  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  INDEX idx_dish_votes_user_id (user_id),\n  INDEX idx_dish_votes_dish_name (dish_name),\n  INDEX idx_dish_votes_user_dish (user_id, dish_name),\n  INDEX idx_dish_votes_context (context)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3HwhU55c9ykAFSx.root --database PWe3aXVRBZJqm34KdWoMVL --execute CREATE TABLE IF NOT EXISTS dish_votes (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  user_id INT NOT NULL,\n  dish_name VARCHAR(255) NOT NULL,\n  liked INT NOT NULL,\n  context VARCHAR(50) NOT NULL DEFAULT 'meal_plan',\n  metadata TEXT,\n  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  INDEX idx_dish_votes_user_id (user_id),\n  INDEX idx_dish_votes_dish_name (dish_name),\n  INDEX idx_dish_votes_user_dish (user_id, dish_name),\n  INDEX idx_dish_votes_context (context)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1641
+}
