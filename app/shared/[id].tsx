@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Pressable, ScrollView, RefreshControl, ActivityIndicator, Platform, TextInput } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -14,6 +14,18 @@ export default function SharedMealPlanScreen() {
   const [hasVoted, setHasVoted] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  
+  // Check if user already voted from this device
+  useEffect(() => {
+    if (typeof window !== 'undefined' && id) {
+      const storageKey = `voted_${id}`;
+      const savedVoterName = localStorage.getItem(storageKey);
+      if (savedVoterName) {
+        setVoterName(savedVoterName);
+        setHasVoted(true);
+      }
+    }
+  }, [id]);
   
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getSharedPlan.useQuery(
     { planId: id! },
@@ -41,6 +53,13 @@ export default function SharedMealPlanScreen() {
         voterName: voterName.trim(),
       });
       setHasVoted(true);
+      
+      // Save voter name to localStorage to prevent duplicate votes
+      if (typeof window !== 'undefined' && id) {
+        const storageKey = `voted_${id}`;
+        localStorage.setItem(storageKey, voterName.trim());
+      }
+      
       await refetch();
       
       if (Platform.OS === 'web') {

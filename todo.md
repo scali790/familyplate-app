@@ -516,3 +516,14 @@
 - [x] Display "FAMILYNAME's Meal Plan" on dashboard
 - [x] Display family name on shared meal plan view
 - [ ] Test family name feature end-to-end
+
+## Improved Voting System
+- [x] Add voterName field to meal_votes table schema
+- [x] Push database schema changes
+- [x] Update voteShared API to store voter name
+- [x] Update getCurrentPlan API to return voter details
+- [x] Update getSharedPlan API to return voter details
+- [x] Add vote details modal to dashboard
+- [x] Implement browser localStorage vote limiting
+- [x] Update shared voting UI to check for existing votes
+- [ ] Test voting flow end-to-end

@@ -294,6 +294,7 @@ function MealCard({
   isRegenerating: boolean;
   weekStartDate: string;
 }) {
+  const [showVoters, setShowVoters] = useState(false);
   // Calculate the actual date for this meal
   const getDayDate = () => {
     const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -364,24 +365,49 @@ function MealCard({
       </TouchableOpacity>
 
       {/* Voting */}
-      <View className="flex-row items-center justify-between pt-3 border-t border-border">
-        <Text className="text-muted font-medium">Family Votes</Text>
-        <View className="flex-row gap-3">
-          <TouchableOpacity
-            onPress={() => onVote("up")}
-            className="flex-row items-center gap-1 bg-success/10 px-3 py-2 rounded-full active:opacity-70"
-          >
-            <Text className="text-lg">👍</Text>
-            <Text className="text-success font-semibold">{meal.upvotes}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => onVote("down")}
-            className="flex-row items-center gap-1 bg-error/10 px-3 py-2 rounded-full active:opacity-70"
-          >
-            <Text className="text-lg">👎</Text>
-            <Text className="text-error font-semibold">{meal.downvotes}</Text>
-          </TouchableOpacity>
+      <View className="pt-3 border-t border-border gap-2">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-muted font-medium">Family Votes</Text>
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              onPress={() => onVote("up")}
+              className="flex-row items-center gap-1 bg-success/10 px-3 py-2 rounded-full active:opacity-70"
+            >
+              <Text className="text-lg">👍</Text>
+              <Text className="text-success font-semibold">{meal.upvotes}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => onVote("down")}
+              className="flex-row items-center gap-1 bg-error/10 px-3 py-2 rounded-full active:opacity-70"
+            >
+              <Text className="text-lg">👎</Text>
+              <Text className="text-error font-semibold">{meal.downvotes}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+        
+        {/* Voter Details */}
+        {(meal as any).voters && (meal as any).voters.length > 0 && (
+          <View>
+            <TouchableOpacity
+              onPress={() => setShowVoters(!showVoters)}
+              className="flex-row items-center gap-1 active:opacity-70"
+            >
+              <Text className="text-xs text-primary font-semibold">
+                {showVoters ? "▼" : "▶"} View {(meal as any).voters.length} voter{(meal as any).voters.length > 1 ? "s" : ""}
+              </Text>
+            </TouchableOpacity>
+            {showVoters && (
+              <View className="mt-2 bg-background/50 rounded-lg p-3 gap-1">
+                {(meal as any).voters.map((voter: any, idx: number) => (
+                  <Text key={idx} className="text-sm text-foreground">
+                    {voter.vote} <Text className="font-semibold">{voter.name}</Text>
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
       </View>
     </View>
   );

@@ -536,15 +536,22 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
       const meals: Meal[] = JSON.parse(plan.meals);
       const votes = await db.select().from(mealVotes).where(eq(mealVotes.mealPlanId, plan.id));
       
-      const votesByDay: Record<string, { upvotes: number; downvotes: number }> = {};
+      const votesByDay: Record<string, { upvotes: number; downvotes: number; voters: Array<{ name: string; vote: string }> }> = {};
       votes.forEach(vote => {
         if (!votesByDay[vote.mealDay]) {
-          votesByDay[vote.mealDay] = { upvotes: 0, downvotes: 0 };
+          votesByDay[vote.mealDay] = { upvotes: 0, downvotes: 0, voters: [] };
         }
         if (vote.voteType === "up") {
           votesByDay[vote.mealDay].upvotes++;
         } else {
           votesByDay[vote.mealDay].downvotes++;
+        }
+        // Add voter details if voterName exists (shared voting)
+        if (vote.voterName) {
+          votesByDay[vote.mealDay].voters.push({
+            name: vote.voterName,
+            vote: vote.voteType === "up" ? "👍" : "👎"
+          });
         }
       });
       
@@ -552,6 +559,7 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         ...meal,
         upvotes: votesByDay[meal.day]?.upvotes || 0,
         downvotes: votesByDay[meal.day]?.downvotes || 0,
+        voters: votesByDay[meal.day]?.voters || [],
       }));
       
       return {
@@ -621,15 +629,22 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         const meals = JSON.parse(plan.meals);
         const votes = await db.select().from(mealVotes).where(eq(mealVotes.mealPlanId, plan.id));
         
-        const votesByDay: Record<string, { upvotes: number; downvotes: number }> = {};
+        const votesByDay: Record<string, { upvotes: number; downvotes: number; voters: Array<{ name: string; vote: string }> }> = {};
         votes.forEach(vote => {
           if (!votesByDay[vote.mealDay]) {
-            votesByDay[vote.mealDay] = { upvotes: 0, downvotes: 0 };
+            votesByDay[vote.mealDay] = { upvotes: 0, downvotes: 0, voters: [] };
           }
           if (vote.voteType === "up") {
             votesByDay[vote.mealDay].upvotes++;
           } else {
             votesByDay[vote.mealDay].downvotes++;
+          }
+          // Add voter details if voterName exists
+          if (vote.voterName) {
+            votesByDay[vote.mealDay].voters.push({
+              name: vote.voterName,
+              vote: vote.voteType === "up" ? "👍" : "👎"
+            });
           }
         });
         
@@ -637,6 +652,7 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
           ...meal,
           upvotes: votesByDay[meal.day]?.upvotes || 0,
           downvotes: votesByDay[meal.day]?.downvotes || 0,
+          voters: votesByDay[meal.day]?.voters || [],
         }));
         
         return {
@@ -677,13 +693,17 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         
         if (existingVote[0]) {
           await db.update(mealVotes)
-            .set({ voteType: input.voteType })
+            .set({ 
+              voteType: input.voteType,
+              voterName: input.voterName,
+            })
             .where(eq(mealVotes.id, existingVote[0].id));
         } else {
           await db.insert(mealVotes).values({
             mealPlanId: input.mealPlanId,
             mealDay: input.mealDay,
             userId: voterHash,
+            voterName: input.voterName,
             voteType: input.voteType,
           });
         }

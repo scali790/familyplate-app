@@ -86,6 +86,7 @@ export const mealVotes = mysqlTable(
     mealPlanId: int("meal_plan_id").notNull(),
     mealDay: varchar("meal_day", { length: 10 }).notNull(),
     userId: int("user_id").notNull(),
+    voterName: varchar("voter_name", { length: 100 }), // Name of the voter (for shared voting)
     voteType: varchar("vote_type", { length: 10 }).notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
