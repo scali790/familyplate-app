@@ -4,7 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { getDb } from "./db";
-import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, type Meal } from "../drizzle/schema";
+import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, dishVotes, type Meal } from "../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
@@ -376,12 +376,91 @@ export const appRouter = router({
         ? `\n- Food frequency preferences: ${preferences.join(", ")}`
         : "";
       
+      // Fetch dish votes for taste signals
+      const dishVotesResult = await db.select().from(dishVotes)
+        .where(eq(dishVotes.userId, ctx.user.id))
+        .orderBy(desc(dishVotes.createdAt))
+        .limit(50); // Get last 50 votes
+      
+      const likedDishes = dishVotesResult.filter(v => v.liked).map(v => v.dishName);
+      const dislikedDishes = dishVotesResult.filter(v => !v.liked).map(v => v.dishName);
+      
+      // Parse taste profile if available
+      let tasteProfile: any = null;
+      if (prefs.tasteProfile) {
+        try {
+          tasteProfile = JSON.parse(prefs.tasteProfile);
+        } catch (e) {
+          console.error("Failed to parse taste profile", e);
+        }
+      }
+      
+      // Fetch last 4 weeks of meal history to avoid repeats
+      const fourWeeksAgo = new Date();
+      fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+      const historyResult = await db.select().from(mealPlans)
+        .where(and(
+          eq(mealPlans.userId, ctx.user.id),
+          // Only get recent plans
+        ))
+        .orderBy(desc(mealPlans.createdAt))
+        .limit(4);
+      
+      const recentMealNames: string[] = [];
+      historyResult.forEach(plan => {
+        const meals: Meal[] = JSON.parse(plan.meals);
+        meals.forEach(meal => recentMealNames.push(meal.name));
+      });
+      
+      // Build taste signals text for prompt
+      let tasteSignalsText = "";
+      
+      if (likedDishes.length > 0) {
+        tasteSignalsText += `\n- User likes these dishes: ${likedDishes.slice(0, 10).join(", ")}`;
+      }
+      
+      if (dislikedDishes.length > 0) {
+        tasteSignalsText += `\n- User dislikes these dishes: ${dislikedDishes.slice(0, 10).join(", ")}`;
+      }
+      
+      if (tasteProfile) {
+        if (tasteProfile.cuisineWeights && Object.keys(tasteProfile.cuisineWeights).length > 0) {
+          const topCuisines = Object.entries(tasteProfile.cuisineWeights)
+            .sort(([,a]: any, [,b]: any) => b - a)
+            .slice(0, 5)
+            .map(([cuisine, weight]) => `${cuisine} (${((weight as number) * 100).toFixed(0)}%)`);
+          if (topCuisines.length > 0) {
+            tasteSignalsText += `\n- Preferred cuisines: ${topCuisines.join(", ")}`;
+          }
+        }
+        
+        if (tasteProfile.proteinWeights && Object.keys(tasteProfile.proteinWeights).length > 0) {
+          const topProteins = Object.entries(tasteProfile.proteinWeights)
+            .sort(([,a]: any, [,b]: any) => b - a)
+            .slice(0, 5)
+            .map(([protein, weight]) => `${protein} (${((weight as number) * 100).toFixed(0)}%)`);
+          if (topProteins.length > 0) {
+            tasteSignalsText += `\n- Preferred proteins: ${topProteins.join(", ")}`;
+          }
+        }
+        
+        if (tasteProfile.spiceLevelPreference !== undefined) {
+          const spiceLevels = ["mild", "mild-medium", "medium", "medium-hot", "hot"];
+          tasteSignalsText += `\n- Spice preference: ${spiceLevels[Math.min(4, Math.max(0, tasteProfile.spiceLevelPreference))]}`;
+        }
+      }
+      
+      let avoidRepeatsText = "";
+      if (recentMealNames.length > 0) {
+        avoidRepeatsText = `\n\nIMPORTANT: Avoid repeating these recently generated meals: ${recentMealNames.join(", ")}`;
+      }
+      
       const prompt = `Generate a 7-day meal plan for a family of ${prefs.familySize}.
 
 Preferences:
 - Cuisines: ${cuisines.join(", ") || "Any"}
 - Flavors: ${flavors.join(", ") || "Balanced"}
-- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${frequencyText}
+- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${frequencyText}${tasteSignalsText}${avoidRepeatsText}
 
 Return a JSON object with a "meals" array containing exactly 7 meal objects with these fields:
 - day: string (Monday through Sunday)

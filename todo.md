@@ -446,3 +446,13 @@
 - [x] Integrate with dishVotes.save API
 - [x] Update navigation flow to route new users through taste onboarding first
 - [x] Test taste onboarding flow end-to-end
+
+## LLM Personalization Integration
+- [x] Fetch user's dish votes from database in generatePlan endpoint
+- [x] Fetch user's computed taste profile from preferences
+- [x] Fetch last 4 weeks of meal history to avoid repeats
+- [x] Update LLM prompt to include liked/disliked dishes
+- [x] Update LLM prompt to include taste profile (cuisine/protein weights)
+- [x] Update LLM prompt to avoid recently generated meals
+- [x] Test personalized meal generation with taste signals (4 tests passing)
+- [x] Verify meal plans reflect user preferences
