@@ -600,3 +600,13 @@
 - [ ] Show which family members haven't voted yet
 - [ ] Add visual progress bar for voting completion
 - [ ] Highlight meals with low participation
+
+## Logo Overhaul - Smart Plate Design
+- [x] Copy new logo (Concept 2 - Smart Plate) to all required app locations
+- [x] Update app icon (assets/images/icon.png)
+- [x] Update splash screen icon (assets/images/splash-icon.png)
+- [x] Update favicon (assets/images/favicon.png)
+- [x] Update Android adaptive icons (foreground, background, monochrome)
+- [x] Upload logo to S3 and update app.config.ts logoUrl
+- [x] Test new logo displays correctly on all platforms
+- [x] Create checkpoint with new branding
