@@ -129,7 +129,7 @@ export default function ShoppingListScreen() {
     <ScreenContainer>
       <ScrollView 
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 40 }}
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 80 }}
       >
         {/* Header */}
         <View className="p-6 pb-4 border-b border-border">

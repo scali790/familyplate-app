@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Image, Platform, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, Image, Platform, ActivityIndicator, ScrollView } from "react-native";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -94,7 +94,15 @@ export default function TasteOnboardingScreen() {
 
   return (
     <ScreenContainer>
-      <View style={{ flex: 1, padding: 20, paddingBottom: Math.max(insets.bottom, 20) + 20, justifyContent: "space-between" }}>
+      <ScrollView 
+        contentContainerStyle={{ 
+          flexGrow: 1, 
+          padding: 20, 
+          paddingBottom: Math.max(insets.bottom, 20) + 80,
+          justifyContent: "space-between" 
+        }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={{ gap: 12 }}>
           <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.foreground }}>
@@ -274,7 +282,7 @@ export default function TasteOnboardingScreen() {
             Skip for now →
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </ScreenContainer>
   );
 }

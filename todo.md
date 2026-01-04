@@ -711,3 +711,11 @@
 - [x] Upload all dish images to CDN
 - [x] Update taste-dishes.ts with CDN URLs
 - [x] Verify images are accessible
+
+
+## Button Visibility Issues
+- [x] Fix taste onboarding vote buttons cut off at bottom
+- [x] Increase bottom padding to ensure buttons are fully visible
+- [x] Audit all screens for similar button visibility issues
+- [x] Updated padding on settings.tsx and shopping-list.tsx from +40 to +80
+- [ ] Test on mobile device to verify fix

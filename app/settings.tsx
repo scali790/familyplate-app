@@ -56,7 +56,7 @@ export default function SettingsScreen() {
     <ScreenContainer>
       <ScrollView 
         className="flex-1 p-6"
-        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 40 }}
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 80 }}
       >
         <View className="gap-6">
           {/* Back Button */}
