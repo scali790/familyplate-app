@@ -370,3 +370,10 @@
 - [x] Improve text contrast and readability
 - [x] Match ingredient and instruction styling between platforms
 - [x] Ensure consistent color scheme across web and mobile
+
+## Recipe Modal Layout Issues on Mobile
+- [x] Reduce header size - title and description take up almost half the screen
+- [x] Decrease font sizes in modal header for better space utilization
+- [x] Maximize scrollable content area to show more recipe details
+- [x] Make header more compact while keeping it readable
+- [ ] Test modal scrolling and content visibility on Samsung S24
