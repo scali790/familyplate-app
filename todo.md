@@ -456,3 +456,9 @@
 - [x] Update LLM prompt to avoid recently generated meals
 - [x] Test personalized meal generation with taste signals (4 tests passing)
 - [x] Verify meal plans reflect user preferences
+
+## Family Voting Link Requires Login (Bug)
+- [x] Investigate why shared link redirects to login screen
+- [x] Make /shared/[id] route publicly accessible without authentication
+- [x] Ensure family members can vote without creating an account
+- [x] Test shared link flow end-to-end

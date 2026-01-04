@@ -87,6 +87,7 @@ export default function RootLayout() {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="oauth/callback" />
+            <Stack.Screen name="shared/[id]" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>
