@@ -94,7 +94,7 @@ export default function SettingsScreen() {
               FamilyPlate v1.0.0
             </Text>
             <Text className="text-sm text-muted text-center">
-              AI-Powered Family Meal Planner
+              Family Meal Planning Made Simple
             </Text>
           </View>
 

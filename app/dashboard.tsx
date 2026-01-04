@@ -154,7 +154,7 @@ export default function DashboardScreen() {
               No Meal Plan Yet
             </Text>
             <Text className="text-muted text-center">
-              Generate your first AI-powered meal plan to get started!
+              Let's create your first weekly meal plan!
             </Text>
             <TouchableOpacity
               onPress={handleGenerateNew}

@@ -113,7 +113,7 @@ export default function GeneratePlanScreen() {
                 Generate Meal Plan
               </Text>
               <Text className="text-muted text-center">
-                Our AI will create a personalized 7-day meal plan based on your preferences
+                We'll create a personalized 7-day meal plan based on your family's preferences
               </Text>
             </View>
 
@@ -133,7 +133,7 @@ export default function GeneratePlanScreen() {
 
             {/* Features */}
             <View className="gap-3 w-full">
-              <FeatureItem text="✨ AI-powered recommendations" />
+              <FeatureItem text="✨ Personalized recommendations" />
               <FeatureItem text="🎯 Tailored to your family size" />
               <FeatureItem text="🍽️ Matches your cuisine preferences" />
               <FeatureItem text="⚡ Takes about 10 seconds" />

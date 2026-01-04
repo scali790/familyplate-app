@@ -170,7 +170,7 @@ export default function SharedMealPlanScreen() {
               Powered by FamilyPlate 🍴
             </Text>
             <Text className="text-muted text-xs text-center">
-              AI-Powered Family Meal Planning
+              Family Meal Planning Made Simple
             </Text>
           </View>
         </View>

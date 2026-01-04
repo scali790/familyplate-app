@@ -133,15 +133,15 @@ export default function WelcomeScreen() {
         <View className="items-center gap-2">
           <Text className="text-4xl font-bold text-foreground">FamilyPlate</Text>
           <Text className="text-lg text-muted text-center">
-            AI-Powered Family Meal Planner
+            Family Meal Planning Made Simple
           </Text>
         </View>
 
         {/* Features */}
         <View className="gap-4 w-full">
           <FeatureItem
-            emoji="🤖"
-            text="AI-generated 7-day meal plans"
+            emoji="📅"
+            text="7-day meal plans tailored to your family"
           />
           <FeatureItem
             emoji="👨‍👩‍👧‍👦"

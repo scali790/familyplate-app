@@ -663,3 +663,18 @@
 - [ ] Allow filtering/switching between different week plans on dashboard
 - [x] Test workflow: create plan for week 1, try to create for week 1 again (should warn)
 - [x] Test workflow: create plans for multiple weeks, view all on dashboard
+
+
+## Human-Centered Messaging - Remove AI Hype
+- [x] Replace "AI-powered" language with human helper explanations
+- [x] Update welcome screen to remove "AI" mentions
+- [x] Update generate plan screen messaging to be context-aware
+- [x] Update dashboard empty state messaging
+- [x] Update settings screen tagline
+- [x] Update shared voting page footer
+- [x] Remove robot emoji (🤖) and replace with calendar emoji (📅)
+- [ ] Add contextual explanations that appear only when relevant
+- [ ] Implement progressive onboarding (layer features over time)
+- [ ] Add meal swap feature with 3 alternatives and human reasoning
+- [ ] Update vote feedback to acknowledge actions naturally
+- [ ] Test all messaging changes for natural, supportive tone
