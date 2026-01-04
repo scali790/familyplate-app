@@ -610,3 +610,13 @@
 - [x] Upload logo to S3 and update app.config.ts logoUrl
 - [x] Test new logo displays correctly on all platforms
 - [x] Create checkpoint with new branding
+
+## Mailjet API Update - noreply@familyplate.ai
+- [x] Request new Mailjet API key and secret from user
+- [x] Update MAILJET_API_KEY environment variable
+- [x] Update MAILJET_SECRET_KEY environment variable
+- [x] Update sender email to noreply@familyplate.ai
+- [x] Update sender name to FamilyPlate
+- [x] Test magic link email delivery
+- [x] Verify email appears from correct sender
+- [x] Create checkpoint with updated email configuration
