@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, user_id, family_name FROM user_preferences LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3HwhU55c9ykAFSx.root --database PWe3aXVRBZJqm34KdWoMVL --execute SELECT id, user_id, family_name FROM user_preferences LIMIT 1;",
+  "rows": [
+    {
+      "id": "1",
+      "user_id": "1",
+      "family_name": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuser_id\tfamily_name\n1\t1\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1536
+}

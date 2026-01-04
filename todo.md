@@ -554,3 +554,10 @@
 - [x] Fix SQL syntax error in savePreferences mutation
 - [x] Investigate Drizzle ORM MySQL dialect configuration
 - [x] Test preferences save end-to-end
+
+## Preferences Not Persisting Bug
+- [x] Debug why saved preferences don't load when returning to onboarding screen
+- [x] Fixed database schema out of sync issue (missing family_name column)
+- [x] Added family_name column to database manually
+- [x] Restarted server to apply changes
+- [x] Test complete save/load cycle

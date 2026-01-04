@@ -1,0 +1,178 @@
+{
+  "query": "DESCRIBE user_preferences;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3HwhU55c9ykAFSx.root --database PWe3aXVRBZJqm34KdWoMVL --execute DESCRIBE user_preferences;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "user_id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "family_size",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "cuisines",
+      "Type": "text",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "flavors",
+      "Type": "text",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "dietary_restrictions",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "created_at",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updated_at",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "country",
+      "Type": "varchar(3)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "UAE",
+      "Extra": ""
+    },
+    {
+      "Field": "meat_frequency",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "3",
+      "Extra": ""
+    },
+    {
+      "Field": "chicken_frequency",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "3",
+      "Extra": ""
+    },
+    {
+      "Field": "fish_frequency",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "3",
+      "Extra": ""
+    },
+    {
+      "Field": "vegetarian_frequency",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "2",
+      "Extra": ""
+    },
+    {
+      "Field": "vegan_frequency",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "1",
+      "Extra": ""
+    },
+    {
+      "Field": "spicy_frequency",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "2",
+      "Extra": ""
+    },
+    {
+      "Field": "kid_friendly_frequency",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "2",
+      "Extra": ""
+    },
+    {
+      "Field": "healthy_frequency",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "3",
+      "Extra": ""
+    },
+    {
+      "Field": "language",
+      "Type": "varchar(5)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "en",
+      "Extra": ""
+    },
+    {
+      "Field": "units",
+      "Type": "varchar(10)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "metric",
+      "Extra": ""
+    },
+    {
+      "Field": "currency",
+      "Type": "varchar(3)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "USD",
+      "Extra": ""
+    },
+    {
+      "Field": "taste_profile",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nuser_id\tint(11)\tNO\t\tNULL\t\nfamily_size\tint(11)\tNO\t\tNULL\t\ncuisines\ttext\tNO\t\tNULL\t\nflavors\ttext\tNO\t\tNULL\t\ndietary_restrictions\ttext\tYES\t\tNULL\t\ncreated_at\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdated_at\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\ncountry\tvarchar(3)\tYES\t\tUAE\t\nmeat_frequency\tint(11)\tNO\t\t3\t\nchicken_frequency\tint(11)\tNO\t\t3\t\nfish_frequency\tint(11)\tNO\t\t3\t\nvegetarian_frequency\tint(11)\tNO\t\t2\t\nvegan_frequency\tint(11)\tNO\t\t1\t\nspicy_frequency\tint(11)\tNO\t\t2\t\nkid_friendly_frequency\tint(11)\tNO\t\t2\t\nhealthy_frequency\tint(11)\tNO\t\t3\t\nlanguage\tvarchar(5)\tNO\t\ten\t\nunits\tvarchar(10)\tNO\t\tmetric\t\ncurrency\tvarchar(3)\tNO\t\tUSD\t\ntaste_profile\ttext\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 1609
+}

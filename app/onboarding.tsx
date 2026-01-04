@@ -69,7 +69,11 @@ export default function OnboardingScreen() {
 
   // Load existing preferences when data is fetched
   useEffect(() => {
+    console.log('[Onboarding] Loading preferences, existingPreferences:', existingPreferences);
+    console.log('[Onboarding] isLoadingPreferences:', isLoadingPreferences);
+    
     if (existingPreferences) {
+      console.log('[Onboarding] Populating form with existing preferences');
       setFamilyName(existingPreferences.familyName || "");
       setFamilySize(existingPreferences.familySize.toString());
       setSelectedCuisines(existingPreferences.cuisines || []);
@@ -88,8 +92,11 @@ export default function OnboardingScreen() {
         kidFriendlyFrequency: existingPreferences.kidFriendlyFrequency ?? 2,
         healthyFrequency: existingPreferences.healthyFrequency ?? 3,
       });
+      console.log('[Onboarding] Form populated successfully');
+    } else {
+      console.log('[Onboarding] No existing preferences found');
     }
-  }, [existingPreferences]);
+  }, [existingPreferences, isLoadingPreferences]);
 
   const toggleCuisine = (cuisine: string) => {
     if (selectedCuisines.includes(cuisine)) {
@@ -151,6 +158,15 @@ export default function OnboardingScreen() {
       });
 
       console.log("Preferences saved successfully!");
+      console.log('[Onboarding] Saved data:', {
+        familyName,
+        familySize: size,
+        cuisines: selectedCuisines,
+        flavors: selectedFlavors,
+        dietaryRestrictions,
+        country: selectedCountry,
+        ...foodPreferences
+      });
       
       // If user has an existing meal plan, ask if they want to regenerate it
       if (currentMealPlan) {
