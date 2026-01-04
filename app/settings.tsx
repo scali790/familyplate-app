@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert, Switch } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert, Switch, Platform } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useAuth } from "@/hooks/use-auth";
@@ -12,6 +12,23 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
 
   const handleLogout = async () => {
+    // Use window.confirm on web for better compatibility
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm("Are you sure you want to logout?");
+      if (!confirmed) return;
+      
+      try {
+        await logoutMutation.mutateAsync();
+        await logout();
+        router.replace("/welcome");
+      } catch (error) {
+        window.alert("Failed to logout. Please try again.");
+        console.error(error);
+      }
+      return;
+    }
+
+    // Use Alert for native platforms
     Alert.alert(
       "Logout",
       "Are you sure you want to logout?",

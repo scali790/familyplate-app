@@ -13,8 +13,14 @@ export async function createContext(opts: CreateExpressContextOptions): Promise<
 
   try {
     user = await sdk.authenticateRequest(opts.req);
+    console.log('[tRPC Context] User authenticated:', user ? `${user.email} (ID: ${user.id})` : 'null');
   } catch (error) {
     // Authentication is optional for public procedures.
+    console.log('[tRPC Context] Authentication failed:', error instanceof Error ? error.message : error);
+    console.log('[tRPC Context] Headers:', {
+      authorization: opts.req.headers.authorization,
+      cookie: opts.req.headers.cookie ? 'present' : 'missing'
+    });
     user = null;
   }
 

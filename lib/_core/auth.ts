@@ -13,10 +13,14 @@ export type User = {
 
 export async function getSessionToken(): Promise<string | null> {
   try {
-    // Web platform uses cookie-based auth, no manual token management needed
     if (Platform.OS === "web") {
-      console.log("[Auth] Web platform uses cookie-based auth, skipping token retrieval");
-      return null;
+      // Web: Use localStorage for token storage
+      const token = window.localStorage.getItem(SESSION_TOKEN_KEY);
+      console.log(
+        "[Auth] Session token retrieved from localStorage:",
+        token ? `present (${token.substring(0, 20)}...)` : "missing",
+      );
+      return token;
     }
 
     // Use SecureStore for native
@@ -35,9 +39,11 @@ export async function getSessionToken(): Promise<string | null> {
 
 export async function setSessionToken(token: string): Promise<void> {
   try {
-    // Web platform uses cookie-based auth, no manual token management needed
     if (Platform.OS === "web") {
-      console.log("[Auth] Web platform uses cookie-based auth, skipping token storage");
+      // Web: Use localStorage for token storage
+      console.log("[Auth] Setting session token in localStorage...", token.substring(0, 20) + "...");
+      window.localStorage.setItem(SESSION_TOKEN_KEY, token);
+      console.log("[Auth] Session token stored in localStorage successfully");
       return;
     }
 
@@ -53,9 +59,11 @@ export async function setSessionToken(token: string): Promise<void> {
 
 export async function removeSessionToken(): Promise<void> {
   try {
-    // Web platform uses cookie-based auth, logout is handled by server clearing cookie
     if (Platform.OS === "web") {
-      console.log("[Auth] Web platform uses cookie-based auth, skipping token removal");
+      // Web: Remove from localStorage
+      console.log("[Auth] Removing session token from localStorage...");
+      window.localStorage.removeItem(SESSION_TOKEN_KEY);
+      console.log("[Auth] Session token removed from localStorage successfully");
       return;
     }
 

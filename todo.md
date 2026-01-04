@@ -678,3 +678,23 @@
 - [ ] Add meal swap feature with 3 alternatives and human reasoning
 - [ ] Update vote feedback to acknowledge actions naturally
 - [ ] Test all messaging changes for natural, supportive tone
+
+
+## Authentication Bug - Preference Save Failure (Error 10001)
+- [x] Investigate why new users get "Please login (10001)" error when saving preferences
+- [x] Check if magic link login properly creates user session
+- [x] Verify authentication token is passed to savePreferences mutation
+- [x] Check server-side authentication middleware for savePreferences endpoint
+- [x] Fix session/token handling in onboarding flow (web was returning null for token)
+- [x] Update auth.ts to store session token in localStorage on web platform
+- [ ] Test complete flow: magic link → onboarding → save preferences → dashboard
+- [ ] Add better error handling and user feedback for auth failures
+
+
+## Logout Button Not Working
+- [x] Investigate why logout button doesn't work
+- [x] Check logout mutation implementation
+- [x] Ensure session token is cleared from localStorage on web
+- [x] Ensure user info is cleared from localStorage
+- [x] Redirect to welcome page after logout
+- [x] Test logout functionality on web
