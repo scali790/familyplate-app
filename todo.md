@@ -377,3 +377,9 @@
 - [x] Maximize scrollable content area to show more recipe details
 - [x] Make header more compact while keeping it readable
 - [ ] Test modal scrolling and content visibility on Samsung S24
+
+## Preference Indicator Visibility in Dark Mode
+- [x] Fix indicator circles (dots) that are too dark in dark mode
+- [x] Use lighter colors for inactive/unselected dots
+- [x] Ensure good contrast between active and inactive indicators
+- [x] Test preference selection visibility on mobile dark mode
