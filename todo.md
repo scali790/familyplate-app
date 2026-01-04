@@ -356,3 +356,10 @@
 - [x] Fix meal regeneration duplicates - prevent regenerated meals from being same as other days in the plan
 - [x] Add error handling and logging to share functionality
 - [x] Update AI prompt to ensure unique meals across all days
+
+## Add Dates to Meal Cards
+- [x] Calculate actual dates for each day based on week start date
+- [x] Display date next to day name (e.g., "MONDAY • Jan 6")
+- [x] Update dashboard meal cards with dates
+- [x] Update shared meal plan view with dates
+- [x] Test date calculation and display

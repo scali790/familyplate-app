@@ -140,6 +140,7 @@ export default function SharedMealPlanScreen() {
                   setSelectedMeal(meal);
                   setModalVisible(true);
                 }}
+                weekStartDate={mealPlan.weekStartDate}
               />
             ))}
           </View>
@@ -171,13 +172,28 @@ function MealCard({
   meal, 
   onVote,
   canVote,
-  onPress
+  onPress,
+  weekStartDate
 }: { 
   meal: Meal; 
   onVote: (voteType: "up" | "down") => void;
   canVote: boolean;
   onPress: () => void;
+  weekStartDate: string;
 }) {
+  // Calculate the actual date for this meal
+  const getDayDate = () => {
+    const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const dayIndex = dayNames.indexOf(meal.day);
+    const startDate = new Date(weekStartDate);
+    const mealDate = new Date(startDate);
+    mealDate.setDate(startDate.getDate() + dayIndex);
+    
+    // Format as "Jan 6"
+    const month = mealDate.toLocaleDateString('en-US', { month: 'short' });
+    const day = mealDate.getDate();
+    return `${month} ${day}`;
+  };
   return (
     <Pressable
       onPress={onPress}
@@ -188,7 +204,10 @@ function MealCard({
       <View className="bg-surface rounded-2xl p-5 border border-border">
       {/* Day & Name */}
       <View className="mb-3">
-        <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
+        <View className="flex-row items-center gap-2">
+          <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
+          <Text className="text-sm text-muted">• {getDayDate()}</Text>
+        </View>
         <View className="flex-row items-center gap-2 mt-1">
           {meal.tags && meal.tags.length > 0 && (
             <Text className="text-xl">{getIconsForTags(meal.tags).join(" ")}</Text>
