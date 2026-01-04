@@ -236,7 +236,7 @@ export const appRouter = router({
       }),
   }),
 
-  // EasyPlate meal planning routes
+  // FamilyPlate meal planning routes
   mealPlanning: router({
     // Get user preferences
     getPreferences: protectedProcedure.query(async ({ ctx }) => {

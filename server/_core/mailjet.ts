@@ -51,8 +51,8 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
     return false;
   }
 
-  const fromEmail = options.fromEmail || ENV.mailjetFromEmail || "noreply@easyplate.app";
-  const fromName = options.fromName || ENV.mailjetFromName || "EasyPlate";
+  const fromEmail = options.fromEmail || ENV.mailjetFromEmail || "noreply@familyplate.ai";
+  const fromName = options.fromName || ENV.mailjetFromName || "FamilyPlate";
 
   try {
     const request = client.post("send", { version: "v3.1" }).request({
@@ -105,7 +105,7 @@ export async function sendMagicLinkEmail(
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Your EasyPlate Login Link</title>
+      <title>Your FamilyPlate Login Link</title>
     </head>
     <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
       <table role="presentation" style="width: 100%; border-collapse: collapse;">
@@ -115,7 +115,7 @@ export async function sendMagicLinkEmail(
               <!-- Header -->
               <tr>
                 <td style="padding: 40px 40px 20px; text-align: center;">
-                  <h1 style="margin: 0; color: #0a7ea4; font-size: 28px; font-weight: bold;">🍽️ EasyPlate</h1>
+                  <h1 style="margin: 0; color: #0a7ea4; font-size: 28px; font-weight: bold;">🍽️ FamilyPlate</h1>
                   <p style="margin: 10px 0 0; color: #687076; font-size: 16px;">AI-Powered Family Meal Planner</p>
                 </td>
               </tr>
@@ -125,7 +125,7 @@ export async function sendMagicLinkEmail(
                 <td style="padding: 20px 40px;">
                   <h2 style="margin: 0 0 20px; color: #11181C; font-size: 24px; font-weight: 600;">Welcome${name ? `, ${name}` : ''}!</h2>
                   <p style="margin: 0 0 20px; color: #11181C; font-size: 16px; line-height: 1.5;">
-                    Click the button below to securely access your EasyPlate account. This link works for both login and account recovery - no password needed!
+                    Click the button below to securely access your FamilyPlate account. This link works for both login and account recovery - no password needed!
                   </p>
                   
                   <!-- CTA Button -->
@@ -133,7 +133,7 @@ export async function sendMagicLinkEmail(
                     <tr>
                       <td align="center">
                         <a href="${magicLink}" style="display: inline-block; background-color: #0a7ea4; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-size: 18px; font-weight: 600;">
-                          Log In to EasyPlate
+                          Log In to FamilyPlate
                         </a>
                       </td>
                     </tr>
@@ -153,7 +153,7 @@ export async function sendMagicLinkEmail(
                     ⏱️ This link expires in <strong>${expiresInMinutes} minutes</strong>.
                   </p>
                   <p style="margin: 0 0 10px; color: #687076; font-size: 14px;">
-                    🔐 <strong>Passwordless Authentication:</strong> EasyPlate uses magic links instead of passwords for secure, hassle-free access.
+                    🔐 <strong>Passwordless Authentication:</strong> FamilyPlate uses magic links instead of passwords for secure, hassle-free access.
                   </p>
                   <p style="margin: 0; color: #687076; font-size: 14px;">
                     🔒 If you didn't request this link, you can safely ignore this email.
@@ -164,7 +164,7 @@ export async function sendMagicLinkEmail(
             
             <!-- Footer text -->
             <p style="margin: 20px 0 0; color: #9BA1A6; font-size: 12px; text-align: center;">
-              © ${new Date().getFullYear()} EasyPlate. All rights reserved.
+              © ${new Date().getFullYear()} FamilyPlate. All rights reserved.
             </p>
           </td>
         </tr>
@@ -174,7 +174,7 @@ export async function sendMagicLinkEmail(
   `;
 
   const textContent = `
-Welcome to EasyPlate!
+Welcome to FamilyPlate!
 
 Click this link to log in to your account:
 ${magicLink}
@@ -183,13 +183,13 @@ This link expires in ${expiresInMinutes} minutes.
 
 If you didn't request this link, you can safely ignore this email.
 
-© ${new Date().getFullYear()} EasyPlate. All rights reserved.
+© ${new Date().getFullYear()} FamilyPlate. All rights reserved.
   `.trim();
 
   return sendEmail({
     to: email,
     toName: name || undefined,
-    subject: "Your EasyPlate Login Link",
+    subject: "Your FamilyPlate Login Link",
     textContent,
     htmlContent,
   });

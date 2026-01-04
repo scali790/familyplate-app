@@ -53,7 +53,7 @@ export default function ResetPasswordScreen() {
                 <View className="gap-2">
                   <Text className="text-lg font-semibold text-foreground">🔐 Passwordless Authentication</Text>
                   <Text className="text-sm text-muted leading-relaxed">
-                    EasyPlate uses magic links instead of passwords. This means you never have to remember or reset a password!
+                    FamilyPlate uses magic links instead of passwords. This means you never have to remember or reset a password!
                   </Text>
                 </View>
 

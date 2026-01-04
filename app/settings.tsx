@@ -91,7 +91,7 @@ export default function SettingsScreen() {
           {/* App Info */}
           <View className="mt-8 pt-6 border-t border-border">
             <Text className="text-sm text-muted text-center mb-4">
-              EasyPlate v1.0.0
+              FamilyPlate v1.0.0
             </Text>
             <Text className="text-sm text-muted text-center">
               AI-Powered Family Meal Planner

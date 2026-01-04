@@ -131,7 +131,7 @@ export default function WelcomeScreen() {
 
         {/* Title */}
         <View className="items-center gap-2">
-          <Text className="text-4xl font-bold text-foreground">EasyPlate</Text>
+          <Text className="text-4xl font-bold text-foreground">FamilyPlate</Text>
           <Text className="text-lg text-muted text-center">
             AI-Powered Family Meal Planner
           </Text>

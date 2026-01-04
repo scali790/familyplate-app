@@ -167,7 +167,7 @@ export default function SharedMealPlanScreen() {
           {/* Footer */}
           <View className="items-center gap-2 py-4">
             <Text className="text-muted text-sm text-center">
-              Powered by EasyPlate 🍴
+              Powered by FamilyPlate 🍴
             </Text>
             <Text className="text-muted text-xs text-center">
               AI-Powered Family Meal Planning
