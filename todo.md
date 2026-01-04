@@ -383,3 +383,9 @@
 - [x] Use lighter colors for inactive/unselected dots
 - [x] Ensure good contrast between active and inactive indicators
 - [x] Test preference selection visibility on mobile dark mode
+
+## Meal Card Icon Layout Wasting Space on Mobile
+- [x] Fix meal tag icons displayed on separate line taking up too much space
+- [x] Move icons inline with meal title like on web version
+- [x] Make meal cards more compact to show more content
+- [x] Test layout on mobile to ensure icons fit properly with title

@@ -313,11 +313,11 @@ function MealCard({
             <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
             <Text className="text-sm text-muted">• {getDayDate()}</Text>
           </View>
-          <View className="flex-row items-center gap-2 mt-1">
+          <View className="flex-row items-center gap-1.5 mt-1">
             {meal.tags && meal.tags.length > 0 && (
-              <Text className="text-xl">{getIconsForTags(meal.tags).join(" ")}</Text>
+              <Text className="text-base">{getIconsForTags(meal.tags).join(" ")}</Text>
             )}
-            <Text className="text-xl font-bold text-foreground flex-1">{meal.name}</Text>
+            <Text className="text-lg font-bold text-foreground flex-1">{meal.name}</Text>
           </View>
         </View>
         <TouchableOpacity
