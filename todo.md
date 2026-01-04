@@ -545,3 +545,7 @@
 - [x] Update welcome screen branding
 - [x] Update any hardcoded domain references
 - [x] Test all user-facing text for consistency
+
+## Navigation Bug - Dashboard Empty State
+- [x] Add back button to dashboard screen when no meal plan exists
+- [x] Test navigation from dashboard back to home/settings

@@ -131,23 +131,39 @@ export default function DashboardScreen() {
 
   if (!mealPlan) {
     return (
-      <ScreenContainer className="justify-center items-center p-6">
-        <View className="items-center gap-6 max-w-md">
-          <Text className="text-6xl">🍽️</Text>
-          <Text className="text-2xl font-bold text-foreground text-center">
-            No Meal Plan Yet
-          </Text>
-          <Text className="text-muted text-center">
-            Generate your first AI-powered meal plan to get started!
-          </Text>
-          <TouchableOpacity
-            onPress={handleGenerateNew}
-            className="bg-primary px-8 py-4 rounded-full active:opacity-80"
-          >
-            <Text className="text-white font-semibold text-lg">
-              Generate Meal Plan
+      <ScreenContainer className="p-6">
+        {/* Back Button */}
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)")}
+          style={{
+            padding: 8,
+            borderRadius: 8,
+            backgroundColor: 'rgba(0,0,0,0.05)',
+            alignSelf: 'flex-start',
+            marginBottom: 20,
+          }}
+        >
+          <Text style={{ fontSize: 24 }} className="text-foreground">←</Text>
+        </TouchableOpacity>
+        
+        <View className="flex-1 justify-center items-center">
+          <View className="items-center gap-6 max-w-md">
+            <Text className="text-6xl">🍽️</Text>
+            <Text className="text-2xl font-bold text-foreground text-center">
+              No Meal Plan Yet
             </Text>
-          </TouchableOpacity>
+            <Text className="text-muted text-center">
+              Generate your first AI-powered meal plan to get started!
+            </Text>
+            <TouchableOpacity
+              onPress={handleGenerateNew}
+              className="bg-primary px-8 py-4 rounded-full active:opacity-80"
+            >
+              <Text className="text-white font-semibold text-lg">
+                Generate Meal Plan
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScreenContainer>
     );
