@@ -537,6 +537,23 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
       return { success: true, meals, weekStartDate };
     }),
 
+    // Get all meal plans for user (for multi-week management)
+    getAllPlans: protectedProcedure.query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) return [];
+      
+      const plans = await db.select().from(mealPlans)
+        .where(eq(mealPlans.userId, ctx.user.id))
+        .orderBy(desc(mealPlans.weekStartDate));
+      
+      return plans.map(plan => ({
+        id: plan.id,
+        weekStartDate: plan.weekStartDate,
+        createdAt: plan.createdAt,
+        mealCount: JSON.parse(plan.meals).length,
+      }));
+    }),
+
     // Get current meal plan
     getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
       const db = await getDb();

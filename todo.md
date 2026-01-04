@@ -648,3 +648,18 @@
 - [ ] Show multiple active meal plans (current + future weeks) on dashboard
 - [ ] Update shopping list to support multi-week planning
 - [x] Test workflow: generate plan for next week, vote, approve
+
+
+## Multi-Week Plan Management - Prevent Accidental Overwrites
+- [x] Create API endpoint to fetch all existing meal plan weeks for a user
+- [x] Update WeekSelector component to show which weeks already have plans (✓ indicator)
+- [x] Add visual distinction between empty weeks and planned weeks
+- [x] Show plan creation date and meal count for existing weeks
+- [x] Add confirmation dialog when user tries to generate plan for week that already has one
+- [x] Provide "View Existing Plan" vs "Replace Plan" options in dialog
+- [x] Update generate-plan screen to fetch existing plans on load
+- [x] Create comprehensive tests for multi-week management (10 tests passing)
+- [ ] Add "All Weeks" view on dashboard showing all planned weeks
+- [ ] Allow filtering/switching between different week plans on dashboard
+- [x] Test workflow: create plan for week 1, try to create for week 1 again (should warn)
+- [x] Test workflow: create plans for multiple weeks, view all on dashboard

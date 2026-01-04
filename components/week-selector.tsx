@@ -6,14 +6,21 @@ interface WeekSelectorProps {
   selectedWeek: string; // weekStartString (YYYY-MM-DD)
   onSelectWeek: (weekStartString: string) => void;
   weeksToShow?: number;
+  existingPlans?: Array<{ weekStartDate: string; mealCount: number; createdAt: Date | string }>;
 }
 
 export function WeekSelector({
   selectedWeek,
   onSelectWeek,
   weeksToShow = 4,
+  existingPlans = [],
 }: WeekSelectorProps) {
   const weeks = getUpcomingWeeks(weeksToShow);
+  
+  // Create a map of existing plans by week start date
+  const plansByWeek = new Map(
+    existingPlans.map(plan => [plan.weekStartDate, plan])
+  );
 
   return (
     <View className="gap-3">
@@ -24,6 +31,7 @@ export function WeekSelector({
       {weeks.map((week: WeekInfo) => {
         const isSelected = week.weekStartString === selectedWeek;
         const showWarning = week.isCurrentWeek && week.daysRemaining < 4;
+        const existingPlan = plansByWeek.get(week.weekStartString);
 
         return (
           <TouchableOpacity
@@ -62,13 +70,19 @@ export function WeekSelector({
                   </Text>
                 </View>
 
-                {week.isNextWeek && (
+                {existingPlan && (
+                  <Text className="text-sm text-primary ml-7 mt-1">
+                    ✓ Plan exists ({existingPlan.mealCount} meals)
+                  </Text>
+                )}
+
+                {!existingPlan && week.isNextWeek && (
                   <Text className="text-sm text-success ml-7 mt-1">
                     ✓ Recommended - Perfect timing for shopping this week
                   </Text>
                 )}
 
-                {showWarning && (
+                {!existingPlan && showWarning && (
                   <Text className="text-sm text-warning ml-7 mt-1">
                     ⚠️ Only {week.daysRemaining} day{week.daysRemaining !== 1 ? 's' : ''} left
                   </Text>

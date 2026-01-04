@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator, Platform, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator, Platform, ScrollView, Alert } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { WeekSelector } from "@/components/week-selector";
@@ -14,10 +14,50 @@ export default function GeneratePlanScreen() {
     return formatDateForDB(defaultWeek);
   });
   const generateMutation = trpc.mealPlanning.generatePlan.useMutation();
+  const { data: existingPlans = [], isLoading: loadingPlans } = trpc.mealPlanning.getAllPlans.useQuery();
   const insets = useSafeAreaInsets();
 
   const handleGenerate = async () => {
     console.log("handleGenerate called");
+    
+    // Check if plan already exists for this week
+    const existingPlan = existingPlans.find(plan => plan.weekStartDate === selectedWeek);
+    
+    if (existingPlan) {
+      // Show confirmation dialog
+      if (Platform.OS === 'web') {
+        const confirmed = confirm(
+          `A meal plan already exists for this week (${existingPlan.mealCount} meals).\n\n` +
+          `Do you want to replace it with a new plan?\n\n` +
+          `⚠️ This will delete the existing plan and all votes.`
+        );
+        if (!confirmed) return;
+      } else {
+        // For mobile, use Alert
+        return new Promise((resolve) => {
+          Alert.alert(
+            "Replace Existing Plan?",
+            `A meal plan already exists for this week (${existingPlan.mealCount} meals).\n\nDo you want to replace it with a new plan?\n\n⚠️ This will delete the existing plan and all votes.`,
+            [
+              { text: "Cancel", style: "cancel", onPress: () => resolve(false) },
+              { 
+                text: "Replace Plan", 
+                style: "destructive", 
+                onPress: () => {
+                  resolve(true);
+                  proceedWithGeneration();
+                }
+              },
+            ]
+          );
+        });
+      }
+    }
+    
+    await proceedWithGeneration();
+  };
+  
+  const proceedWithGeneration = async () => {
     setIsGenerating(true);
     try {
       console.log("Calling generatePlan mutation for week:", selectedWeek);
@@ -79,11 +119,16 @@ export default function GeneratePlanScreen() {
 
             {/* Week Selector */}
             <View className="w-full">
-              <WeekSelector
-                selectedWeek={selectedWeek}
-                onSelectWeek={setSelectedWeek}
-                weeksToShow={4}
-              />
+              {loadingPlans ? (
+                <ActivityIndicator size="small" color="#FF8C42" />
+              ) : (
+                <WeekSelector
+                  selectedWeek={selectedWeek}
+                  onSelectWeek={setSelectedWeek}
+                  weeksToShow={4}
+                  existingPlans={existingPlans}
+                />
+              )}
             </View>
 
             {/* Features */}
