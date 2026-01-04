@@ -458,7 +458,15 @@ export const appRouter = router({
         avoidRepeatsText = `\n\nIMPORTANT: Avoid repeating these recently generated meals: ${recentMealNames.join(", ")}`;
       }
       
-      const prompt = `Generate a 7-day meal plan for a family of ${prefs.familySize}.
+      const prompt = `Generate a 7-day DINNER meal plan for a family of ${prefs.familySize}.
+
+IMPORTANT: Generate ONLY complete main course meals suitable for dinner. DO NOT include:
+- Desserts (cookies, cakes, pastries, sweet treats)
+- Snacks or appetizers
+- Breakfast items
+- Side dishes only
+
+Each meal must be a substantial, complete dinner with protein and vegetables.
 
 Preferences:
 - Cuisines: ${cuisines.join(", ") || "Any"}

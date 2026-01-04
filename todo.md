@@ -584,3 +584,9 @@
 - [x] Add Swiss cuisine to onboarding cuisine selection
 - [x] Swiss cuisine added between French and Korean
 - [x] Test Swiss meal generation
+
+## Fix Meal Type - Exclude Desserts
+- [x] Update AI prompt to specify main courses only
+- [x] Exclude desserts, cookies, snacks, and appetizers
+- [x] Ensure all generated meals are complete dinner meals
+- [x] Added explicit constraints: "Generate ONLY complete main course meals suitable for dinner"
