@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import type { Meal } from "@/drizzle/schema";
 import * as Haptics from "expo-haptics";
 import { getIconsForTags } from "@/src/utils/iconMapping";
+import { parseWeekStartString, getSunday, formatWeekRange } from "@/lib/week-utils";
 
 export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -205,9 +206,15 @@ export default function DashboardScreen() {
             <View className="flex-row items-center justify-between">
               <View>
                 <Text className="text-3xl font-bold text-foreground">
-                  {preferences?.familyName ? `${preferences.familyName}'s Meal Plan` : "This Week's Plan"}
+                  {preferences?.familyName ? `${preferences.familyName}'s Meal Plan` : "Meal Plan"}
                 </Text>
-                <Text className="text-muted">Week of {mealPlan.weekStartDate}</Text>
+                <Text className="text-muted">
+                  {(() => {
+                    const startDate = parseWeekStartString(mealPlan.weekStartDate);
+                    const endDate = getSunday(startDate);
+                    return formatWeekRange(startDate, endDate);
+                  })()}
+                </Text>
               </View>
               <TouchableOpacity
                 onPress={handleGenerateNew}

@@ -2,11 +2,17 @@ import { useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, Platform, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { WeekSelector } from "@/components/week-selector";
 import { trpc } from "@/lib/trpc";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getDefaultPlanningWeek, formatDateForDB } from "@/lib/week-utils";
 
 export default function GeneratePlanScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedWeek, setSelectedWeek] = useState(() => {
+    const defaultWeek = getDefaultPlanningWeek();
+    return formatDateForDB(defaultWeek);
+  });
   const generateMutation = trpc.mealPlanning.generatePlan.useMutation();
   const insets = useSafeAreaInsets();
 
@@ -14,8 +20,8 @@ export default function GeneratePlanScreen() {
     console.log("handleGenerate called");
     setIsGenerating(true);
     try {
-      console.log("Calling generatePlan mutation...");
-      const result = await generateMutation.mutateAsync();
+      console.log("Calling generatePlan mutation for week:", selectedWeek);
+      const result = await generateMutation.mutateAsync({ weekStartDate: selectedWeek });
       console.log("Meal plan generated successfully:", result);
       
       if (Platform.OS === 'web') {
@@ -69,6 +75,15 @@ export default function GeneratePlanScreen() {
               <Text className="text-muted text-center">
                 Our AI will create a personalized 7-day meal plan based on your preferences
               </Text>
+            </View>
+
+            {/* Week Selector */}
+            <View className="w-full">
+              <WeekSelector
+                selectedWeek={selectedWeek}
+                onSelectWeek={setSelectedWeek}
+                weeksToShow={4}
+              />
             </View>
 
             {/* Features */}

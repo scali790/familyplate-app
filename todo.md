@@ -636,3 +636,15 @@
 - [x] Set MAILJET_FROM_EMAIL environment variable explicitly
 - [x] Test email delivery after configuration
 - [x] Verify email arrives in inbox with correct sender (SUCCESS!)
+
+## Meal Planning Date Logic - Support Advance Planning
+- [x] Analyze current date calculation logic
+- [x] Understand real-world meal planning workflow (plan 1 week ahead)
+- [x] Design week selection UI (current week vs next week)
+- [x] Add week picker to meal plan generation
+- [x] Update date display to show planning target week
+- [x] Allow users to generate plans for future weeks
+- [x] Create comprehensive tests for week utilities (26 tests passing)
+- [ ] Show multiple active meal plans (current + future weeks) on dashboard
+- [ ] Update shopping list to support multi-week planning
+- [x] Test workflow: generate plan for next week, vote, approve

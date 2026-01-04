@@ -178,7 +178,7 @@ export default function OnboardingScreen() {
           if (shouldRegenerate) {
             try {
               console.log("Regenerating meal plan with new preferences...");
-              await generatePlanMutation.mutateAsync();
+              await generatePlanMutation.mutateAsync({});
               console.log("Meal plan regenerated successfully!");
               alert("Your meal plan has been updated with your new preferences!");
             } catch (error) {

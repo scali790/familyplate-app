@@ -326,7 +326,9 @@ export const appRouter = router({
       }),
 
     // Generate meal plan using AI
-    generatePlan: protectedProcedure.mutation(async ({ ctx }) => {
+    generatePlan: protectedProcedure
+      .input(z.object({ weekStartDate: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       
@@ -512,12 +514,19 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         throw new Error("Failed to generate 7 meals");
       }
       
-      const now = new Date();
-      const dayOfWeek = now.getDay();
-      const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-      const monday = new Date(now);
-      monday.setDate(now.getDate() + diff);
-      const weekStartDate = monday.toISOString().split("T")[0];
+      // Use provided weekStartDate or calculate default
+      let weekStartDate: string;
+      if (input.weekStartDate) {
+        weekStartDate = input.weekStartDate;
+      } else {
+        // Default: calculate current week's Monday
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + diff);
+        weekStartDate = monday.toISOString().split("T")[0];
+      }
       
       await db.insert(mealPlans).values({
         userId: ctx.user.id,
