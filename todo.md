@@ -363,3 +363,10 @@
 - [x] Update dashboard meal cards with dates
 - [x] Update shared meal plan view with dates
 - [x] Test date calculation and display
+
+## Recipe Modal Styling Improvements
+- [x] Improve mobile modal styling to match web appearance
+- [x] Add dark background to modal on mobile
+- [x] Improve text contrast and readability
+- [x] Match ingredient and instruction styling between platforms
+- [x] Ensure consistent color scheme across web and mobile
