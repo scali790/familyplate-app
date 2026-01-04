@@ -55,6 +55,8 @@ export default function OnboardingScreen() {
   const { colorScheme, setColorScheme } = useThemeContext();
   const saveMutation = trpc.mealPlanning.savePreferences.useMutation();
   const { data: existingPreferences, isLoading: isLoadingPreferences } = trpc.mealPlanning.getPreferences.useQuery();
+  const { data: currentMealPlan } = trpc.mealPlanning.getCurrentPlan.useQuery();
+  const generatePlanMutation = trpc.mealPlanning.generatePlan.useMutation();
 
   // Redirect to welcome if not authenticated (only after auth has loaded)
   useEffect(() => {
@@ -146,6 +148,28 @@ export default function OnboardingScreen() {
       });
 
       console.log("Preferences saved successfully!");
+      
+      // If user has an existing meal plan, ask if they want to regenerate it
+      if (currentMealPlan) {
+        if (Platform.OS === 'web') {
+          const shouldRegenerate = confirm(
+            "Your preferences have been updated! Would you like to regenerate your meal plan to reflect these changes?"
+          );
+          
+          if (shouldRegenerate) {
+            try {
+              console.log("Regenerating meal plan with new preferences...");
+              await generatePlanMutation.mutateAsync();
+              console.log("Meal plan regenerated successfully!");
+              alert("Your meal plan has been updated with your new preferences!");
+            } catch (error) {
+              console.error("Failed to regenerate meal plan:", error);
+              alert("Preferences saved, but failed to regenerate meal plan. You can manually regenerate from the dashboard.");
+            }
+          }
+        }
+      }
+      
       router.replace("/dashboard");
     } catch (error: any) {
       console.error("Failed to save preferences:", error);

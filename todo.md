@@ -498,3 +498,11 @@
 - [ ] Fix generate-plan screen "Generate Plan" button
 - [ ] Fix any other screens with bottom buttons
 - [ ] Test on mobile device to verify buttons are fully visible
+
+## Auto-Regenerate Meal Plan on Preference Update
+- [x] Design logic: detect if user has existing meal plan when saving preferences
+- [x] Add confirmation dialog asking if user wants to regenerate meal plan
+- [x] Implement automatic meal plan regeneration after preference save
+- [x] Show loading indicator during regeneration
+- [x] Navigate to dashboard with updated meal plan
+- [ ] Test preference update → auto-regeneration flow
