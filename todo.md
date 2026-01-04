@@ -425,3 +425,24 @@
 - [ ] Build "Confirm Your Style" onboarding flow (10 dish votes)
 - [ ] Update LLM meal generation prompts to use taste signals and history
 - [ ] Display personalized meal recommendations based on taste profile
+
+## "Confirm Your Style" Taste Onboarding Flow
+- [ ] Design 10 representative dishes covering diverse cuisines, proteins, and spice levels
+- [ ] Generate dish images for voting UI
+- [ ] Create TasteOnboarding screen component (/app/taste-onboarding.tsx)
+- [ ] Build swipeable card interface with dish image, name, description
+- [ ] Add 👍 Like and 👎 Dislike buttons with haptic feedback
+- [ ] Integrate with dishVotes.save API mutation
+- [ ] Show progress indicator (e.g., "3/10 dishes rated")
+- [ ] Auto-advance to next dish after vote
+- [ ] Navigate to main onboarding form after 10 votes
+- [ ] Update welcome screen to route new users through taste onboarding first
+- [ ] Test complete flow: welcome → taste onboarding → preferences → dashboard
+
+## "Confirm Your Style" Taste Onboarding Flow
+- [x] Generate 10 representative dish images (diverse cuisines, proteins, spice levels)
+- [x] Create TasteOnboarding screen component with voting UI
+- [x] Implement card interface with 👍/👎 buttons
+- [x] Integrate with dishVotes.save API
+- [x] Update navigation flow to route new users through taste onboarding first
+- [x] Test taste onboarding flow end-to-end

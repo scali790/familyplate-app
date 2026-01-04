@@ -25,11 +25,11 @@ export default function WelcomeScreen() {
   // Redirect if already logged in
   useEffect(() => {
     if (user && existingPreferences !== undefined) {
-      // If user has preferences, go to home; otherwise go to onboarding
+      // If user has preferences, go to home; otherwise go to taste onboarding first
       if (existingPreferences) {
         router.replace("/(tabs)");
       } else {
-        router.replace("/onboarding");
+        router.replace("/taste-onboarding");
       }
     }
   }, [user, existingPreferences]);
