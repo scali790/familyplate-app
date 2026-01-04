@@ -34,6 +34,7 @@ export const userPreferences = mysqlTable(
   {
     id: int("id").primaryKey().autoincrement(),
     userId: int("user_id").notNull(),
+    familyName: varchar("family_name", { length: 100 }), // Optional family name for personalization
     familySize: int("family_size").notNull().default(2),
     cuisines: text("cuisines"), // JSON string
     flavors: text("flavors"), // JSON string

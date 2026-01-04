@@ -33,6 +33,7 @@ const COUNTRY_OPTIONS = [
 export default function OnboardingScreen() {
   const { user, loading: authLoading } = useAuth();
   const insets = useSafeAreaInsets();
+  const [familyName, setFamilyName] = useState("");
   const [familySize, setFamilySize] = useState("2");
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
@@ -69,6 +70,7 @@ export default function OnboardingScreen() {
   // Load existing preferences when data is fetched
   useEffect(() => {
     if (existingPreferences) {
+      setFamilyName(existingPreferences.familyName || "");
       setFamilySize(existingPreferences.familySize.toString());
       setSelectedCuisines(existingPreferences.cuisines || []);
       setSelectedFlavors(existingPreferences.flavors || []);
@@ -137,8 +139,9 @@ export default function OnboardingScreen() {
 
     setIsSubmitting(true);
     try {
-      console.log("Saving preferences...", { size, selectedCuisines, selectedFlavors, dietaryRestrictions });
+      console.log("Saving preferences...", { familyName, size, selectedCuisines, selectedFlavors, dietaryRestrictions });
       await saveMutation.mutateAsync({
+        familyName: familyName.trim() || undefined,
         familySize: size,
         cuisines: selectedCuisines,
         flavors: selectedFlavors,
@@ -213,6 +216,22 @@ export default function OnboardingScreen() {
             <Text className="text-3xl font-bold text-foreground">Set Your Preferences</Text>
             <Text className="text-muted text-center">
               Tell us about your family's meal preferences
+            </Text>
+          </View>
+
+          {/* Family Name (Optional) */}
+          <View className="gap-2">
+            <Text className="text-lg font-semibold text-foreground">
+              Family Name <Text className="text-muted text-sm">(Optional)</Text>
+            </Text>
+            <TextInput
+              className="bg-surface border border-border rounded-xl px-4 py-3 text-foreground"
+              placeholder="e.g., The Smiths, Johnson Family"
+              value={familyName}
+              onChangeText={setFamilyName}
+            />
+            <Text className="text-xs text-muted italic">
+              💡 This will appear on your meal plans (e.g., "The Smiths' Meal Plan")
             </Text>
           </View>
 

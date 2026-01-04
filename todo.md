@@ -506,3 +506,13 @@
 - [x] Show loading indicator during regeneration
 - [x] Navigate to dashboard with updated meal plan
 - [ ] Test preference update → auto-regeneration flow
+
+## Family Name Feature
+- [x] Check current database schema for user_preferences table
+- [x] Add familyName field to database schema (optional string)
+- [x] Push database schema changes
+- [x] Add family name input field to onboarding screen (optional)
+- [x] Update savePreferences API to accept familyName
+- [x] Display "FAMILYNAME's Meal Plan" on dashboard
+- [x] Display family name on shared meal plan view
+- [ ] Test family name feature end-to-end

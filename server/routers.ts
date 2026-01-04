@@ -259,6 +259,7 @@ export const appRouter = router({
     savePreferences: protectedProcedure
       .input(
         z.object({
+          familyName: z.string().optional(),
           familySize: z.number().min(1).max(20),
           cuisines: z.array(z.string()).max(5),
           flavors: z.array(z.string()),
@@ -284,6 +285,7 @@ export const appRouter = router({
         if (existing[0]) {
           await db.update(userPreferences)
             .set({
+              familyName: input.familyName || null,
               familySize: input.familySize,
               cuisines: JSON.stringify(input.cuisines),
               flavors: JSON.stringify(input.flavors),
@@ -304,6 +306,7 @@ export const appRouter = router({
         } else {
           await db.insert(userPreferences).values({
             userId: ctx.user.id,
+            familyName: input.familyName || null,
             familySize: input.familySize,
             cuisines: JSON.stringify(input.cuisines),
             flavors: JSON.stringify(input.flavors),
@@ -611,6 +614,10 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         const plan = planResult[0];
         if (!plan) return null;
         
+        // Get user preferences to fetch family name
+        const prefsResult = await db.select().from(userPreferences).where(eq(userPreferences.userId, plan.userId)).limit(1);
+        const prefs = prefsResult[0];
+        
         const meals = JSON.parse(plan.meals);
         const votes = await db.select().from(mealVotes).where(eq(mealVotes.mealPlanId, plan.id));
         
@@ -636,6 +643,7 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
           id: plan.id,
           weekStartDate: plan.weekStartDate,
           meals: mealsWithVotes,
+          familyName: prefs?.familyName || null,
         };
       }),
 

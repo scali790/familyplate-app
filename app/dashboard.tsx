@@ -14,6 +14,7 @@ export default function DashboardScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getCurrentPlan.useQuery();
+  const { data: preferences } = trpc.mealPlanning.getPreferences.useQuery();
   const voteMutation = trpc.mealPlanning.vote.useMutation();
   const regenerateMutation = trpc.mealPlanning.regenerateMeal.useMutation();
   const [regeneratingDay, setRegeneratingDay] = useState<string | null>(null);
@@ -187,7 +188,9 @@ export default function DashboardScreen() {
             </View>
             <View className="flex-row items-center justify-between">
               <View>
-                <Text className="text-3xl font-bold text-foreground">This Week's Plan</Text>
+                <Text className="text-3xl font-bold text-foreground">
+                  {preferences?.familyName ? `${preferences.familyName}'s Meal Plan` : "This Week's Plan"}
+                </Text>
                 <Text className="text-muted">Week of {mealPlan.weekStartDate}</Text>
               </View>
               <TouchableOpacity

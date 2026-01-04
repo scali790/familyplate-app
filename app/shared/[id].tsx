@@ -91,7 +91,7 @@ export default function SharedMealPlanScreen() {
           <View className="items-center gap-2 bg-primary/10 p-6 rounded-2xl">
             <Text className="text-4xl">🍽️</Text>
             <Text className="text-2xl font-bold text-foreground text-center">
-              Family Meal Plan
+              {mealPlan.familyName ? `${mealPlan.familyName}'s Meal Plan` : "Family Meal Plan"}
             </Text>
             <Text className="text-muted text-center">
               Week of {mealPlan.weekStartDate}
