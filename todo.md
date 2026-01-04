@@ -579,3 +579,8 @@
 - [x] Check magic_link_tokens table columns (7 columns verified)
 - [x] Review all tRPC query implementations
 - [x] All schema matches confirmed - no issues found
+
+## Add Swiss Cuisine Option
+- [x] Add Swiss cuisine to onboarding cuisine selection
+- [x] Swiss cuisine added between French and Korean
+- [x] Test Swiss meal generation

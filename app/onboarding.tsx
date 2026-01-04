@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CUISINE_OPTIONS = [
   "Italian", "Mexican", "Chinese", "Japanese", "Indian",
-  "Thai", "Mediterranean", "American", "French", "Korean",
+  "Thai", "Mediterranean", "American", "French", "Swiss", "Korean",
   "Middle Eastern", "Lebanese", "Turkish", "Persian",
   "Vietnamese", "Malaysian", "Indonesian",
   "Spanish", "Greek", "Portuguese", "German",
