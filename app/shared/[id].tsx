@@ -200,6 +200,7 @@ function MealCard({
   onPress: () => void;
   weekStartDate: string;
 }) {
+  const voters = (meal as any).voters || [];
   // Calculate the actual date for this meal
   const getDayDate = () => {
     const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -261,6 +262,41 @@ function MealCard({
             <Text className="text-xs text-muted italic">Enter name to vote ↑</Text>
           )}
         </View>
+        
+        {/* Voter Avatars */}
+        {voters.length > 0 && (
+          <View className="flex-row flex-wrap gap-2 mb-3">
+            {voters.map((voter: any, idx: number) => {
+              const initials = voter.name
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+              const isUpvote = voter.vote === '👍';
+              const bgColor = isUpvote ? '#4ADE80' : '#F87171';
+              
+              return (
+                <View
+                  key={idx}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: bgColor,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
+                    {initials}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+        
         <View className="flex-row gap-3">
           <TouchableOpacity
             onPress={() => {

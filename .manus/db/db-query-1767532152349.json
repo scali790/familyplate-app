@@ -1,0 +1,55 @@
+{
+  "query": "SELECT * FROM meal_votes LIMIT 5",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3HwhU55c9ykAFSx.root --database PWe3aXVRBZJqm34KdWoMVL --execute SELECT * FROM meal_votes LIMIT 5",
+  "rows": [
+    {
+      "id": "1",
+      "meal_plan_id": "30004",
+      "user_id": "1",
+      "meal_day": "Monday",
+      "vote_type": "up",
+      "created_at": "2026-01-03 11:13:00",
+      "voter_name": "NULL"
+    },
+    {
+      "id": "2",
+      "meal_plan_id": "30002",
+      "user_id": "8",
+      "meal_day": "Monday",
+      "vote_type": "down",
+      "created_at": "2026-01-03 11:14:40",
+      "voter_name": "NULL"
+    },
+    {
+      "id": "3",
+      "meal_plan_id": "30005",
+      "user_id": "8",
+      "meal_day": "Wednesday",
+      "vote_type": "up",
+      "created_at": "2026-01-03 11:25:21",
+      "voter_name": "NULL"
+    },
+    {
+      "id": "30001",
+      "meal_plan_id": "30005",
+      "user_id": "8",
+      "meal_day": "Monday",
+      "vote_type": "up",
+      "created_at": "2026-01-03 12:00:59",
+      "voter_name": "NULL"
+    },
+    {
+      "id": "30002",
+      "meal_plan_id": "30005",
+      "user_id": "8",
+      "meal_day": "Tuesday",
+      "vote_type": "up",
+      "created_at": "2026-01-03 12:09:40",
+      "voter_name": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmeal_plan_id\tuser_id\tmeal_day\tvote_type\tcreated_at\tvoter_name\n1\t30004\t1\tMonday\tup\t2026-01-03 11:13:00\tNULL\n2\t30002\t8\tMonday\tdown\t2026-01-03 11:14:40\tNULL\n3\t30005\t8\tWednesday\tup\t2026-01-03 11:25:21\tNULL\n30001\t30005\t8\tMonday\tup\t2026-01-03 12:00:59\tNULL\n30002\t30005\t8\tTuesday\tup\t2026-01-03 12:09:40\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1714
+}

@@ -590,3 +590,13 @@
 - [x] Exclude desserts, cookies, snacks, and appetizers
 - [x] Ensure all generated meals are complete dinner meals
 - [x] Added explicit constraints: "Generate ONLY complete main course meals suitable for dinner"
+
+## Voting Engagement Features (Killer Feature Enhancement)
+- [ ] Add voting progress indicator: "3 of 4 family members voted"
+- [ ] Display voter avatars/initials under each meal card
+- [ ] Show weekly voting summary at top of dashboard
+- [ ] Add "X meals still undecided" reminder
+- [ ] Calculate expected voter count from family size
+- [ ] Show which family members haven't voted yet
+- [ ] Add visual progress bar for voting completion
+- [ ] Highlight meals with low participation

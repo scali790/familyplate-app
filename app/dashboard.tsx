@@ -278,6 +278,7 @@ export default function DashboardScreen() {
                 onRegenerate={() => handleRegenerateMeal(index, meal.day)}
                 isRegenerating={regeneratingDay === meal.day}
                 weekStartDate={mealPlan.weekStartDate}
+                familySize={preferences?.familySize}
               />
             ))}
           </View>
@@ -301,7 +302,8 @@ function MealCard({
   onPress, 
   onRegenerate, 
   isRegenerating,
-  weekStartDate 
+  weekStartDate,
+  familySize 
 }: { 
   meal: Meal; 
   onVote: (voteType: "up" | "down") => void; 
@@ -309,8 +311,12 @@ function MealCard({
   onRegenerate: () => void;
   isRegenerating: boolean;
   weekStartDate: string;
+  familySize?: number;
 }) {
   const [showVoters, setShowVoters] = useState(false);
+  const voters = (meal as any).voters || [];
+  const totalVoters = voters.length;
+  const expectedVoters = familySize || 4; // Default to 4 if not provided
   // Calculate the actual date for this meal
   const getDayDate = () => {
     const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -382,6 +388,15 @@ function MealCard({
 
       {/* Voting */}
       <View className="pt-3 border-t border-border gap-2">
+        {/* Voting Progress Indicator */}
+        {totalVoters < expectedVoters && (
+          <View className="bg-warning/10 px-3 py-2 rounded-lg mb-2">
+            <Text className="text-xs text-warning font-semibold">
+              ⚠️ {totalVoters} of {expectedVoters} family members voted
+            </Text>
+          </View>
+        )}
+        
         <View className="flex-row items-center justify-between">
           <Text className="text-muted font-medium">Family Votes</Text>
           <View className="flex-row gap-3">
@@ -402,20 +417,54 @@ function MealCard({
           </View>
         </View>
         
+        {/* Voter Avatars */}
+        {voters.length > 0 && (
+          <View className="flex-row flex-wrap gap-2 mt-2">
+            {voters.map((voter: any, idx: number) => {
+              const initials = voter.name
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+              const isUpvote = voter.vote === '👍';
+              const bgColor = isUpvote ? '#4ADE80' : '#F87171';
+              
+              return (
+                <View
+                  key={idx}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: bgColor,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
+                    {initials}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+        
         {/* Voter Details */}
-        {(meal as any).voters && (meal as any).voters.length > 0 && (
+        {voters.length > 0 && (
           <View>
             <TouchableOpacity
               onPress={() => setShowVoters(!showVoters)}
               className="flex-row items-center gap-1 active:opacity-70"
             >
               <Text className="text-xs text-primary font-semibold">
-                {showVoters ? "▼" : "▶"} View {(meal as any).voters.length} voter{(meal as any).voters.length > 1 ? "s" : ""}
+                {showVoters ? "▼" : "▶"} View {voters.length} voter{voters.length > 1 ? "s" : ""}
               </Text>
             </TouchableOpacity>
             {showVoters && (
               <View className="mt-2 bg-background/50 rounded-lg p-3 gap-1">
-                {(meal as any).voters.map((voter: any, idx: number) => (
+                {voters.map((voter: any, idx: number) => (
                   <Text key={idx} className="text-sm text-foreground">
                     {voter.vote} <Text className="font-semibold">{voter.name}</Text>
                   </Text>
