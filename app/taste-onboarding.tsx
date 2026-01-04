@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, TouchableOpacity, Image, Platform } from "react-native";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScreenContainer } from "@/components/screen-container";
 import { TASTE_DISHES, type TasteDish } from "@/constants/taste-dishes";
@@ -16,6 +17,7 @@ import { useColors } from "@/hooks/use-colors";
  */
 export default function TasteOnboardingScreen() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [votedCount, setVotedCount] = useState(0);
   
@@ -62,7 +64,7 @@ export default function TasteOnboardingScreen() {
 
   return (
     <ScreenContainer>
-      <View style={{ flex: 1, padding: 20, justifyContent: "space-between" }}>
+      <View style={{ flex: 1, padding: 20, paddingBottom: Math.max(insets.bottom, 20) + 20, justifyContent: "space-between" }}>
         {/* Header */}
         <View style={{ gap: 12 }}>
           <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.foreground }}>

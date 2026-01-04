@@ -470,3 +470,31 @@
 - [x] Add European varieties (Spanish, Greek, Portuguese, German)
 - [x] Add African cuisines (Moroccan, Ethiopian)
 - [x] Test cuisine selection in onboarding
+
+## QR Code Not Scannable (Bug)
+- [x] Investigate why QR code in Publishing section is not scannable
+- [x] Generate proper Expo Go QR code for mobile testing
+- [x] Provide alternative access methods (direct link, manual URL entry)
+- [ ] Test QR code with Expo Go app on Samsung S24
+
+## EAS Build & Publishing
+- [ ] Configure EAS Build for production Android build
+- [ ] Set up app signing and credentials
+- [ ] Create production APK/AAB build
+- [ ] Test installation on Samsung S24
+- [ ] Verify publishing QR code works after build
+
+## Local Development Build (Option 1)
+- [ ] Install expo-dev-client package
+- [ ] Configure app for local builds
+- [ ] Install Android build tools
+- [ ] Create development APK
+- [ ] Test APK installation on Samsung S24
+
+## Bottom Button Covered by Android Navigation Bar (Critical Bug)
+- [ ] Audit all screens with bottom buttons (onboarding, generate-plan, settings, shopping-list)
+- [ ] Add proper bottom padding using useSafeAreaInsets().bottom
+- [ ] Fix onboarding screen "Save Preferences" button
+- [ ] Fix generate-plan screen "Generate Plan" button
+- [ ] Fix any other screens with bottom buttons
+- [ ] Test on mobile device to verify buttons are fully visible

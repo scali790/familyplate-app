@@ -3,10 +3,12 @@ import { View, Text, TouchableOpacity, ActivityIndicator, Platform, ScrollView }
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GeneratePlanScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
   const generateMutation = trpc.mealPlanning.generatePlan.useMutation();
+  const insets = useSafeAreaInsets();
 
   const handleGenerate = async () => {
     console.log("handleGenerate called");
@@ -34,7 +36,7 @@ export default function GeneratePlanScreen() {
 
   return (
     <ScreenContainer>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: Math.max(insets.bottom, 20) + 80 }}>
         {/* Back Button */}
         <TouchableOpacity
           onPress={() => router.back()}

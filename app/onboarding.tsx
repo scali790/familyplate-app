@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { useThemeContext } from "@/lib/theme-provider";
 import { FOOD_PREFERENCES, FREQUENCY_LABELS } from "@/src/utils/iconMapping";
 import { useAuth } from "@/hooks/use-auth";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CUISINE_OPTIONS = [
   "Italian", "Mexican", "Chinese", "Japanese", "Indian",
@@ -31,6 +32,7 @@ const COUNTRY_OPTIONS = [
 
 export default function OnboardingScreen() {
   const { user, loading: authLoading } = useAuth();
+  const insets = useSafeAreaInsets();
   const [familySize, setFamilySize] = useState("2");
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
@@ -164,8 +166,11 @@ export default function OnboardingScreen() {
 
   return (
     <ScreenContainer>
-      <ScrollView className="flex-1 p-6">
-        <View className="gap-6 pb-8">
+      <ScrollView 
+        className="flex-1 p-6"
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 80 }}
+      >
+        <View className="gap-6">
           {/* Back Button */}
           <TouchableOpacity
             onPress={() => router.back()}

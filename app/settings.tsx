@@ -1,12 +1,15 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity, Alert, Switch } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useAuth } from "@/hooks/use-auth";
 import { trpc } from "@/lib/trpc";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
   const logoutMutation = trpc.auth.logout.useMutation();
+  const insets = useSafeAreaInsets();
 
   const handleLogout = async () => {
     Alert.alert(
@@ -34,7 +37,10 @@ export default function SettingsScreen() {
 
   return (
     <ScreenContainer>
-      <ScrollView className="flex-1 p-6">
+      <ScrollView 
+        className="flex-1 p-6"
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 40 }}
+      >
         <View className="gap-6">
           {/* Back Button */}
           <TouchableOpacity

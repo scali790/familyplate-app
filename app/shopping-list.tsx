@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface ShoppingItem {
   name: string;
@@ -29,6 +30,7 @@ interface ShoppingList {
 
 export default function ShoppingListScreen() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const mealPlanId = parseInt(params.mealPlanId as string);
   
@@ -125,7 +127,10 @@ export default function ShoppingListScreen() {
 
   return (
     <ScreenContainer>
-      <ScrollView className="flex-1">
+      <ScrollView 
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 40 }}
+      >
         {/* Header */}
         <View className="p-6 pb-4 border-b border-border">
           <TouchableOpacity
