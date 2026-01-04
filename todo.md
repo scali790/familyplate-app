@@ -462,3 +462,11 @@
 - [x] Make /shared/[id] route publicly accessible without authentication
 - [x] Ensure family members can vote without creating an account
 - [x] Test shared link flow end-to-end
+
+## Expand Cuisine Options
+- [x] Add Middle Eastern cuisines (Lebanese, Turkish, Persian)
+- [x] Add more Southeast Asian options (Vietnamese, Malaysian, Indonesian)
+- [x] Add Latin American cuisines (Brazilian, Peruvian, Argentinian)
+- [x] Add European varieties (Spanish, Greek, Portuguese, German)
+- [x] Add African cuisines (Moroccan, Ethiopian)
+- [x] Test cuisine selection in onboarding

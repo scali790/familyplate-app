@@ -10,6 +10,11 @@ import { useAuth } from "@/hooks/use-auth";
 const CUISINE_OPTIONS = [
   "Italian", "Mexican", "Chinese", "Japanese", "Indian",
   "Thai", "Mediterranean", "American", "French", "Korean",
+  "Middle Eastern", "Lebanese", "Turkish", "Persian",
+  "Vietnamese", "Malaysian", "Indonesian",
+  "Spanish", "Greek", "Portuguese", "German",
+  "Brazilian", "Peruvian", "Argentinian",
+  "Moroccan", "Ethiopian",
 ];
 
 const FLAVOR_OPTIONS = [
