@@ -12,7 +12,7 @@ export interface TasteDish {
   spice_level: "low" | "medium" | "high";
   cooking_time: string;
   difficulty: "Easy" | "Medium" | "Hard";
-  imageUrl: string;
+  imageUrl: string; // CDN URL
 }
 
 export const TASTE_DISHES: TasteDish[] = [
@@ -25,7 +25,7 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "high",
     cooking_time: "35 mins",
     difficulty: "Medium",
-    imageUrl: "/taste-dishes/chicken-tikka-masala.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/ZecNEoRLZMYfIKgY.jpg",
   },
   {
     id: "margherita-pizza",
@@ -36,7 +36,7 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "low",
     cooking_time: "20 mins",
     difficulty: "Easy",
-    imageUrl: "/taste-dishes/margherita-pizza.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/JLHimooagJONOdvI.jpg",
   },
   {
     id: "beef-tacos",
@@ -47,7 +47,7 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "medium",
     cooking_time: "25 mins",
     difficulty: "Easy",
-    imageUrl: "/taste-dishes/beef-tacos.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/EbkRVfSdMVjaTHjd.jpg",
   },
   {
     id: "salmon-teriyaki",
@@ -58,7 +58,7 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "low",
     cooking_time: "20 mins",
     difficulty: "Easy",
-    imageUrl: "/taste-dishes/salmon-teriyaki.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/lAReNqNHPwPFqHPJ.jpg",
   },
   {
     id: "vegetable-stir-fry",
@@ -69,7 +69,7 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "medium",
     cooking_time: "15 mins",
     difficulty: "Easy",
-    imageUrl: "/taste-dishes/vegetable-stir-fry.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/hUrJULlaTyItgfKN.jpg",
   },
   {
     id: "lamb-kebabs",
@@ -80,7 +80,7 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "medium",
     cooking_time: "30 mins",
     difficulty: "Medium",
-    imageUrl: "/taste-dishes/lamb-kebabs.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/uJsCOslQJVzXpDIg.jpg",
   },
   {
     id: "pad-thai",
@@ -91,7 +91,7 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "high",
     cooking_time: "25 mins",
     difficulty: "Medium",
-    imageUrl: "/taste-dishes/pad-thai.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/RolKunfOvzGzBSqH.jpg",
   },
   {
     id: "mushroom-risotto",
@@ -102,7 +102,7 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "low",
     cooking_time: "40 mins",
     difficulty: "Hard",
-    imageUrl: "/taste-dishes/mushroom-risotto.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/zzsblAHXunZaTHaM.jpg",
   },
   {
     id: "chicken-fajitas",
@@ -113,7 +113,7 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "medium",
     cooking_time: "20 mins",
     difficulty: "Easy",
-    imageUrl: "/taste-dishes/chicken-fajitas.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/CIdHYpZAjVHWtGlG.jpg",
   },
   {
     id: "lentil-curry",
@@ -124,6 +124,6 @@ export const TASTE_DISHES: TasteDish[] = [
     spice_level: "high",
     cooking_time: "35 mins",
     difficulty: "Easy",
-    imageUrl: "/taste-dishes/lentil-curry.jpg",
+    imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/VJyUehWasBEfMVCK.jpg",
   },
 ];

@@ -76,11 +76,11 @@ export default function VerifyMagicLinkScreen() {
 
         setStatus("success");
 
-        // Redirect to onboarding after successful login
-        // The onboarding screen will check if user has already completed it
+        // Redirect to taste onboarding for new users
+        // Taste onboarding will then redirect to preferences onboarding
         setTimeout(() => {
-          console.log("[VerifyMagicLink] Redirecting to onboarding");
-          router.replace("/onboarding");
+          console.log("[VerifyMagicLink] Redirecting to taste onboarding");
+          router.replace("/taste-onboarding");
         }, 1500);
       } catch (error: any) {
         console.error("[VerifyMagicLink] Verification failed:", error);

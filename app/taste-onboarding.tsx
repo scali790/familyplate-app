@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, Image, Platform } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, Image, Platform, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,8 +20,26 @@ export default function TasteOnboardingScreen() {
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [votedCount, setVotedCount] = useState(0);
+  const [isChecking, setIsChecking] = useState(true);
   
   const saveDishVote = trpc.dishVotes.save.useMutation();
+  const existingVotes = trpc.dishVotes.getAll.useQuery({ context: "onboarding" });
+
+  // Check if user has already completed taste onboarding
+  useEffect(() => {
+    if (existingVotes.data) {
+      console.log("[TasteOnboarding] Existing votes:", existingVotes.data.length);
+      
+      // If user has already voted on dishes during onboarding, skip this screen
+      if (existingVotes.data.length > 0) {
+        console.log("[TasteOnboarding] User already completed taste onboarding, skipping...");
+        router.replace("/onboarding");
+        return;
+      }
+      
+      setIsChecking(false);
+    }
+  }, [existingVotes.data]);
 
   const currentDish = TASTE_DISHES[currentIndex];
   const progress = ((votedCount / TASTE_DISHES.length) * 100).toFixed(0);
@@ -61,6 +79,18 @@ export default function TasteOnboardingScreen() {
       setCurrentIndex(currentIndex + 1);
     }
   };
+
+  // Show loading while checking for existing votes
+  if (isChecking || existingVotes.isLoading) {
+    return (
+      <ScreenContainer>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 16 }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ fontSize: 16, color: colors.muted }}>Loading...</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>

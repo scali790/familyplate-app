@@ -698,3 +698,16 @@
 - [x] Ensure user info is cleared from localStorage
 - [x] Redirect to welcome page after logout
 - [x] Test logout functionality on web
+
+
+## Taste Onboarding Flow Not Showing for New Users
+- [x] Check why taste onboarding is being skipped
+- [x] Update auth/verify.tsx to route new users to /taste-onboarding first
+- [x] Update taste-onboarding.tsx to navigate to /onboarding after completion
+- [x] Test complete flow: magic link → taste onboarding → preferences → dashboard
+
+- [x] Fix taste onboarding dish images not loading
+- [x] Check image URLs in taste-dishes.ts
+- [x] Upload all dish images to CDN
+- [x] Update taste-dishes.ts with CDN URLs
+- [x] Verify images are accessible
