@@ -860,3 +860,11 @@
 - [x] Add "Nutrition insights (Premium)" placeholder in settings
 - [x] Add "Unlimited regenerations (Premium)" text near regenerate button
 - [x] Test premium signaling displays correctly
+
+## Dashboard UI Redesign
+- [x] Redesign dashboard with compact meal cards showing all 7 days on one screen
+- [x] Add voting indicators (👍 😐 👎 counts) visible on each meal card
+- [x] Switch to lighter color scheme (white/light background with proper dark mode support)
+- [x] Improve visual hierarchy (primary actions more prominent)
+- [x] Create compact meal preview (name + emoji + votes, tap for details)
+- [x] Test redesigned dashboard on mobile

@@ -98,6 +98,7 @@ export default function DashboardScreen() {
       const shareUrl = `${window.location.origin}/shared/${mealPlan.id}`;
       console.log('Web share URL:', shareUrl);
       
+      // Try native Web Share API first
       if (navigator.share) {
         await navigator.share({
           title: "Vote on This Week's Meal Plan",
@@ -105,49 +106,36 @@ export default function DashboardScreen() {
           url: shareUrl,
         });
       } else {
+        // Fallback: Copy to clipboard
         await navigator.clipboard.writeText(shareUrl);
-        alert(`Link copied to clipboard!\n\nShare this link with your family:\n${shareUrl}`);
+        alert('Link copied to clipboard!');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Share failed:', error);
-      if (error.message !== 'User did not share') {
-        if (Platform.OS === 'web') {
-          alert('Failed to share. Please try again.');
-        }
+      if (Platform.OS === 'web') {
+        alert('Failed to share');
       }
     }
   };
 
   const handleGenerateNew = () => {
-    router.push("/generate-plan");
+    router.push('/generate-plan');
   };
 
   if (isLoading) {
     return (
-      <ScreenContainer className="justify-center items-center">
-        <ActivityIndicator size="large" color="#FF8C42" />
+      <ScreenContainer>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#FF8C42" />
+        </View>
       </ScreenContainer>
     );
   }
 
   if (!mealPlan) {
     return (
-      <ScreenContainer className="p-6">
-        {/* Back Button */}
-        <TouchableOpacity
-          onPress={() => router.push("/(tabs)")}
-          style={{
-            padding: 8,
-            borderRadius: 8,
-            backgroundColor: 'rgba(0,0,0,0.05)',
-            alignSelf: 'flex-start',
-            marginBottom: 20,
-          }}
-        >
-          <Text style={{ fontSize: 24 }} className="text-foreground">←</Text>
-        </TouchableOpacity>
-        
-        <View className="flex-1 justify-center items-center">
+      <ScreenContainer>
+        <View className="flex-1 items-center justify-center p-6">
           <View className="items-center gap-6 max-w-md">
             <Text className="text-6xl">🍽️</Text>
             <Text className="text-2xl font-bold text-foreground text-center">
@@ -178,102 +166,82 @@ export default function DashboardScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF8C42" />
         }
       >
-        <View className="p-6 gap-6">
-          {/* Header */}
-          <View className="gap-4">
-            <View className="flex-row items-center justify-between mb-2">
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{
-                  padding: 8,
-                  borderRadius: 8,
-                  backgroundColor: 'rgba(0,0,0,0.05)',
-                }}
-              >
-                <Text style={{ fontSize: 24, color: '#11181C' }} className="dark:text-[#ECEDEE]">←</Text>
-              </TouchableOpacity>
+        <View className="p-4 gap-4">
+          {/* Compact Header */}
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-foreground">
+                {preferences?.familyName ? `${preferences.familyName}'s Meals` : "This Week"}
+              </Text>
+              <Text className="text-sm text-muted">
+                {(() => {
+                  const startDate = parseWeekStartString(mealPlan.weekStartDate);
+                  const endDate = getSunday(startDate);
+                  return formatWeekRange(startDate, endDate);
+                })()}
+              </Text>
+            </View>
+            <View className="flex-row gap-2">
               <TouchableOpacity
                 onPress={() => router.push('/settings')}
-                style={{
-                  padding: 8,
-                  borderRadius: 8,
-                  backgroundColor: 'rgba(0,0,0,0.05)',
-                }}
+                className="w-10 h-10 items-center justify-center bg-surface rounded-full border border-border"
               >
-                <Text style={{ fontSize: 24 }}>⚙️</Text>
+                <Text style={{ fontSize: 18 }}>⚙️</Text>
               </TouchableOpacity>
-            </View>
-            <View className="flex-row items-center justify-between">
-              <View>
-                <Text className="text-3xl font-bold text-foreground">
-                  {preferences?.familyName ? `${preferences.familyName}'s Meal Plan` : "Meal Plan"}
-                </Text>
-                <Text className="text-muted">
-                  {(() => {
-                    const startDate = parseWeekStartString(mealPlan.weekStartDate);
-                    const endDate = getSunday(startDate);
-                    return formatWeekRange(startDate, endDate);
-                  })()}
-                </Text>
-              </View>
               <TouchableOpacity
                 onPress={handleGenerateNew}
-                className="bg-success px-4 py-2 rounded-full active:opacity-80"
+                className="bg-success px-4 h-10 items-center justify-center rounded-full active:opacity-80"
               >
-                <Text className="text-white font-semibold">New Plan</Text>
+                <Text className="text-white font-semibold text-sm">New</Text>
               </TouchableOpacity>
             </View>
-            
-            {/* Share Button */}
+          </View>
+          
+          {/* Action Buttons */}
+          <View className="flex-row gap-2">
             <Pressable
-              onPress={() => {
-                console.log('Button pressed!');
-                handleShare();
-              }}
+              onPress={handleShare}
               style={({ pressed }) => ({
-                backgroundColor: pressed ? 'rgba(255, 140, 66, 0.2)' : 'rgba(255, 140, 66, 0.1)',
+                flex: 1,
+                backgroundColor: pressed ? 'rgba(255, 140, 66, 0.15)' : 'rgba(255, 140, 66, 0.1)',
                 borderWidth: 1,
                 borderColor: '#FF8C42',
-                paddingHorizontal: 16,
                 paddingVertical: 12,
                 borderRadius: 12,
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 8,
-                cursor: 'pointer',
+                gap: 6,
               })}
             >
-              <Text style={{ fontSize: 24 }}>👨‍👩‍👧‍👦</Text>
-              <Text style={{ color: '#FF8C42', fontWeight: '600' }}>Share with Family to Vote</Text>
+              <Text style={{ fontSize: 18 }}>👨‍👩‍👧‍👦</Text>
+              <Text style={{ color: '#FF8C42', fontWeight: '600', fontSize: 14 }}>Share</Text>
             </Pressable>
 
-            {/* Shopping List Button */}
             <Pressable
               onPress={() => router.push(`/shopping-list?mealPlanId=${mealPlan.id}`)}
               style={({ pressed }) => ({
-                backgroundColor: pressed ? 'rgba(74, 222, 128, 0.2)' : 'rgba(74, 222, 128, 0.1)',
+                flex: 1,
+                backgroundColor: pressed ? 'rgba(74, 222, 128, 0.15)' : 'rgba(74, 222, 128, 0.1)',
                 borderWidth: 1,
                 borderColor: '#4ADE80',
-                paddingHorizontal: 16,
                 paddingVertical: 12,
                 borderRadius: 12,
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 8,
-                cursor: 'pointer',
+                gap: 6,
               })}
             >
-              <Text style={{ fontSize: 24 }}>🛒</Text>
-              <Text style={{ color: '#4ADE80', fontWeight: '600' }}>Generate Shopping List</Text>
+              <Text style={{ fontSize: 18 }}>🛒</Text>
+              <Text style={{ color: '#4ADE80', fontWeight: '600', fontSize: 14 }}>Shop</Text>
             </Pressable>
           </View>
 
-          {/* Meal Cards */}
-          <View className="gap-4">
+          {/* Compact Meal Cards */}
+          <View className="gap-2">
             {mealPlan.meals.map((meal, index) => (
-              <MealCard
+              <CompactMealCard
                 key={meal.day}
                 meal={meal}
                 onVote={(voteType) => handleVote(meal.day, voteType)}
@@ -285,7 +253,6 @@ export default function DashboardScreen() {
                 onRegenerate={() => handleRegenerateMeal(index, meal.day)}
                 isRegenerating={regeneratingDay === meal.day}
                 weekStartDate={mealPlan.weekStartDate}
-                familySize={preferences?.familySize}
               />
             ))}
           </View>
@@ -303,14 +270,13 @@ export default function DashboardScreen() {
   );
 }
 
-function MealCard({ 
+function CompactMealCard({ 
   meal, 
   onVote, 
   onPress, 
   onRegenerate, 
   isRegenerating,
   weekStartDate,
-  familySize 
 }: { 
   meal: Meal; 
   onVote: (voteType: "up" | "down" | "neutral") => void; 
@@ -318,12 +284,7 @@ function MealCard({
   onRegenerate: () => void;
   isRegenerating: boolean;
   weekStartDate: string;
-  familySize?: number;
 }) {
-  const [showVoters, setShowVoters] = useState(false);
-  const voters = (meal as any).voters || [];
-  const totalVoters = voters.length;
-  const expectedVoters = familySize || 4; // Default to 4 if not provided
   // Calculate the actual date for this meal
   const getDayDate = () => {
     const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -337,165 +298,82 @@ function MealCard({
     const day = mealDate.getDate();
     return `${month} ${day}`;
   };
+
   return (
-    <View className="bg-surface rounded-2xl p-5 border border-border">
-      {/* Day & Name with Regenerate Button */}
-      <View className="mb-3 flex-row items-start justify-between">
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      className="bg-surface rounded-xl p-3 border border-border"
+    >
+      <View className="flex-row items-center justify-between gap-3">
+        {/* Left: Day + Meal Info */}
         <View className="flex-1">
-          <View className="flex-row items-center gap-2">
-            <Text className="text-sm font-semibold text-primary uppercase">{meal.day}</Text>
-            <Text className="text-sm text-muted">• {getDayDate()}</Text>
+          <View className="flex-row items-center gap-2 mb-1">
+            <Text className="text-xs font-bold text-primary uppercase">{meal.day.slice(0, 3)}</Text>
+            <Text className="text-xs text-muted">{getDayDate()}</Text>
           </View>
-          <View className="flex-row items-center gap-1.5 mt-1">
+          <View className="flex-row items-center gap-1.5">
             {meal.tags && meal.tags.length > 0 && (
-              <Text className="text-base">{getIconsForTags(meal.tags).join(" ")}</Text>
+              <Text className="text-sm">{getIconsForTags(meal.tags).join(" ")}</Text>
             )}
-            <Text className="text-lg font-bold text-foreground flex-1">{meal.name}</Text>
+            <Text className="text-base font-semibold text-foreground flex-1" numberOfLines={1}>
+              {meal.name}
+            </Text>
           </View>
         </View>
-        <View className="items-end gap-1">
+
+        {/* Right: Votes + Regenerate */}
+        <View className="flex-row items-center gap-2">
+          {/* Vote Counts */}
+          <View className="flex-row items-center gap-1.5">
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onVote("up");
+              }}
+              className="flex-row items-center gap-0.5 bg-success/10 px-2 py-1 rounded-full"
+            >
+              <Text className="text-sm">👍</Text>
+              <Text className="text-success font-semibold text-xs">{meal.upvotes}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onVote("neutral");
+              }}
+              className="flex-row items-center gap-0.5 bg-muted/10 px-2 py-1 rounded-full"
+            >
+              <Text className="text-sm">😐</Text>
+              <Text className="text-muted font-semibold text-xs">{meal.neutralVotes || 0}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onVote("down");
+              }}
+              className="flex-row items-center gap-0.5 bg-error/10 px-2 py-1 rounded-full"
+            >
+              <Text className="text-sm">👎</Text>
+              <Text className="text-error font-semibold text-xs">{meal.downvotes}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Regenerate Button */}
           <TouchableOpacity
-            onPress={onRegenerate}
+            onPress={(e) => {
+              e.stopPropagation();
+              onRegenerate();
+            }}
             disabled={isRegenerating}
-            className="bg-primary/10 px-3 py-2 rounded-full active:opacity-70"
+            className="w-8 h-8 items-center justify-center bg-primary/10 rounded-full"
             style={{ opacity: isRegenerating ? 0.5 : 1 }}
           >
-            <Text className="text-sm font-semibold text-primary">
+            <Text className="text-sm">
               {isRegenerating ? "⌛" : "🔄"}
             </Text>
           </TouchableOpacity>
-          <Text className="text-xs text-muted italic">2/week free</Text>
         </View>
       </View>
-
-      {/* Description - Tappable area for recipe details */}
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-        <Text className="text-muted mb-3">{meal.description}</Text>
-      </TouchableOpacity>
-
-      {/* Meta Info - Tappable area for recipe details */}
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-        <View className="flex-row gap-4 mb-4">
-          <View className="flex-row items-center gap-1">
-            <Text className="text-muted">⏱️ {meal.prepTime}</Text>
-          </View>
-          <View className="flex-row items-center gap-1">
-            <Text className="text-muted">
-              {meal.difficulty === "Easy" && "🟢"}
-              {meal.difficulty === "Medium" && "🟡"}
-              {meal.difficulty === "Hard" && "🔴"}
-              {" "}{meal.difficulty}
-            </Text>
-          </View>
-        </View>
-        {/* View Recipe hint */}
-        <View className="mb-3 px-3 py-2 bg-primary/10 rounded-lg">
-          <Text className="text-primary text-center text-sm font-semibold">
-            👆 Tap here to view full recipe
-          </Text>
-        </View>
-      </TouchableOpacity>
-
-      {/* Voting */}
-      <View className="pt-3 border-t border-border gap-2">
-        {/* Voting Progress Indicator */}
-        {totalVoters < expectedVoters && (
-          <View className="bg-warning/10 px-3 py-2 rounded-lg mb-2">
-            <Text className="text-xs text-warning font-semibold">
-              ⚠️ {totalVoters} of {expectedVoters} family members voted
-            </Text>
-          </View>
-        )}
-        
-        <View className="flex-row items-center justify-between">
-          <Text className="text-muted font-medium">Family Votes</Text>
-          <View className="flex-row gap-3">
-            <TouchableOpacity
-              onPress={() => onVote("up")}
-              className="flex-row items-center gap-1 bg-success/10 px-3 py-2 rounded-full active:opacity-70"
-            >
-              <Text className="text-lg">👍</Text>
-              <Text className="text-success font-semibold">{meal.upvotes}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => onVote("neutral")}
-              className="flex-row items-center gap-1 bg-muted/10 px-3 py-2 rounded-full active:opacity-70"
-            >
-              <Text className="text-lg">😐</Text>
-              <Text className="text-muted font-semibold">{meal.neutralVotes || 0}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => onVote("down")}
-              className="flex-row items-center gap-1 bg-error/10 px-3 py-2 rounded-full active:opacity-70"
-            >
-              <Text className="text-lg">👎</Text>
-              <Text className="text-error font-semibold">{meal.downvotes}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        
-        {/* Learning Feedback */}
-        <Text className="text-xs text-muted italic text-center mt-1">
-          ✨ Your votes help us improve future plans
-        </Text>
-        
-        {/* Voter Avatars */}
-        {voters.length > 0 && (
-          <View className="flex-row flex-wrap gap-2 mt-2">
-            {voters.map((voter: any, idx: number) => {
-              const initials = voter.name
-                .split(' ')
-                .map((n: string) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2);
-              const isUpvote = voter.vote === '👍';
-              const bgColor = isUpvote ? '#4ADE80' : '#F87171';
-              
-              return (
-                <View
-                  key={idx}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    backgroundColor: bgColor,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
-                    {initials}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        )}
-        
-        {/* Voter Details */}
-        {voters.length > 0 && (
-          <View>
-            <TouchableOpacity
-              onPress={() => setShowVoters(!showVoters)}
-              className="flex-row items-center gap-1 active:opacity-70"
-            >
-              <Text className="text-xs text-primary font-semibold">
-                {showVoters ? "▼" : "▶"} View {voters.length} voter{voters.length > 1 ? "s" : ""}
-              </Text>
-            </TouchableOpacity>
-            {showVoters && (
-              <View className="mt-2 bg-background/50 rounded-lg p-3 gap-1">
-                {voters.map((voter: any, idx: number) => (
-                  <Text key={idx} className="text-sm text-foreground">
-                    {voter.vote} <Text className="font-semibold">{voter.name}</Text>
-                  </Text>
-                ))}
-              </View>
-            )}
-          </View>
-        )}
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 }
