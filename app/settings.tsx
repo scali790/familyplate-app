@@ -105,6 +105,25 @@ export default function SettingsScreen() {
             />
           </View>
           
+          {/* Feedback Section */}
+          <View className="mt-6">
+            <SettingItem
+              icon="💬"
+              title="Give Feedback"
+              description="Help us improve FamilyPlate (BETA)"
+              onPress={() => {
+                if (Platform.OS === 'web') {
+                  window.open('mailto:info@btwmarketing.com?subject=FamilyPlate%20Feedback', '_blank');
+                } else {
+                  // On mobile, use Linking API
+                  import('expo-linking').then(({ default: Linking }) => {
+                    Linking.openURL('mailto:info@btwmarketing.com?subject=FamilyPlate%20Feedback');
+                  });
+                }
+              }}
+            />
+          </View>
+          
           {/* Premium Features Section */}
           <View className="mt-6">
             <View className="flex-row items-center gap-2 mb-3">
