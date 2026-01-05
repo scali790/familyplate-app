@@ -892,3 +892,9 @@
 - [x] Move shadow outside ScrollView to prevent it from scrolling with content
 - [x] Shadow should remain fixed at bottom of modal while content scrolls
 - [x] Test shadow stays visible and doesn't move with scroll
+
+## Fix Authentication Error
+- [x] Debug 'Something went wrong' error on landing page signup
+- [x] Check server logs for auth endpoint errors
+- [x] Verify magic link email sending functionality
+- [x] Test complete signup flow end-to-end
