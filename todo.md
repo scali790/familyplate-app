@@ -887,3 +887,8 @@
 - [x] Apply to dashboard meal cards
 - [x] Apply to shared voting page meal cards
 - [x] Test microcopy appears correctly on both pages
+
+## Fix Scroll Hint Shadow
+- [x] Move shadow outside ScrollView to prevent it from scrolling with content
+- [x] Shadow should remain fixed at bottom of modal while content scrolls
+- [x] Test shadow stays visible and doesn't move with scroll

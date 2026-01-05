@@ -192,21 +192,27 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
                   <Text style={{ fontStyle: 'italic', color: mutedColor, fontSize: 14 }}>No instructions available</Text>
                 )}
               </View>
-              {/* Scroll hint shadow - subtle fade at bottom */}
-              {meal.instructions && meal.instructions.length > 3 && (
-                <View style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 30,
-                  backgroundColor: isDark ? 'rgba(26, 26, 26, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-                  opacity: 0.8,
-                  pointerEvents: 'none'
-                }} />
-              )}
             </View>
           </ScrollView>
+
+          {/* Scroll hint shadow - fixed at bottom of content area */}
+          {meal.instructions && meal.instructions.length > 3 && (
+            <View style={{
+              position: 'absolute',
+              bottom: 73,
+              left: 0,
+              right: 0,
+              height: 50,
+              pointerEvents: 'none'
+            }}>
+              {/* Gradient effect using multiple layers */}
+              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0)' : 'rgba(255, 255, 255, 0)' }} />
+              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0.3)' : 'rgba(255, 255, 255, 0.3)' }} />
+              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0.6)' : 'rgba(255, 255, 255, 0.6)' }} />
+              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0.85)' : 'rgba(255, 255, 255, 0.85)' }} />
+              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0.95)' : 'rgba(255, 255, 255, 0.95)' }} />
+            </View>
+          )}
 
           {/* Close Button - Compact */}
           <View style={{ 
