@@ -768,3 +768,10 @@
 - [ ] Manual test routing for new users (requires fresh email)
 - [ ] Manual test routing for existing users with meal plan
 - [ ] Manual test routing for existing users without meal plan
+
+
+## Simplify Welcome Page Layout
+- [x] Reduce number of feature points from 6 to 3 (most important)
+- [x] Kept: 7-day meal plans, Family voting, Personalized preferences
+- [x] Removed: Personalized recommendations, Cuisine matching, Takes 10 seconds
+- [x] Login buttons now appear higher on page with less scrolling needed

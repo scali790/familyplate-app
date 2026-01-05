@@ -138,7 +138,7 @@ export default function WelcomeScreen() {
         </View>
 
         {/* Features */}
-        <View className="gap-4 w-full">
+        <View className="gap-3 w-full">
           <FeatureItem
             emoji="📅"
             text="7-day meal plans tailored to your family"
@@ -150,18 +150,6 @@ export default function WelcomeScreen() {
           <FeatureItem
             emoji="🎯"
             text="Personalized to your family's preferences"
-          />
-          <FeatureItem
-            emoji="✨"
-            text="Personalized recommendations"
-          />
-          <FeatureItem
-            emoji="🍽️"
-            text="Matches your cuisine preferences"
-          />
-          <FeatureItem
-            emoji="⚡"
-            text="Takes about 10 seconds"
           />
         </View>
 
