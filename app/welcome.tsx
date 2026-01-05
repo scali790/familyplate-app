@@ -149,7 +149,7 @@ export default function WelcomeScreen() {
           />
           <FeatureItem
             emoji="🎯"
-            text="Personalized to your preferences"
+            text="Personalized to your family's preferences"
           />
         </View>
 

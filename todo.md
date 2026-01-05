@@ -719,3 +719,10 @@
 - [x] Audit all screens for similar button visibility issues
 - [x] Updated padding on settings.tsx and shopping-list.tsx from +40 to +80
 - [ ] Test on mobile device to verify fix
+
+
+## Clarify Family vs Individual Preferences
+- [x] Update taste onboarding text to mention "family's taste"
+- [x] Update welcome screen feature text to say "family's preferences"
+- [x] Verified preferences screen already says "family's meal preferences"
+- [x] Ensure all user-facing text clarifies main user represents the family

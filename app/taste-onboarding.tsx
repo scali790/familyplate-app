@@ -106,10 +106,10 @@ export default function TasteOnboardingScreen() {
         {/* Header */}
         <View style={{ gap: 12 }}>
           <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.foreground }}>
-            Confirm Your Style
+            Confirm Your Family's Style
           </Text>
           <Text style={{ fontSize: 16, color: colors.muted, lineHeight: 24 }}>
-            Help us understand your taste preferences by voting on these dishes
+            Help us understand your family's taste preferences by voting on these dishes. Vote based on what your family generally enjoys!
           </Text>
           
           {/* Progress Bar */}
