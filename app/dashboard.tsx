@@ -324,39 +324,53 @@ function CompactMealCard({
 
         {/* Right: Votes + Regenerate */}
         <View className="flex-row items-center gap-2">
-          {/* Vote Counts */}
-          <View className="flex-row items-center gap-1.5">
-            <TouchableOpacity
-              onPress={(e) => {
-                e.stopPropagation();
-                onVote("up");
-              }}
-              className="flex-row items-center gap-0.5 bg-success/10 px-2 py-1 rounded-full"
-            >
-              <Text className="text-sm">👍</Text>
-              <Text className="text-success font-semibold text-xs">{meal.upvotes}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={(e) => {
-                e.stopPropagation();
-                onVote("neutral");
-              }}
-              className="flex-row items-center gap-0.5 bg-muted/10 px-2 py-1 rounded-full"
-            >
-              <Text className="text-sm">😐</Text>
-              <Text className="text-muted font-semibold text-xs">{meal.neutralVotes || 0}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={(e) => {
-                e.stopPropagation();
-                onVote("down");
-              }}
-              className="flex-row items-center gap-0.5 bg-error/10 px-2 py-1 rounded-full"
-            >
-              <Text className="text-sm">👎</Text>
-              <Text className="text-error font-semibold text-xs">{meal.downvotes}</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Vote Counts or Waiting Message */}
+          {(() => {
+            const totalVotes = (meal.upvotes || 0) + (meal.neutralVotes || 0) + (meal.downvotes || 0);
+            
+            if (totalVotes === 0) {
+              return (
+                <Text className="text-muted text-xs italic">
+                  Waiting for family votes
+                </Text>
+              );
+            }
+            
+            return (
+              <View className="flex-row items-center gap-1.5">
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    onVote("up");
+                  }}
+                  className="flex-row items-center gap-0.5 bg-success/10 px-2 py-1 rounded-full"
+                >
+                  <Text className="text-sm">👍</Text>
+                  <Text className="text-success font-semibold text-xs">{meal.upvotes}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    onVote("neutral");
+                  }}
+                  className="flex-row items-center gap-0.5 bg-muted/10 px-2 py-1 rounded-full"
+                >
+                  <Text className="text-sm">😐</Text>
+                  <Text className="text-muted font-semibold text-xs">{meal.neutralVotes || 0}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    onVote("down");
+                  }}
+                  className="flex-row items-center gap-0.5 bg-error/10 px-2 py-1 rounded-full"
+                >
+                  <Text className="text-sm">👎</Text>
+                  <Text className="text-error font-semibold text-xs">{meal.downvotes}</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })()}
 
           {/* Regenerate Button */}
           <TouchableOpacity

@@ -879,3 +879,11 @@
 - [x] Increase line spacing between instruction steps for easier scanning
 - [x] Add scroll hint shadow at bottom of instructions section
 - [x] Test instruction readability improvements on mobile
+
+## Voting Microcopy Enhancement
+- [x] Add 'Waiting for family votes' text when vote counts are zero
+- [x] Use muted color styling (secondary text color)
+- [x] Position where vote counts will appear (prevent layout jump)
+- [x] Apply to dashboard meal cards
+- [x] Apply to shared voting page meal cards
+- [x] Test microcopy appears correctly on both pages
