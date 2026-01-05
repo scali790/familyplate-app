@@ -873,3 +873,9 @@
 - [x] Increase X button size for better visibility
 - [x] Improve X button contrast (darker/bolder)
 - [x] Test X button is easily noticeable on mobile
+
+## Recipe Instructions Readability Improvements
+- [x] Bold action verbs at start of each instruction step (Sauté, Add, Stir, etc.)
+- [x] Increase line spacing between instruction steps for easier scanning
+- [x] Add scroll hint shadow at bottom of instructions section
+- [x] Test instruction readability improvements on mobile
