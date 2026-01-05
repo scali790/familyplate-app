@@ -756,3 +756,15 @@
 - [x] Implement loading states on taste-onboarding screen
 - [x] Implement loading states on dashboard screen
 - [x] Note: generate-plan uses inline button spinner (better UX than full-screen loader)
+
+
+## Improve Post-Login Routing Logic
+- [x] Update auth/verify.tsx to implement smart routing after login
+- [x] New users: Login → Taste Onboarding → Preferences → Generate Plan
+- [x] Existing users with meal plan: Login → Dashboard (Week Overview)
+- [x] Existing users without meal plan: Login → Generate Plan screen
+- [x] Check if user has preferences saved to determine if new or existing
+- [x] Check if user has any meal plans to determine dashboard vs generate route
+- [ ] Manual test routing for new users (requires fresh email)
+- [ ] Manual test routing for existing users with meal plan
+- [ ] Manual test routing for existing users without meal plan

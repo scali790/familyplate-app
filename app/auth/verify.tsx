@@ -77,11 +77,64 @@ export default function VerifyMagicLinkScreen() {
 
         setStatus("success");
 
-        // Redirect to taste onboarding for new users
-        // Taste onboarding will then redirect to preferences onboarding
-        setTimeout(() => {
-          console.log("[VerifyMagicLink] Redirecting to taste onboarding");
-          router.replace("/taste-onboarding");
+        // Smart routing based on user state
+        setTimeout(async () => {
+          try {
+            // Check if user has preferences (determines if new or existing user)
+            const preferencesResult = await queryClient.fetchQuery({
+              queryKey: ['userPreferences.get'],
+              queryFn: async () => {
+                const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/trpc/userPreferences.get`, {
+                  headers: {
+                    'Authorization': `Bearer ${result.sessionToken}`,
+                  },
+                });
+                if (!response.ok) throw new Error('Failed to fetch preferences');
+                const data = await response.json();
+                return data.result.data;
+              },
+            });
+
+            const hasPreferences = preferencesResult && preferencesResult.familySize;
+
+            if (!hasPreferences) {
+              // New user: Go through onboarding flow
+              console.log("[VerifyMagicLink] New user detected, redirecting to taste onboarding");
+              router.replace("/taste-onboarding");
+              return;
+            }
+
+            // Existing user: Check if they have a meal plan
+            const mealPlansResult = await queryClient.fetchQuery({
+              queryKey: ['mealPlanning.getAllPlans'],
+              queryFn: async () => {
+                const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/trpc/mealPlanning.getAllPlans`, {
+                  headers: {
+                    'Authorization': `Bearer ${result.sessionToken}`,
+                  },
+                });
+                if (!response.ok) throw new Error('Failed to fetch meal plans');
+                const data = await response.json();
+                return data.result.data;
+              },
+            });
+
+            const hasMealPlan = mealPlansResult && mealPlansResult.length > 0;
+
+            if (hasMealPlan) {
+              // Existing user with meal plan: Go to dashboard
+              console.log("[VerifyMagicLink] Existing user with meal plan, redirecting to dashboard");
+              router.replace("/");
+            } else {
+              // Existing user without meal plan: Go to generate plan
+              console.log("[VerifyMagicLink] Existing user without meal plan, redirecting to generate plan");
+              router.replace("/generate-plan");
+            }
+          } catch (error) {
+            console.error("[VerifyMagicLink] Error during smart routing:", error);
+            // Fallback to taste onboarding if routing logic fails
+            router.replace("/taste-onboarding");
+          }
         }, 1500);
       } catch (error: any) {
         console.error("[VerifyMagicLink] Verification failed:", error);
