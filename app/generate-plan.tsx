@@ -131,14 +131,6 @@ export default function GeneratePlanScreen() {
               )}
             </View>
 
-            {/* Features */}
-            <View className="gap-3 w-full">
-              <FeatureItem text="✨ Personalized recommendations" />
-              <FeatureItem text="🎯 Tailored to your family size" />
-              <FeatureItem text="🍽️ Matches your cuisine preferences" />
-              <FeatureItem text="⚡ Takes about 10 seconds" />
-            </View>
-
             {/* Generate Button */}
             <TouchableOpacity
               onPress={handleGenerate}
@@ -170,13 +162,5 @@ export default function GeneratePlanScreen() {
         </View>
       </ScrollView>
     </ScreenContainer>
-  );
-}
-
-function FeatureItem({ text }: { text: string }) {
-  return (
-    <View className="flex-row items-center gap-3 bg-surface p-4 rounded-xl">
-      <Text className="text-foreground">{text}</Text>
-    </View>
   );
 }

@@ -726,3 +726,15 @@
 - [x] Update welcome screen feature text to say "family's preferences"
 - [x] Verified preferences screen already says "family's meal preferences"
 - [x] Ensure all user-facing text clarifies main user represents the family
+
+
+## Spice Level Indicator Confusion
+- [x] Check spice level data in taste-dishes.ts
+- [x] Verified spice indicator already shows clear range: 🌶️ (low), 🌶️🌶️ (medium), 🌶️🌶️🌶️ (high)
+- [x] Decision: Keep as is - users will learn the pattern naturally
+
+
+## Move Feature Points to Welcome Page
+- [x] Add 4 feature points to welcome page (first page)
+- [x] Remove feature points from generate-plan screen
+- [x] Removed unused FeatureItem component from generate-plan.tsx

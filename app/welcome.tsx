@@ -151,6 +151,18 @@ export default function WelcomeScreen() {
             emoji="🎯"
             text="Personalized to your family's preferences"
           />
+          <FeatureItem
+            emoji="✨"
+            text="Personalized recommendations"
+          />
+          <FeatureItem
+            emoji="🍽️"
+            text="Matches your cuisine preferences"
+          />
+          <FeatureItem
+            emoji="⚡"
+            text="Takes about 10 seconds"
+          />
         </View>
 
         {/* Login Mode Tabs */}
