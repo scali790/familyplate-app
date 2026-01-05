@@ -1,6 +1,7 @@
 import { ScrollView, Text, View, TouchableOpacity, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { LoadingScreen } from "@/components/loading-screen";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
 
@@ -14,11 +15,7 @@ export default function HomeScreen() {
   }, [user, loading]);
 
   if (loading) {
-    return (
-      <ScreenContainer className="justify-center items-center">
-        <ActivityIndicator size="large" color="#FF8C42" />
-      </ScreenContainer>
-    );
+    return <LoadingScreen message="Loading your dashboard..." />;
   }
 
   if (!user) {

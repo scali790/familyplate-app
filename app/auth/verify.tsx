@@ -2,6 +2,7 @@ import { Text, View, ActivityIndicator, Platform } from "react-native";
 import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { LoadingScreen } from "@/components/loading-screen";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useQueryClient } from "@tanstack/react-query";
@@ -92,20 +93,13 @@ export default function VerifyMagicLinkScreen() {
     verifyToken();
   }, [token]);
 
+  if (status === "verifying") {
+    return <LoadingScreen message="Verifying your magic link..." />;
+  }
+
   return (
     <ScreenContainer className="justify-center items-center p-6">
       <View className="items-center gap-6 w-full max-w-md">
-        {status === "verifying" && (
-          <>
-            <ActivityIndicator size="large" color="#0a7ea4" />
-            <Text className="text-2xl font-bold text-foreground text-center">
-              Verifying Magic Link
-            </Text>
-            <Text className="text-muted text-center">
-              Please wait while we log you in...
-            </Text>
-          </>
-        )}
 
         {status === "success" && (
           <>

@@ -5,6 +5,7 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScreenContainer } from "@/components/screen-container";
+import { LoadingScreen } from "@/components/loading-screen";
 import { TASTE_DISHES, type TasteDish } from "@/constants/taste-dishes";
 import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
@@ -82,14 +83,7 @@ export default function TasteOnboardingScreen() {
 
   // Show loading while checking for existing votes
   if (isChecking || existingVotes.isLoading) {
-    return (
-      <ScreenContainer>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 16 }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ fontSize: 16, color: colors.muted }}>Loading...</Text>
-        </View>
-      </ScreenContainer>
-    );
+    return <LoadingScreen message="Loading your taste preferences..." />;
   }
 
   return (

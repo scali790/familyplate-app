@@ -738,3 +738,21 @@
 - [x] Add 4 feature points to welcome page (first page)
 - [x] Remove feature points from generate-plan screen
 - [x] Removed unused FeatureItem component from generate-plan.tsx
+
+
+## Implement Loading Animations
+- [ ] Choose loading animation approach (Lottie vs react-native-reanimated)
+- [ ] Create reusable LoadingScreen component
+- [ ] Identify all screens with loading states
+- [ ] Replace ActivityIndicator with custom loading animation
+- [ ] Test on both mobile and web
+
+
+## Implement Loading Animations
+- [x] Research best loading animation approach (Lottie vs react-native-reanimated vs CSS)
+- [x] Installed lottie-react package
+- [x] Create reusable LoadingScreen component with animated food emoji (🍽️)
+- [x] Implement loading states on auth/verify screen
+- [x] Implement loading states on taste-onboarding screen
+- [x] Implement loading states on dashboard screen
+- [x] Note: generate-plan uses inline button spinner (better UX than full-screen loader)
