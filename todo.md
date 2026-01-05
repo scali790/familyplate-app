@@ -775,3 +775,10 @@
 - [x] Kept: 7-day meal plans, Family voting, Personalized preferences
 - [x] Removed: Personalized recommendations, Cuisine matching, Takes 10 seconds
 - [x] Login buttons now appear higher on page with less scrolling needed
+
+
+## Add Social Proof to Welcome Page
+- [x] Add social proof badge below tagline
+- [x] Used subtle pill-shaped badge with sparkle emoji
+- [x] Trust-building copy: "Join families planning better meals"
+- [x] Designed to be non-intrusive and build credibility

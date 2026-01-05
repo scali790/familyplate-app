@@ -135,6 +135,14 @@ export default function WelcomeScreen() {
           <Text className="text-lg text-muted text-center">
             Family Meal Planning Made Simple
           </Text>
+          
+          {/* Social Proof */}
+          <View className="flex-row items-center gap-2 mt-2 px-4 py-2 bg-surface rounded-full">
+            <Text className="text-2xl">✨</Text>
+            <Text className="text-sm text-muted font-medium">
+              Join families planning better meals
+            </Text>
+          </View>
         </View>
 
         {/* Features */}
