@@ -868,3 +868,8 @@
 - [x] Improve visual hierarchy (primary actions more prominent)
 - [x] Create compact meal preview (name + emoji + votes, tap for details)
 - [x] Test redesigned dashboard on mobile
+
+## Recipe Modal UX Improvements
+- [x] Increase X button size for better visibility
+- [x] Improve X button contrast (darker/bolder)
+- [x] Test X button is easily noticeable on mobile

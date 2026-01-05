@@ -78,11 +78,17 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
               onPress={onClose}
               style={({ pressed }) => ({
                 opacity: pressed ? 0.6 : 1,
-                padding: 4,
-                marginTop: -4
+                padding: 8,
+                marginTop: -4,
+                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                borderRadius: 20,
+                width: 36,
+                height: 36,
+                justifyContent: 'center',
+                alignItems: 'center'
               })}
             >
-              <Text style={{ fontSize: 28, color: mutedColor }}>×</Text>
+              <Text style={{ fontSize: 32, fontWeight: '600', color: textColor, lineHeight: 32 }}>×</Text>
             </Pressable>
           </View>
 
