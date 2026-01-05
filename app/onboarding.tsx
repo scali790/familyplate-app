@@ -22,6 +22,25 @@ const FLAVOR_OPTIONS = [
   "Sweet", "Savory", "Spicy", "Mild", "Tangy", "Umami",
 ];
 
+const DIETARY_RESTRICTION_OPTIONS = [
+  // Religious restrictions
+  { value: "halal", label: "Halal", icon: "☪️", category: "religious" },
+  { value: "kosher", label: "Kosher", icon: "✡️", category: "religious" },
+  { value: "no-pork", label: "No Pork", icon: "🚫🐷", category: "religious" },
+  { value: "no-beef", label: "No Beef", icon: "🚫🐮", category: "religious" },
+  // Dietary types
+  { value: "vegetarian", label: "Vegetarian", icon: "🥗", category: "dietary" },
+  { value: "vegan", label: "Vegan", icon: "🌱", category: "dietary" },
+  { value: "pescatarian", label: "Pescatarian", icon: "🐟", category: "dietary" },
+  // Allergens
+  { value: "gluten-free", label: "Gluten-Free", icon: "🌾", category: "allergen" },
+  { value: "dairy-free", label: "Dairy-Free", icon: "🥛", category: "allergen" },
+  { value: "nut-free", label: "Nut-Free", icon: "🥜", category: "allergen" },
+  { value: "shellfish-free", label: "Shellfish-Free", icon: "🦐", category: "allergen" },
+  { value: "egg-free", label: "Egg-Free", icon: "🥚", category: "allergen" },
+  { value: "soy-free", label: "Soy-Free", icon: "🫘", category: "allergen" },
+];
+
 const COUNTRY_OPTIONS = [
   { code: "UAE", name: "United Arab Emirates" },
   { code: "USA", name: "United States" },
@@ -37,6 +56,7 @@ export default function OnboardingScreen() {
   const [familySize, setFamilySize] = useState("2");
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
+  const [selectedDietaryRestrictions, setSelectedDietaryRestrictions] = useState<string[]>([]);
   const [dietaryRestrictions, setDietaryRestrictions] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("UAE");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,6 +98,17 @@ export default function OnboardingScreen() {
       setFamilySize(existingPreferences.familySize.toString());
       setSelectedCuisines(existingPreferences.cuisines || []);
       setSelectedFlavors(existingPreferences.flavors || []);
+      // Parse dietary restrictions from string (temporary until DB schema is updated)
+      if (existingPreferences.dietaryRestrictions) {
+        try {
+          const parsed = JSON.parse(existingPreferences.dietaryRestrictions);
+          if (Array.isArray(parsed)) {
+            setSelectedDietaryRestrictions(parsed);
+          }
+        } catch {
+          setSelectedDietaryRestrictions([]);
+        }
+      }
       setDietaryRestrictions(existingPreferences.dietaryRestrictions || "");
       setSelectedCountry(existingPreferences.country || "UAE");
       
@@ -120,6 +151,14 @@ export default function OnboardingScreen() {
     }
   };
 
+  const toggleDietaryRestriction = (restriction: string) => {
+    if (selectedDietaryRestrictions.includes(restriction)) {
+      setSelectedDietaryRestrictions(selectedDietaryRestrictions.filter(r => r !== restriction));
+    } else {
+      setSelectedDietaryRestrictions([...selectedDietaryRestrictions, restriction]);
+    }
+  };
+
   const handleSave = async () => {
     console.log("handleSave called");
     const size = parseInt(familySize);
@@ -146,13 +185,13 @@ export default function OnboardingScreen() {
 
     setIsSubmitting(true);
     try {
-      console.log("Saving preferences...", { familyName, size, selectedCuisines, selectedFlavors, dietaryRestrictions });
+      console.log("Saving preferences...", { familyName, size, selectedCuisines, selectedFlavors, selectedDietaryRestrictions, dietaryRestrictions });
       await saveMutation.mutateAsync({
         familyName: familyName.trim() || undefined,
         familySize: size,
         cuisines: selectedCuisines,
         flavors: selectedFlavors,
-        dietaryRestrictions: dietaryRestrictions.trim() || undefined,
+        dietaryRestrictions: JSON.stringify(selectedDietaryRestrictions),
         country: selectedCountry,
         ...foodPreferences,
       });
@@ -317,6 +356,94 @@ export default function OnboardingScreen() {
                     }`}
                   >
                     {flavor}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Dietary & Religious Restrictions */}
+          <View className="gap-2">
+            <Text className="text-lg font-semibold text-foreground">
+              Dietary & Religious Restrictions
+            </Text>
+            <Text className="text-sm text-muted mb-2">
+              Select any dietary or religious restrictions to ensure all meals respect your family's needs
+            </Text>
+            
+            {/* Religious Restrictions */}
+            <Text className="text-sm font-medium text-foreground mt-2 mb-1">🕌 Religious</Text>
+            <View className="flex-row flex-wrap gap-2 mb-3">
+              {DIETARY_RESTRICTION_OPTIONS.filter(r => r.category === 'religious').map(restriction => (
+                <TouchableOpacity
+                  key={restriction.value}
+                  onPress={() => toggleDietaryRestriction(restriction.value)}
+                  className={`px-4 py-2 rounded-full ${
+                    selectedDietaryRestrictions.includes(restriction.value)
+                      ? "bg-primary"
+                      : "bg-surface border border-border"
+                  }`}
+                >
+                  <Text
+                    className={`font-medium ${
+                      selectedDietaryRestrictions.includes(restriction.value)
+                        ? "text-white"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {restriction.icon} {restriction.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            {/* Dietary Types */}
+            <Text className="text-sm font-medium text-foreground mb-1">🥗 Dietary Types</Text>
+            <View className="flex-row flex-wrap gap-2 mb-3">
+              {DIETARY_RESTRICTION_OPTIONS.filter(r => r.category === 'dietary').map(restriction => (
+                <TouchableOpacity
+                  key={restriction.value}
+                  onPress={() => toggleDietaryRestriction(restriction.value)}
+                  className={`px-4 py-2 rounded-full ${
+                    selectedDietaryRestrictions.includes(restriction.value)
+                      ? "bg-success"
+                      : "bg-surface border border-border"
+                  }`}
+                >
+                  <Text
+                    className={`font-medium ${
+                      selectedDietaryRestrictions.includes(restriction.value)
+                        ? "text-white"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {restriction.icon} {restriction.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            {/* Allergens */}
+            <Text className="text-sm font-medium text-foreground mb-1">⚠️ Allergens</Text>
+            <View className="flex-row flex-wrap gap-2">
+              {DIETARY_RESTRICTION_OPTIONS.filter(r => r.category === 'allergen').map(restriction => (
+                <TouchableOpacity
+                  key={restriction.value}
+                  onPress={() => toggleDietaryRestriction(restriction.value)}
+                  className={`px-4 py-2 rounded-full ${
+                    selectedDietaryRestrictions.includes(restriction.value)
+                      ? "bg-error"
+                      : "bg-surface border border-border"
+                  }`}
+                >
+                  <Text
+                    className={`font-medium ${
+                      selectedDietaryRestrictions.includes(restriction.value)
+                        ? "text-white"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {restriction.icon} {restriction.label}
                   </Text>
                 </TouchableOpacity>
               ))}

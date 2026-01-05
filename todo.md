@@ -800,3 +800,32 @@
 - [x] Update all logo files (icon, splash, favicon, android-icon-foreground) with transparent version
 - [x] Upload transparent logo to CDN and update logoUrl in app.config.ts
 - [x] Logo now works seamlessly in both light and dark modes
+
+
+## Add Religious and Dietary Restrictions
+- [ ] Update preferences screen to include comprehensive dietary restrictions
+- [ ] Add religious restrictions: Halal, Kosher, No Pork, No Beef
+- [ ] Add dietary types: Vegetarian, Vegan, Pescatarian
+- [ ] Add allergen restrictions: Gluten-Free, Dairy-Free, Nut-Free, Shellfish-Free, Egg-Free, Soy-Free
+- [ ] Update database schema to store new restriction fields
+- [ ] Update API to handle new restrictions
+- [ ] Update meal generation prompt to strictly respect all restrictions
+- [ ] Test that generated meals never violate selected restrictions
+
+## Dietary & Religious Restrictions Feature
+- [x] Add dietary restrictions UI section to onboarding screen
+- [x] Create multi-select options for religious restrictions (Halal, Kosher, No Pork, No Beef)
+- [x] Create multi-select options for dietary types (Vegetarian, Vegan, Pescatarian)
+- [x] Create multi-select options for allergens (Gluten-Free, Dairy-Free, Nut-Free, Shellfish-Free, Egg-Free, Soy-Free)
+- [x] Update state management for dietary restrictions selection
+- [x] Save dietary restrictions as JSON array to database
+- [x] Load dietary restrictions from database on preferences screen
+- [x] Update AI meal generation prompt with strict enforcement rules
+- [x] Add detailed restriction rules for each dietary type (halal, kosher, vegetarian, vegan, etc.)
+- [x] Add verification message to ensure AI complies with all restrictions
+- [x] Write comprehensive tests for dietary restrictions feature (21 tests, all passing)
+- [x] Test restriction options configuration
+- [x] Test AI prompt generation with restrictions
+- [x] Test restriction data handling and serialization
+- [x] Test restriction combinations
+- [x] Test toggle functionality
