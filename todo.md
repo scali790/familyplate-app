@@ -829,3 +829,34 @@
 - [x] Test restriction data handling and serialization
 - [x] Test restriction combinations
 - [x] Test toggle functionality
+
+## Product Feedback Improvements (High-Impact Quick Wins)
+
+### 1. Taste Onboarding Optimization
+- [x] Reduce mandatory taste onboarding from 10 dishes to 6 dishes
+- [x] Update taste-dishes.ts to mark first 6 as mandatory, last 4 as optional
+- [x] Update taste-onboarding.tsx to show progress (e.g., "3 of 6")
+- [x] Add "Skip remaining" button after 6 mandatory votes
+- [x] Test reduced onboarding flow
+
+### 2. AI Learning Loop Visibility
+- [x] Add microcopy after voting: "This helps us improve future plans"
+- [x] Add microcopy after meal regeneration: "We'll avoid similar meals next time"
+- [x] Add microcopy after taste onboarding completion: "We've learned your family's preferences!"
+- [x] Test feedback messages on all relevant screens
+
+### 3. Neutral Vote Option
+- [x] Add 😐 neutral vote button to meal cards (alongside 👍/👎)
+- [x] Update database schema to support neutral votes (or map to 0 value)
+- [x] Update voting mutation to handle neutral votes
+- [x] Update vote display to show neutral vote count
+- [ ] Add neutral votes to shared voting page
+- [x] Test neutral voting functionality
+
+### 4. Monetization Signaling
+- [x] Add "Premium" badge to settings screen for future features
+- [x] Add subtle premium indicators without blocking current functionality
+- [x] Add "Advanced substitutions (Premium)" placeholder in settings
+- [x] Add "Nutrition insights (Premium)" placeholder in settings
+- [x] Add "Unlimited regenerations (Premium)" text near regenerate button
+- [x] Test premium signaling displays correctly

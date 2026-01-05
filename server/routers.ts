@@ -630,7 +630,7 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         z.object({
           mealPlanId: z.number(),
           mealDay: z.string(),
-          voteType: z.enum(["up", "down"]),
+          voteType: z.enum(["up", "down", "neutral"]),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -724,7 +724,7 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         z.object({
           mealPlanId: z.number(),
           mealDay: z.string(),
-          voteType: z.enum(["up", "down"]),
+          voteType: z.enum(["up", "down", "neutral"]),
           voterName: z.string(),
         }),
       )

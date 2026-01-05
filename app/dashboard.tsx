@@ -26,7 +26,7 @@ export default function DashboardScreen() {
     setRefreshing(false);
   };
 
-  const handleVote = async (mealDay: string, voteType: "up" | "down") => {
+  const handleVote = async (mealDay: string, voteType: "up" | "down" | "neutral") => {
     if (!mealPlan) return;
 
     try {
@@ -313,7 +313,7 @@ function MealCard({
   familySize 
 }: { 
   meal: Meal; 
-  onVote: (voteType: "up" | "down") => void; 
+  onVote: (voteType: "up" | "down" | "neutral") => void; 
   onPress: () => void;
   onRegenerate: () => void;
   isRegenerating: boolean;
@@ -353,16 +353,19 @@ function MealCard({
             <Text className="text-lg font-bold text-foreground flex-1">{meal.name}</Text>
           </View>
         </View>
-        <TouchableOpacity
-          onPress={onRegenerate}
-          disabled={isRegenerating}
-          className="ml-2 bg-primary/10 px-3 py-2 rounded-full active:opacity-70"
-          style={{ opacity: isRegenerating ? 0.5 : 1 }}
-        >
-          <Text className="text-sm font-semibold text-primary">
-            {isRegenerating ? "⏳" : "🔄"}
-          </Text>
-        </TouchableOpacity>
+        <View className="items-end gap-1">
+          <TouchableOpacity
+            onPress={onRegenerate}
+            disabled={isRegenerating}
+            className="bg-primary/10 px-3 py-2 rounded-full active:opacity-70"
+            style={{ opacity: isRegenerating ? 0.5 : 1 }}
+          >
+            <Text className="text-sm font-semibold text-primary">
+              {isRegenerating ? "⌛" : "🔄"}
+            </Text>
+          </TouchableOpacity>
+          <Text className="text-xs text-muted italic">2/week free</Text>
+        </View>
       </View>
 
       {/* Description - Tappable area for recipe details */}
@@ -415,6 +418,13 @@ function MealCard({
               <Text className="text-success font-semibold">{meal.upvotes}</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              onPress={() => onVote("neutral")}
+              className="flex-row items-center gap-1 bg-muted/10 px-3 py-2 rounded-full active:opacity-70"
+            >
+              <Text className="text-lg">😐</Text>
+              <Text className="text-muted font-semibold">{meal.neutralVotes || 0}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={() => onVote("down")}
               className="flex-row items-center gap-1 bg-error/10 px-3 py-2 rounded-full active:opacity-70"
             >
@@ -423,6 +433,11 @@ function MealCard({
             </TouchableOpacity>
           </View>
         </View>
+        
+        {/* Learning Feedback */}
+        <Text className="text-xs text-muted italic text-center mt-1">
+          ✨ Your votes help us improve future plans
+        </Text>
         
         {/* Voter Avatars */}
         {voters.length > 0 && (

@@ -151,4 +151,5 @@ export interface Meal {
   tags: string[]; // e.g., ["chicken", "spicy", "healthy"]
   upvotes: number;
   downvotes: number;
+  neutralVotes?: number; // Optional neutral vote count
 }

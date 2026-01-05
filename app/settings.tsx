@@ -104,6 +104,38 @@ export default function SettingsScreen() {
               onPress={() => router.push("/(tabs)")}
             />
           </View>
+          
+          {/* Premium Features Section */}
+          <View className="mt-6">
+            <View className="flex-row items-center gap-2 mb-3">
+              <Text className="text-xl font-bold text-foreground">Premium Features</Text>
+              <View className="bg-warning px-2 py-1 rounded-full">
+                <Text className="text-xs font-bold text-white">COMING SOON</Text>
+              </View>
+            </View>
+            <View className="gap-3">
+              <PremiumFeatureItem
+                icon="🔄"
+                title="Unlimited Regenerations"
+                description="Regenerate meals as many times as you want"
+              />
+              <PremiumFeatureItem
+                icon="🔀"
+                title="Advanced Substitutions"
+                description="Smart ingredient swaps based on what you have"
+              />
+              <PremiumFeatureItem
+                icon="📊"
+                title="Nutrition Insights"
+                description="Detailed nutritional information for every meal"
+              />
+              <PremiumFeatureItem
+                icon="📅"
+                title="Multi-Week Planning"
+                description="Plan meals for multiple weeks in advance"
+              />
+            </View>
+          </View>
 
           {/* App Info */}
           <View className="mt-8 pt-6 border-t border-border">
@@ -155,5 +187,33 @@ function SettingItem({
         <Text className="text-2xl text-muted">›</Text>
       </View>
     </TouchableOpacity>
+  );
+}
+
+function PremiumFeatureItem({
+  icon,
+  title,
+  description,
+}: {
+  icon: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <View className="bg-surface p-5 rounded-2xl border border-border opacity-60">
+      <View className="flex-row items-center gap-4">
+        <Text className="text-3xl">{icon}</Text>
+        <View className="flex-1">
+          <View className="flex-row items-center gap-2">
+            <Text className="text-lg font-semibold text-foreground">{title}</Text>
+            <View className="bg-primary px-2 py-0.5 rounded">
+              <Text className="text-xs font-bold text-white">PREMIUM</Text>
+            </View>
+          </View>
+          <Text className="text-sm text-muted mt-1">{description}</Text>
+        </View>
+        <Text className="text-2xl text-muted">🔒</Text>
+      </View>
+    </View>
   );
 }
