@@ -792,3 +792,11 @@
 - [x] Update splash-icon.png, favicon.png, android-icon-foreground.png
 - [x] Upload logo to CDN and update logoUrl in app.config.ts
 - [x] Logo represents family unity through three food items on shared plate
+
+
+## Fix Logo Background for Dark Mode
+- [x] Generate new logo with transparent background
+- [x] Used image variation tool to remove white background while keeping all elements
+- [x] Update all logo files (icon, splash, favicon, android-icon-foreground) with transparent version
+- [x] Upload transparent logo to CDN and update logoUrl in app.config.ts
+- [x] Logo now works seamlessly in both light and dark modes
