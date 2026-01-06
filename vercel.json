@@ -2,17 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/_core/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["server/**/*", "drizzle/**/*"]
-      }
+      "src": "api/index.ts",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "server/_core/index.ts"
+      "src": "/(.*)",
+      "dest": "/api/index.ts"
     }
   ],
   "env": {

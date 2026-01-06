@@ -2,6 +2,7 @@
   "name": "app-template",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "main": "expo-router/entry",
   "scripts": {
     "dev": "concurrently -k \"pnpm dev:server\" \"pnpm dev:metro\"",
@@ -57,6 +58,7 @@
     "mysql2": "^3.16.0",
     "nativewind": "^4.2.1",
     "node-mailjet": "^6.0.11",
+    "postgres": "^3.4.8",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",

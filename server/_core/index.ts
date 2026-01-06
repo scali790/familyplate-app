@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -26,9 +25,9 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-async function startServer() {
+// Create Express app (exported for Vercel)
+export function createExpressApp() {
   const app = express();
-  const server = createServer(app);
 
   // Enable CORS for all routes - reflect the request origin to support credentials
   app.use((req, res, next) => {
@@ -68,6 +67,14 @@ async function startServer() {
     }),
   );
 
+  return app;
+}
+
+// Start server (only for local development)
+async function startServer() {
+  const app = createExpressApp();
+  const server = createServer(app);
+
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
 
@@ -80,4 +87,7 @@ async function startServer() {
   });
 }
 
-startServer().catch(console.error);
+// Only start server if running directly (not in Vercel)
+if (process.env.VERCEL !== "1") {
+  startServer().catch(console.error);
+}
