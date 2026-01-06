@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { getDb } from "../db";
-import { userPreferences, dishVotes, mealPlans } from "../../drizzle/schema";
+import { getDb } from "../db.js";
+import { userPreferences, dishVotes, mealPlans } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 
 describe("Personalized Meal Generation", () => {

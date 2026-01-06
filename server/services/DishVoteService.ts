@@ -5,8 +5,8 @@
  * Used for personalizing meal recommendations over time.
  */
 
-import { getDb } from "../db";
-import { dishVotes, userPreferences } from "../../drizzle/schema";
+import { getDb } from "../db.js";
+import { dishVotes, userPreferences } from "../../drizzle/schema.js";
 import { eq, desc, and, sql } from "drizzle-orm";
 
 // ============================================================

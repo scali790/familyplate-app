@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { dishVoteService } from "./DishVoteService";
+import { dishVoteService } from "./DishVoteService.js";
 
 describe("DishVoteService", () => {
   const testUserId = 1;

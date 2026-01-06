@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js"; // Changed from mysql2
 import postgres from "postgres"; // Import postgres client
-import { InsertUser, users } from "../drizzle/schema-postgres"; // Use Postgres schema
-import { ENV } from "./_core/env";
+import { InsertUser, users } from "../drizzle/schema-postgres.js"; // Use Postgres schema
+import { ENV } from "./_core/env.js";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _client: ReturnType<typeof postgres> | null = null;

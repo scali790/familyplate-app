@@ -787,3 +787,17 @@
 - [x] Update package.json to use ES modules
 - [x] Create proper Vercel API route structure
 - [ ] Test deployment on Vercel
+
+## Fix ES Module Import Paths
+- [x] Add .js extensions to all import statements in server files
+- [ ] Test deployment on Vercel
+
+## Bundle Backend with esbuild for Vercel
+- [ ] Create esbuild configuration for serverless function
+- [ ] Bundle all server code into single file
+- [ ] Test bundled deployment
+
+## Create Vercel-Native Serverless Backend
+- [x] Simplify to tRPC standalone adapter (no Express)
+- [x] Use CommonJS instead of ES modules
+- [ ] Test deployment on Vercel

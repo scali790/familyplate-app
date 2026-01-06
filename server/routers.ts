@@ -1,15 +1,15 @@
 import { COOKIE_NAME } from "../shared/const.js";
-import { getSessionCookieOptions } from "./_core/cookies";
-import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
-import { invokeLLM } from "./_core/llm";
-import { getDb } from "./db";
-import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, dishVotes, type Meal } from "../drizzle/schema";
+import { getSessionCookieOptions } from "./_core/cookies.js";
+import { systemRouter } from "./_core/systemRouter.js";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc.js";
+import { invokeLLM } from "./_core/llm.js";
+import { getDb } from "./db.js";
+import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, dishVotes, type Meal } from "../drizzle/schema.js";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
-import { sendMagicLinkEmail } from "./_core/mailjet";
-import { sdk } from "./_core/sdk";
+import { sendMagicLinkEmail } from "./_core/mailjet.js";
+import { sdk } from "./_core/sdk.js";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly

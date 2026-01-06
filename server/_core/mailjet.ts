@@ -1,5 +1,5 @@
 import Mailjet from "node-mailjet";
-import { ENV } from "./env";
+import { ENV } from "./env.js";
 
 /**
  * Mailjet email service for sending transactional emails
