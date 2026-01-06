@@ -13,7 +13,6 @@ export interface TasteDish {
   cooking_time: string;
   difficulty: "Easy" | "Medium" | "Hard";
   imageUrl: string; // CDN URL
-  mandatory: boolean; // First 6 are mandatory for onboarding
 }
 
 export const TASTE_DISHES: TasteDish[] = [
@@ -27,7 +26,6 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "35 mins",
     difficulty: "Medium",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/ZecNEoRLZMYfIKgY.jpg",
-    mandatory: true,
   },
   {
     id: "margherita-pizza",
@@ -39,7 +37,6 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "20 mins",
     difficulty: "Easy",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/JLHimooagJONOdvI.jpg",
-    mandatory: true,
   },
   {
     id: "beef-tacos",
@@ -51,7 +48,6 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "25 mins",
     difficulty: "Easy",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/EbkRVfSdMVjaTHjd.jpg",
-    mandatory: true,
   },
   {
     id: "salmon-teriyaki",
@@ -63,7 +59,6 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "20 mins",
     difficulty: "Easy",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/lAReNqNHPwPFqHPJ.jpg",
-    mandatory: true,
   },
   {
     id: "vegetable-stir-fry",
@@ -75,7 +70,6 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "15 mins",
     difficulty: "Easy",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/hUrJULlaTyItgfKN.jpg",
-    mandatory: true,
   },
   {
     id: "lamb-kebabs",
@@ -87,7 +81,6 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "30 mins",
     difficulty: "Medium",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/uJsCOslQJVzXpDIg.jpg",
-    mandatory: true,
   },
   {
     id: "pad-thai",
@@ -99,7 +92,6 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "25 mins",
     difficulty: "Medium",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/RolKunfOvzGzBSqH.jpg",
-    mandatory: false,
   },
   {
     id: "mushroom-risotto",
@@ -111,7 +103,6 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "40 mins",
     difficulty: "Hard",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/zzsblAHXunZaTHaM.jpg",
-    mandatory: false,
   },
   {
     id: "chicken-fajitas",
@@ -123,7 +114,6 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "20 mins",
     difficulty: "Easy",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/CIdHYpZAjVHWtGlG.jpg",
-    mandatory: false,
   },
   {
     id: "lentil-curry",
@@ -135,6 +125,5 @@ export const TASTE_DISHES: TasteDish[] = [
     cooking_time: "35 mins",
     difficulty: "Easy",
     imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031854737/VJyUehWasBEfMVCK.jpg",
-    mandatory: false,
   },
 ];

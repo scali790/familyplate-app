@@ -341,7 +341,6 @@ export const appRouter = router({
       
       const cuisines = prefs.cuisines ? JSON.parse(prefs.cuisines) : [];
       const flavors = prefs.flavors ? JSON.parse(prefs.flavors) : [];
-      const dietaryRestrictions = prefs.dietaryRestrictions ? JSON.parse(prefs.dietaryRestrictions) : [];
       
       // Build food frequency preferences (0=Never, 1=Rarely, 2=Sometimes, 3=Often, 4=Always)
       const frequencyMap: Record<number, string> = {
@@ -474,27 +473,7 @@ Each meal must be a substantial, complete dinner with protein and vegetables.
 Preferences:
 - Cuisines: ${cuisines.join(", ") || "Any"}
 - Flavors: ${flavors.join(", ") || "Balanced"}
-- Dietary restrictions: ${dietaryRestrictions.length > 0 ? dietaryRestrictions.join(", ") : "None"}${frequencyText}${tasteSignalsText}${avoidRepeatsText}
-
-${dietaryRestrictions.length > 0 ? `CRITICAL DIETARY RESTRICTIONS - MUST BE STRICTLY ENFORCED:
-${dietaryRestrictions.map((restriction: string) => {
-  const rules: Record<string, string> = {
-    'halal': '- HALAL: NO pork, NO alcohol in cooking, only halal-certified meats (beef, lamb, chicken must be halal)',
-    'kosher': '- KOSHER: NO pork, NO shellfish, NO mixing meat and dairy in same meal, only kosher-certified ingredients',
-    'no_pork': '- NO PORK: Absolutely NO pork, bacon, ham, sausage, or any pork products',
-    'no_beef': '- NO BEEF: Absolutely NO beef, steak, ground beef, or any beef products',
-    'vegetarian': '- VEGETARIAN: NO meat, NO poultry, NO fish, NO seafood. Eggs and dairy are allowed',
-    'vegan': '- VEGAN: NO animal products at all (no meat, poultry, fish, eggs, dairy, honey)',
-    'pescatarian': '- PESCATARIAN: NO meat, NO poultry. Fish and seafood are allowed',
-    'gluten_free': '- GLUTEN-FREE: NO wheat, barley, rye, or any gluten-containing ingredients',
-    'dairy_free': '- DAIRY-FREE: NO milk, cheese, butter, cream, yogurt, or any dairy products',
-    'nut_free': '- NUT-FREE: NO peanuts, tree nuts (almonds, walnuts, cashews, etc.), or nut-based products'
-  };
-  return rules[restriction] || `- ${restriction.toUpperCase().replace(/_/g, ' ')}`;
-}).join('\n')}
-
-You MUST verify every ingredient in every meal complies with ALL restrictions above. If a meal violates any restriction, replace it with a compliant alternative.
-` : ''}
+- Dietary restrictions: ${prefs.dietaryRestrictions || "None"}${frequencyText}${tasteSignalsText}${avoidRepeatsText}
 
 Return a JSON object with a "meals" array containing exactly 7 meal objects with these fields:
 - day: string (Monday through Sunday)
@@ -630,7 +609,7 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         z.object({
           mealPlanId: z.number(),
           mealDay: z.string(),
-          voteType: z.enum(["up", "down", "neutral"]),
+          voteType: z.enum(["up", "down"]),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -724,7 +703,7 @@ IMPORTANT: For tags, analyze each recipe and add 2-4 relevant tags. For example:
         z.object({
           mealPlanId: z.number(),
           mealDay: z.string(),
-          voteType: z.enum(["up", "down", "neutral"]),
+          voteType: z.enum(["up", "down"]),
           voterName: z.string(),
         }),
       )

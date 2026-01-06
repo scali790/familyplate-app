@@ -78,17 +78,11 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
               onPress={onClose}
               style={({ pressed }) => ({
                 opacity: pressed ? 0.6 : 1,
-                padding: 8,
-                marginTop: -4,
-                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                borderRadius: 20,
-                width: 36,
-                height: 36,
-                justifyContent: 'center',
-                alignItems: 'center'
+                padding: 4,
+                marginTop: -4
               })}
             >
-              <Text style={{ fontSize: 32, fontWeight: '600', color: textColor, lineHeight: 32 }}>×</Text>
+              <Text style={{ fontSize: 28, color: mutedColor }}>×</Text>
             </Pressable>
           </View>
 
@@ -155,64 +149,35 @@ export function RecipeModal({ visible, meal, onClose }: RecipeModalProps) {
             </View>
 
             {/* Instructions */}
-            <View style={{ marginBottom: 16, position: 'relative' }}>
+            <View style={{ marginBottom: 16 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                 <Text style={{ fontSize: 18 }}>👨‍🍳</Text>
                 <Text style={{ fontSize: 17, fontWeight: 'bold', color: textColor }}>Instructions</Text>
               </View>
-              <View style={{ gap: 18, position: 'relative' }}>
+              <View style={{ gap: 14 }}>
                 {meal.instructions && meal.instructions.length > 0 ? (
-                  meal.instructions.map((instruction, index) => {
-                    // Extract first word (action verb) for bolding
-                    const words = instruction.split(' ');
-                    const firstWord = words[0];
-                    const restOfText = words.slice(1).join(' ');
-                    
-                    return (
-                      <View key={index} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                        <View style={{ 
-                          width: 28, 
-                          height: 28, 
-                          borderRadius: 14, 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          marginRight: 10,
-                          backgroundColor: colors.primary 
-                        }}>
-                          <Text style={{ fontWeight: 'bold', color: '#ffffff', fontSize: 14 }}>{index + 1}</Text>
-                        </View>
-                        <Text style={{ flex: 1, paddingTop: 4, color: textColor, fontSize: 14, lineHeight: 22 }}>
-                          <Text style={{ fontWeight: '700' }}>{firstWord}</Text>
-                          {restOfText ? ' ' + restOfText : ''}
-                        </Text>
+                  meal.instructions.map((instruction, index) => (
+                    <View key={index} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                      <View style={{ 
+                        width: 28, 
+                        height: 28, 
+                        borderRadius: 14, 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        marginRight: 10,
+                        backgroundColor: colors.primary 
+                      }}>
+                        <Text style={{ fontWeight: 'bold', color: '#ffffff', fontSize: 14 }}>{index + 1}</Text>
                       </View>
-                    );
-                  })
+                      <Text style={{ flex: 1, paddingTop: 4, color: textColor, fontSize: 14, lineHeight: 20 }}>{instruction}</Text>
+                    </View>
+                  ))
                 ) : (
                   <Text style={{ fontStyle: 'italic', color: mutedColor, fontSize: 14 }}>No instructions available</Text>
                 )}
               </View>
             </View>
           </ScrollView>
-
-          {/* Scroll hint shadow - fixed at bottom of content area */}
-          {meal.instructions && meal.instructions.length > 3 && (
-            <View style={{
-              position: 'absolute',
-              bottom: 73,
-              left: 0,
-              right: 0,
-              height: 50,
-              pointerEvents: 'none'
-            }}>
-              {/* Gradient effect using multiple layers */}
-              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0)' : 'rgba(255, 255, 255, 0)' }} />
-              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0.3)' : 'rgba(255, 255, 255, 0.3)' }} />
-              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0.6)' : 'rgba(255, 255, 255, 0.6)' }} />
-              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0.85)' : 'rgba(255, 255, 255, 0.85)' }} />
-              <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(26, 26, 26, 0.95)' : 'rgba(255, 255, 255, 0.95)' }} />
-            </View>
-          )}
 
           {/* Close Button - Compact */}
           <View style={{ 

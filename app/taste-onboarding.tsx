@@ -43,9 +43,6 @@ export default function TasteOnboardingScreen() {
   }, [existingVotes.data]);
 
   const currentDish = TASTE_DISHES[currentIndex];
-  const mandatoryDishes = TASTE_DISHES.filter(d => d.mandatory);
-  const mandatoryCount = mandatoryDishes.length; // 6
-  const mandatoryCompleted = votedCount >= mandatoryCount;
   const progress = ((votedCount / TASTE_DISHES.length) * 100).toFixed(0);
 
   const handleVote = async (liked: boolean) => {
@@ -77,10 +74,7 @@ export default function TasteOnboardingScreen() {
     setVotedCount(nextCount);
 
     if (nextCount >= TASTE_DISHES.length) {
-      // All dishes voted, show success message and proceed
-      if (Platform.OS === 'web') {
-        alert("✨ We've learned your family's preferences! Now let's set up your meal plan.");
-      }
+      // All dishes voted, proceed to main onboarding
       router.replace("/onboarding");
     } else {
       setCurrentIndex(currentIndex + 1);
@@ -125,36 +119,16 @@ export default function TasteOnboardingScreen() {
                 width: `${progress}%` as any, 
                 backgroundColor: colors.primary 
               }} />
-            </View>            <Text style={{ 
+            </View>
+            <Text style={{ 
               fontSize: 13, 
               color: colors.muted, 
               marginTop: 6,
               textAlign: "center"
             }}>
-              {votedCount} / {mandatoryCount} required ({TASTE_DISHES.length - mandatoryCount} optional)
+              {votedCount} / {TASTE_DISHES.length} dishes rated
             </Text>
           </View>
-          
-          {/* Skip Button (after 6 mandatory) */}
-          {mandatoryCompleted && (
-            <TouchableOpacity
-              onPress={() => router.replace("/onboarding")}
-              style={{
-                marginTop: 12,
-                paddingVertical: 10,
-                paddingHorizontal: 16,
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: colors.border,
-                alignSelf: "center",
-              }}
-            >
-              <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 14 }}>
-                ✓ Skip remaining dishes
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
 
         {/* Dish Card */}

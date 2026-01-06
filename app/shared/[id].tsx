@@ -263,8 +263,8 @@ function MealCard({
           )}
         </View>
         
-        {/* Voter Avatars or Waiting Message */}
-        {voters.length > 0 ? (
+        {/* Voter Avatars */}
+        {voters.length > 0 && (
           <View className="flex-row flex-wrap gap-2 mb-3">
             {voters.map((voter: any, idx: number) => {
               const initials = voter.name
@@ -294,12 +294,6 @@ function MealCard({
                 </View>
               );
             })}
-          </View>
-        ) : (
-          <View className="mb-3">
-            <Text className="text-muted text-xs italic">
-              Waiting for family votes
-            </Text>
           </View>
         )}
         
