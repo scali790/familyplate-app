@@ -224,29 +224,55 @@ export default function DashboardScreen() {
               </TouchableOpacity>
             </View>
             
-            {/* Share Button */}
-            <Pressable
-              onPress={() => {
-                console.log('Button pressed!');
-                handleShare();
-              }}
-              style={({ pressed }) => ({
-                backgroundColor: pressed ? 'rgba(255, 140, 66, 0.2)' : 'rgba(255, 140, 66, 0.1)',
-                borderWidth: 1,
-                borderColor: '#FF8C42',
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                borderRadius: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                cursor: 'pointer',
-              })}
-            >
-              <Text style={{ fontSize: 24 }}>👨‍👩‍👧‍👦</Text>
-              <Text style={{ color: '#FF8C42', fontWeight: '600' }}>Share with Family to Vote</Text>
-            </Pressable>
+            {/* Action Buttons Row */}
+            <View className="flex-row gap-3">
+              {/* Edit Preferences Button */}
+              <Pressable
+                onPress={() => router.push('/onboarding')}
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? 'rgba(10, 126, 164, 0.2)' : 'rgba(10, 126, 164, 0.1)',
+                  borderWidth: 1,
+                  borderColor: '#0a7ea4',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  flex: 1,
+                  cursor: 'pointer',
+                })}
+              >
+                <Text style={{ fontSize: 20 }}>✏️</Text>
+                <Text style={{ color: '#0a7ea4', fontWeight: '600' }}>Edit Preferences</Text>
+              </Pressable>
+
+              {/* Share Button */}
+              <Pressable
+                onPress={() => {
+                  console.log('Button pressed!');
+                  handleShare();
+                }}
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? 'rgba(255, 140, 66, 0.2)' : 'rgba(255, 140, 66, 0.1)',
+                  borderWidth: 1,
+                  borderColor: '#FF8C42',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  flex: 1,
+                  cursor: 'pointer',
+                })}
+              >
+                <Text style={{ fontSize: 20 }}>👨‍👩‍👧‍👦</Text>
+                <Text style={{ color: '#FF8C42', fontWeight: '600' }}>Share to Vote</Text>
+              </Pressable>
+            </View>
 
             {/* Shopping List Button */}
             <Pressable
