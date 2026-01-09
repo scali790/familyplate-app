@@ -1,4 +1,5 @@
-import Mailjet from "node-mailjet";
+import Mailjet_lib from "node-mailjet";
+const Mailjet = Mailjet_lib.default || Mailjet_lib;
 import { ENV } from "./env.js";
 
 /**
