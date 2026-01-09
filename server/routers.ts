@@ -4,7 +4,7 @@ import { systemRouter } from "./_core/systemRouter.js";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc.js";
 import { invokeLLM } from "./_core/llm.js";
 import { getDb } from "./db.js";
-import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, dishVotes, type Meal } from "../drizzle/schema.js";
+import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, dishVotes, type Meal } from "../drizzle/schema-postgres.js";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
@@ -46,7 +46,8 @@ export const appRouter = router({
             name: input.name,
             loginMethod: "simple",
           })
-          .onDuplicateKeyUpdate({
+          .onConflictDoUpdate({
+            target: users.openId,
             set: {
               name: input.name,
               lastSignedIn: new Date(),
@@ -196,7 +197,8 @@ export const appRouter = router({
             name: tokenRecord.name || tokenRecord.email.split("@")[0],
             loginMethod: "magic-link",
           })
-          .onDuplicateKeyUpdate({
+          .onConflictDoUpdate({
+            target: users.openId,
             set: {
               lastSignedIn: new Date(),
             },
