@@ -128,8 +128,7 @@ export const appRouter = router({
         const emailSent = await sendMagicLinkEmail(
           input.email,
           input.name || null,
-          magicLink,
-          15
+          magicLink
         );
 
         if (!emailSent) {
