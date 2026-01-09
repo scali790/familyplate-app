@@ -177,14 +177,14 @@ export const appRouter = router({
         }
 
         // Check if token has been used
-        if (tokenRecord.used === 1) {
+        if (tokenRecord.used === true) {
           throw new Error("Magic link has already been used");
         }
 
         // Mark token as used
         await db
           .update(magicLinkTokens)
-          .set({ used: 1 })
+          .set({ used: true })
           .where(eq(magicLinkTokens.id, tokenRecord.id));
 
         // Create or get user
@@ -1011,7 +1011,7 @@ IMPORTANT:
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const { dishVoteService } = await import("./services/DishVoteService");
+        const { dishVoteService } = await import("./services/DishVoteService.js");
         
         if (!ctx.user) throw new Error("Not authenticated");
         
@@ -1035,7 +1035,7 @@ IMPORTANT:
         }).optional()
       )
       .query(async ({ ctx, input }) => {
-        const { dishVoteService } = await import("./services/DishVoteService");
+        const { dishVoteService } = await import("./services/DishVoteService.js");
         
         if (!ctx.user) throw new Error("Not authenticated");
         
@@ -1045,7 +1045,7 @@ IMPORTANT:
       
     getStats: protectedProcedure
       .query(async ({ ctx }) => {
-        const { dishVoteService } = await import("./services/DishVoteService");
+        const { dishVoteService } = await import("./services/DishVoteService.js");
         
         if (!ctx.user) throw new Error("Not authenticated");
         
@@ -1055,7 +1055,7 @@ IMPORTANT:
       
     getTasteProfile: protectedProcedure
       .query(async ({ ctx }) => {
-        const { dishVoteService } = await import("./services/DishVoteService");
+        const { dishVoteService } = await import("./services/DishVoteService.js");
         
         if (!ctx.user) throw new Error("Not authenticated");
         
@@ -1065,7 +1065,7 @@ IMPORTANT:
       
     computeTasteProfile: protectedProcedure
       .mutation(async ({ ctx }) => {
-        const { dishVoteService } = await import("./services/DishVoteService");
+        const { dishVoteService } = await import("./services/DishVoteService.js");
         
         if (!ctx.user) throw new Error("Not authenticated");
         

@@ -6,7 +6,7 @@
  */
 
 import { getDb } from "../db.js";
-import { dishVotes, userPreferences } from "../../drizzle/schema.js";
+import { dishVotes, userPreferences } from "../../drizzle/schema-postgres.js";
 import { eq, desc, and, sql } from "drizzle-orm";
 
 // ============================================================
