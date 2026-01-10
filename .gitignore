@@ -60,3 +60,7 @@ Thumbs.db
 *.tgz
 *.tar.gz
 .cache/
+
+# pnpm lockfile guardrail: only root lockfile
+**/pnpm-lock.yaml
+!pnpm-lock.yaml
