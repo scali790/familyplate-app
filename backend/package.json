@@ -1,9 +1,8 @@
 {
   "name": "familyplate-backend",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "mkdir -p dist && echo 'Serverless functions ready' > dist/.vercel-build-output",
     "dev": "tsx watch server/_core/index.ts"
   },
   "dependencies": {

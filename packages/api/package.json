@@ -1,0 +1,24 @@
+{
+  "name": "@familyplate/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./routers": "./src/routers.ts",
+    "./context": "./src/context.ts"
+  },
+  "dependencies": {
+    "@trpc/server": "11.7.2",
+    "drizzle-orm": "^0.44.7",
+    "postgres": "^3.4.8",
+    "zod": "^4.3.5",
+    "jose": "^6.1.0",
+    "node-mailjet": "^6.0.11",
+    "superjson": "^1.13.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.5",
+    "typescript": "^5.9.3"
+  }
+}
