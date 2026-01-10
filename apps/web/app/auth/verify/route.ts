@@ -3,7 +3,9 @@ import { cookies } from "next/headers";
 import { getDb } from "@/server/db/client";
 import { magicLinkTokens, users } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
-import { sdk } from "@/server/services/sdk";
+import { createSession } from "@/server/auth/sessionStore";
+import { getSessionCookieOptions } from "@/server/auth/session";
+import { validateRedirectUrl } from "@/server/auth/redirectValidation";
 
 export const runtime = "nodejs";
 
@@ -75,34 +77,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
     }
 
-    // Create session token
-    const sessionToken = await sdk.createSessionToken(openId, {
-      name: user.name,
-      expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
-    });
+    // Create DB-backed session
+    const sessionId = await createSession(user.id);
 
     // Set session cookie
     const cookieStore = await cookies();
-    cookieStore.set("manus_session", sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 365 * 24 * 60 * 60, // 1 year
-      path: "/",
-    });
+    const cookieOptions = getSessionCookieOptions();
+    
+    cookieStore.set("fp_session", sessionId, cookieOptions);
 
-    // Handle redirect
-    if (redirectTo) {
-      // Deep link support (e.g., familyplate://auth/verify)
-      if (redirectTo.startsWith("familyplate://")) {
-        return NextResponse.redirect(redirectTo);
-      }
-      // Web redirect
-      return NextResponse.redirect(new URL(redirectTo, request.url));
+    // Validate and handle redirect (prevent open redirect attacks)
+    const safeRedirectUrl = validateRedirectUrl(redirectTo, "/dashboard");
+    
+    // Handle deep links
+    if (safeRedirectUrl.startsWith("familyplate://")) {
+      return NextResponse.redirect(safeRedirectUrl);
     }
-
-    // Default redirect to dashboard
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    
+    // Handle web redirects (relative paths)
+    return NextResponse.redirect(new URL(safeRedirectUrl, request.url));
   } catch (error) {
     console.error("[auth/verify] Error:", error);
     return NextResponse.redirect(

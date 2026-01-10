@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, timestamp, text, integer, jsonb, boolean } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, timestamp, text, integer, jsonb, boolean, index } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -54,6 +54,22 @@ export const dishVotes = pgTable("dish_votes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: serial("id").primaryKey(),
+    sessionId: varchar("session_id", { length: 255 }).notNull().unique(),
+    userId: integer("user_id").notNull().references(() => users.id),
+    expiresAt: timestamp("expires_at").notNull(),
+    revokedAt: timestamp("revoked_at"),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("sessions_userId_idx").on(table.userId),
+    expiresAtIdx: index("sessions_expiresAt_idx").on(table.expiresAt),
+  })
+);
+
 export const magicLinkTokens = pgTable("magic_link_tokens", {
   id: serial("id").primaryKey(),
   email: varchar("email", { length: 255 }).notNull(),
@@ -69,6 +85,7 @@ export type UserPreferences = typeof userPreferences.$inferSelect;
 export type MealPlan = typeof mealPlans.$inferSelect;
 export type MealVote = typeof mealVotes.$inferSelect;
 export type DishVote = typeof dishVotes.$inferSelect;
+export type Session = typeof sessions.$inferSelect;
 export type MagicLinkToken = typeof magicLinkTokens.$inferSelect;
 
 export interface Meal {

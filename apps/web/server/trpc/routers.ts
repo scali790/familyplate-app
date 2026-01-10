@@ -5,7 +5,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
 import { sendMagicLinkEmail } from "../services/mailjet";
-import { sdk } from "../services/sdk";
+// sdk removed - using DB-backed sessions
 import { savePreferencesSchema } from "../schemas/preferences";
 import { buildMealGenerationPrompt, formatPromptForAI } from "../services/promptBuilder";
 import { invokeLLM } from "../services/llm";
@@ -56,80 +56,8 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    // Verify magic link (will be called from separate route handler)
-    verifyMagicLink: publicProcedure
-      .input(z.object({ token: z.string() }))
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database not available");
-
-        const result = await db
-          .select()
-          .from(magicLinkTokens)
-          .where(eq(magicLinkTokens.token, input.token))
-          .limit(1);
-
-        const tokenData = result[0];
-
-        if (!tokenData) {
-          throw new Error("Invalid or expired magic link");
-        }
-
-        if (tokenData.used) {
-          throw new Error("This magic link has already been used");
-        }
-
-        if (new Date() > tokenData.expiresAt) {
-          throw new Error("This magic link has expired");
-        }
-
-        // Mark token as used
-        await db
-          .update(magicLinkTokens)
-          .set({ used: true })
-          .where(eq(magicLinkTokens.id, tokenData.id));
-
-        // Create or get user
-        const openId = `magic-${tokenData.email}`;
-
-        await db
-          .insert(users)
-          .values({
-            openId,
-            email: tokenData.email,
-            name: tokenData.name || tokenData.email.split("@")[0],
-            loginMethod: "magic-link",
-          })
-          .onConflictDoUpdate({
-            target: users.openId,
-            set: {
-              name: tokenData.name || tokenData.email.split("@")[0],
-              lastSignedIn: new Date(),
-            },
-          });
-
-        const userResult = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-        const user = userResult[0];
-
-        if (!user) throw new Error("Failed to create user");
-
-        // Create session token
-        const sessionToken = await sdk.createSessionToken(openId, {
-          name: user.name,
-          expiresInMs: 365 * 24 * 60 * 60 * 1000, // 1 year
-        });
-
-        return {
-          success: true,
-          sessionToken,
-          user: {
-            id: user.id,
-            openId: user.openId,
-            name: user.name,
-            email: user.email,
-          },
-        };
-      }),
+    // Note: Magic link verification is handled by /app/auth/verify/route.ts
+    // which sets the session cookie and redirects to dashboard
   }),
 
   preferences: router({
@@ -220,7 +148,7 @@ export const appRouter = router({
           throw new Error("Please complete onboarding first");
         }
 
-        // Parse JSON fields
+        // Parse JSON fields and map null to defaults
         const parsedPrefs = {
           ...prefs,
           cuisines: typeof prefs.cuisines === "string" ? JSON.parse(prefs.cuisines) : prefs.cuisines,
@@ -229,6 +157,10 @@ export const appRouter = router({
             typeof prefs.dietaryRestrictions === "string"
               ? JSON.parse(prefs.dietaryRestrictions)
               : prefs.dietaryRestrictions,
+          chickenFrequency: prefs.chickenFrequency ?? 2,
+          redMeatFrequency: prefs.redMeatFrequency ?? 2,
+          fishFrequency: prefs.fishFrequency ?? 2,
+          vegetarianFrequency: prefs.vegetarianFrequency ?? 2,
         };
 
         // Get recent meal history to avoid repeats
@@ -247,7 +179,7 @@ export const appRouter = router({
         });
 
         // Build prompt using Prompt Builder service
-        const promptData = buildMealGenerationPrompt(parsedPrefs, undefined, recentMealNames);
+        const promptData = buildMealGenerationPrompt(parsedPrefs as any, undefined, recentMealNames);
         const prompt = formatPromptForAI(promptData);
 
         // Call OpenAI
@@ -266,7 +198,11 @@ export const appRouter = router({
 
         let meals: Meal[];
         try {
-          meals = JSON.parse(aiResponse.content);
+          const content = aiResponse.choices[0]?.message?.content;
+          if (!content || typeof content !== "string") {
+            throw new Error("No valid content in AI response");
+          }
+          meals = JSON.parse(content);
         } catch (e) {
           throw new Error("Failed to parse AI response");
         }
