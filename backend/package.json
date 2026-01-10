@@ -2,7 +2,7 @@
   "name": "familyplate-backend",
   "version": "1.0.0",
   "scripts": {
-    "build": "echo 'No build needed for serverless functions'",
+    "build": "mkdir -p dist && echo 'Serverless functions ready' > dist/.vercel-build-output",
     "dev": "tsx watch server/_core/index.ts"
   },
   "dependencies": {
