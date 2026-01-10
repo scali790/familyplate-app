@@ -180,10 +180,125 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 max-w-2xl text-center">
-          <h2 className="text-4xl font-bold text-foreground mb-4">Ready to End Dinner Debates?</h2>
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-4">How It Works</h2>
+            <p className="text-lg text-muted">Get started in 3 simple steps</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">1</div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Tell Us Your Preferences</h3>
+              <p className="text-muted">Share your family size, dietary restrictions, and taste preferences. Our AI learns what you love.</p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">2</div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Get Your Personalized Plan</h3>
+              <p className="text-muted">Receive a 7-day meal plan tailored to your family. Vote on meals together and swap anything you don't like.</p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">3</div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Shop, Cook, Enjoy</h3>
+              <p className="text-muted">Get a smart shopping list with everything you need. Follow easy recipes and enjoy stress-free dinners.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-surface">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-4">Simple, Transparent Pricing</h2>
+            <p className="text-lg text-muted">Start free, upgrade when you're ready</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <Card className="border-2 border-border">
+              <CardHeader>
+                <CardTitle className="text-2xl">Free</CardTitle>
+                <CardDescription className="text-3xl font-bold text-foreground mt-2">
+                  $0<span className="text-lg font-normal text-muted">/month</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 text-muted">
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>AI-generated weekly meal plans</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>Family voting system</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>Dietary restrictions support</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>Shopping lists & recipes</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>2 meal regenerations/week</span>
+                  </li>
+                </ul>
+                <Button className="w-full mt-6" variant="outline">Get Started Free</Button>
+              </CardContent>
+            </Card>
+
+            {/* Premium Plan */}
+            <Card className="border-2 border-primary relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-sm font-semibold rounded-full">
+                Coming Soon
+              </div>
+              <CardHeader>
+                <CardTitle className="text-2xl">Premium</CardTitle>
+                <CardDescription className="text-3xl font-bold text-foreground mt-2">
+                  $9.99<span className="text-lg font-normal text-muted">/month</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted mb-4">Everything in Free, plus:</p>
+                <ul className="space-y-3 text-muted">
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>Unlimited meal regenerations</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>Advanced ingredient substitutions</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>Nutrition insights & tracking</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>Multi-week planning</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-success mt-1">✓</span>
+                    <span>Priority support</span>
+                  </li>
+                </ul>
+                <Button className="w-full mt-6" disabled>Join Waitlist</Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Email CTA Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4 max-w-2xl text-center">  <h2 className="text-4xl font-bold text-foreground mb-4">Ready to End Dinner Debates?</h2>
           <p className="text-lg text-muted mb-8">
             Enter your email to get started - we'll send you a magic link to create your account (no password needed!)
           </p>
@@ -249,8 +364,8 @@ export default function LandingPage() {
             <div>
               <h3 className="font-semibold text-foreground mb-4">LEGAL</h3>
               <div className="flex flex-col gap-2 text-sm text-muted">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Use</a>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/terms">Terms of Use</a>
               </div>
             </div>
           </div>
