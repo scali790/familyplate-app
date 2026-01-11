@@ -828,3 +828,11 @@
 - [x] Create dedicated Kid-Friendly section with larger toggle
 - [x] Add Kid-Friendly toggle to onboarding flow
 - [x] Make it visually prominent (targeting families with kids)
+
+## Country Selector (Phase 1)
+- [ ] Add country selector to onboarding flow (Step 1 or new step)
+- [ ] Add country dropdown to preferences page
+- [ ] Include flags for visual appeal
+- [ ] Update API to ensure country is saved
+- [ ] Use country for seasonal recipe suggestions
+- [ ] Use country for shopping integration later

@@ -81,10 +81,27 @@ const COMMON_DISLIKES = [
   { value: 'bitter-vegetables', label: 'Bitter Vegetables', emoji: '🥬' },
 ];
 
+const COUNTRIES = [
+  { value: 'ae', label: 'United Arab Emirates', flag: '🇦🇪' },
+  { value: 'de', label: 'Germany', flag: '🇩🇪' },
+  { value: 'us', label: 'United States', flag: '🇺🇸' },
+  { value: 'gb', label: 'United Kingdom', flag: '🇬🇧' },
+  { value: 'sa', label: 'Saudi Arabia', flag: '🇸🇦' },
+  { value: 'in', label: 'India', flag: '🇮🇳' },
+  { value: 'ch', label: 'Switzerland', flag: '🇨🇭' },
+  { value: 'at', label: 'Austria', flag: '🇦🇹' },
+  { value: 'fr', label: 'France', flag: '🇫🇷' },
+  { value: 'it', label: 'Italy', flag: '🇮🇹' },
+  { value: 'es', label: 'Spain', flag: '🇪🇸' },
+  { value: 'ca', label: 'Canada', flag: '🇨🇦' },
+];
+
 export default function PreferencesPage() {
   const router = useRouter();
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showCountryTooltip, setShowCountryTooltip] = useState(false);
   const [formData, setFormData] = useState({
+    country: '',
     familyName: '',
     familySize: 2,
     mealTypes: [] as ('breakfast' | 'lunch' | 'dinner')[],
@@ -107,11 +124,10 @@ export default function PreferencesPage() {
 
   // Load preferences when data arrives
   useEffect(() => {
-    if (preferences) {
-      setFormData({
+    if (preferences) {      setFormData({
+        country: preferences.country || '',
         familyName: preferences.familyName || '',
-        familySize: preferences.familySize,
-        mealTypes: Array.isArray(preferences.mealTypes) ? preferences.mealTypes : [],
+        familySize: preferences.familySize ?? 2,     mealTypes: Array.isArray(preferences.mealTypes) ? preferences.mealTypes : [],
         cuisines: Array.isArray(preferences.cuisines) ? preferences.cuisines : [],
         flavors: Array.isArray(preferences.flavors) ? preferences.flavors : [],
         dietaryRestrictions: Array.isArray(preferences.dietaryRestrictions) ? preferences.dietaryRestrictions : [],
@@ -222,6 +238,45 @@ export default function PreferencesPage() {
           <Card>
             <CardContent className="pt-6">
               <h2 className="text-2xl font-bold text-foreground mb-6">👨‍👩‍👧‍👦 Family Basics</h2>
+              
+              {/* Country Selector */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="text-sm font-medium text-foreground">🌍 Country</label>
+                  <div className="relative">
+                    <button
+                      onMouseEnter={() => setShowCountryTooltip(true)}
+                      onMouseLeave={() => setShowCountryTooltip(false)}
+                      className="w-4 h-4 rounded-full border-2 border-muted text-muted text-xs flex items-center justify-center hover:border-foreground hover:text-foreground transition-colors"
+                      style={{ fontSize: '10px' }}
+                    >
+                      i
+                    </button>
+                    {showCountryTooltip && (
+                      <div className="absolute left-0 top-6 z-10 w-64 p-3 bg-surface border border-border rounded-lg shadow-lg text-sm text-foreground">
+                        <p className="font-semibold mb-2">We use your location to:</p>
+                        <ul className="space-y-1 text-muted">
+                          <li>• Suggest seasonal recipes</li>
+                          <li>• Show local ingredients</li>
+                          <li>• Connect with local shops</li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <select
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:border-primary focus:outline-none"
+                >
+                  <option value="">Select your country...</option>
+                  {COUNTRIES.map((country) => (
+                    <option key={country.value} value={country.value}>
+                      {country.flag} {country.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
               
               {/* Family Name */}
               <div className="mb-6">

@@ -50,10 +50,26 @@ const DIETARY_RESTRICTIONS = [
   { value: 'pescatarian', label: 'Pescatarian', emoji: '🐟' },
 ];
 
+const COUNTRIES = [
+  { value: 'ae', label: 'United Arab Emirates', flag: '🇦🇪' },
+  { value: 'de', label: 'Germany', flag: '🇩🇪' },
+  { value: 'us', label: 'United States', flag: '🇺🇸' },
+  { value: 'gb', label: 'United Kingdom', flag: '🇬🇧' },
+  { value: 'sa', label: 'Saudi Arabia', flag: '🇸🇦' },
+  { value: 'in', label: 'India', flag: '🇮🇳' },
+  { value: 'ch', label: 'Switzerland', flag: '🇨🇭' },
+  { value: 'at', label: 'Austria', flag: '🇦🇹' },
+  { value: 'fr', label: 'France', flag: '🇫🇷' },
+  { value: 'it', label: 'Italy', flag: '🇮🇹' },
+  { value: 'es', label: 'Spain', flag: '🇪🇸' },
+  { value: 'ca', label: 'Canada', flag: '🇨🇦' },
+];
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    country: '',
     familySize: 2,
     mealTypes: [] as ('breakfast' | 'lunch' | 'dinner')[],
     cuisines: [] as string[],
@@ -65,6 +81,7 @@ export default function OnboardingPage() {
     fishFrequency: 2,
     vegetarianFrequency: 2,
   });
+  const [showCountryTooltip, setShowCountryTooltip] = useState(false);
 
   const savePreferences = trpc.preferences.savePreferences.useMutation({
     onSuccess: () => {
@@ -80,6 +97,10 @@ export default function OnboardingPage() {
   const maxFrequency = totalMeals;
 
   const handleNext = () => {
+    if (step === 1 && !formData.country) {
+      alert('Please select your country');
+      return;
+    }
     if (step === 1 && formData.familySize < 1) {
       alert('Please select a family size');
       return;
@@ -164,9 +185,48 @@ export default function OnboardingPage() {
             </p>
           </div>
 
-          {/* Step 1: Family Size */}
+          {/* Step 1: Country & Family Size */}
           {step === 1 && (
-            <div className="space-y-6">
+            <div className="space-y-8">
+              {/* Country Selector */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-2xl font-semibold text-foreground">🌍 Where are you located?</h2>
+                  <div className="relative">
+                    <button
+                      onMouseEnter={() => setShowCountryTooltip(true)}
+                      onMouseLeave={() => setShowCountryTooltip(false)}
+                      className="w-5 h-5 rounded-full border-2 border-muted text-muted text-xs flex items-center justify-center hover:border-foreground hover:text-foreground transition-colors"
+                    >
+                      i
+                    </button>
+                    {showCountryTooltip && (
+                      <div className="absolute left-0 top-8 z-10 w-64 p-3 bg-surface border border-border rounded-lg shadow-lg text-sm text-foreground">
+                        <p className="font-semibold mb-2">We use your location to:</p>
+                        <ul className="space-y-1 text-muted">
+                          <li>• Suggest seasonal recipes</li>
+                          <li>• Show local ingredients</li>
+                          <li>• Connect with local shops</li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <select
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-lg focus:border-primary focus:outline-none"
+                >
+                  <option value="">Select your country...</option>
+                  {COUNTRIES.map((country) => (
+                    <option key={country.value} value={country.value}>
+                      {country.flag} {country.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Family Size */}
               <div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">How many people are you cooking for?</h2>
                 <p className="text-muted">This helps us plan the right portion sizes</p>
