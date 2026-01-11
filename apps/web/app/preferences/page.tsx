@@ -78,8 +78,8 @@ export default function PreferencesPage() {
     redMeatFrequency: 2,
     fishFrequency: 2,
     vegetarianFrequency: 2,
-    cookingTime: 'medium',
-    spiceLevel: 'medium',
+    cookingTime: 'medium' as 'quick' | 'medium' | 'elaborate',
+    spiceLevel: 'medium' as 'mild' | 'medium' | 'hot' | 'extra-hot',
     kidFriendly: false,
     dislikedIngredients: '',
   });
@@ -101,8 +101,8 @@ export default function PreferencesPage() {
         redMeatFrequency: preferences.redMeatFrequency ?? 2,
         fishFrequency: preferences.fishFrequency ?? 2,
         vegetarianFrequency: preferences.vegetarianFrequency ?? 2,
-        cookingTime: preferences.cookingTime || 'medium',
-        spiceLevel: preferences.spiceLevel || 'medium',
+        cookingTime: (preferences.cookingTime || 'medium') as 'quick' | 'medium' | 'elaborate',
+        spiceLevel: (preferences.spiceLevel || 'medium') as 'mild' | 'medium' | 'hot' | 'extra-hot',
         kidFriendly: preferences.kidFriendly || false,
         dislikedIngredients: preferences.dislikedIngredients || '',
       });

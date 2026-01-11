@@ -803,15 +803,15 @@
 - [ ] Test deployment on Vercel
 
 ## Food Preferences Page (Separate from Onboarding)
-- [ ] Create /preferences page (separate from onboarding)
-- [ ] Add new preference fields: cookingTime, spiceLevel, kidFriendly, dislikedIngredients
-- [ ] Update database schema for new fields
-- [ ] Single-page UI with all settings grouped
-- [ ] Advanced settings section (collapsible)
-- [ ] Load existing preferences on page load
-- [ ] Update Edit Preferences link to point to /preferences
-- [ ] Family Name (editable)
-- [ ] Cooking Time Preference (Quick/Medium/Elaborate)
-- [ ] Spice Level (Mild/Medium/Hot/Extra Hot)
-- [ ] Kid-Friendly Priority (Toggle)
-- [ ] Disliked Ingredients (Freitext input)
+- [x] Create /preferences page (separate from onboarding)
+- [x] Add new preference fields: cookingTime, spiceLevel, kidFriendly, dislikedIngredients
+- [x] Update database schema for new fields
+- [x] Single-page UI with all settings grouped
+- [x] Advanced settings section (collapsible)
+- [x] Load existing preferences on page load
+- [x] Update Edit Preferences link to point to /preferences
+- [x] Family Name (editable)
+- [x] Cooking Time Preference (Quick/Medium/Elaborate)
+- [x] Spice Level (Mild/Medium/Hot/Extra Hot)
+- [x] Kid-Friendly Priority (Toggle)
+- [x] Disliked Ingredients (Freitext input)
