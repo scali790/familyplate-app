@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { trpc } from '@/lib/trpc';
+import { getData } from 'country-list';
+import { detectUserCountry, getCountryFlag } from '@/lib/geolocation';
 
 // Available options
 const MEAL_TYPES = [
@@ -50,20 +52,12 @@ const DIETARY_RESTRICTIONS = [
   { value: 'pescatarian', label: 'Pescatarian', emoji: '🐟' },
 ];
 
-const COUNTRIES = [
-  { value: 'ae', label: 'United Arab Emirates', flag: '🇦🇪' },
-  { value: 'de', label: 'Germany', flag: '🇩🇪' },
-  { value: 'us', label: 'United States', flag: '🇺🇸' },
-  { value: 'gb', label: 'United Kingdom', flag: '🇬🇧' },
-  { value: 'sa', label: 'Saudi Arabia', flag: '🇸🇦' },
-  { value: 'in', label: 'India', flag: '🇮🇳' },
-  { value: 'ch', label: 'Switzerland', flag: '🇨🇭' },
-  { value: 'at', label: 'Austria', flag: '🇦🇹' },
-  { value: 'fr', label: 'France', flag: '🇫🇷' },
-  { value: 'it', label: 'Italy', flag: '🇮🇹' },
-  { value: 'es', label: 'Spain', flag: '🇪🇸' },
-  { value: 'ca', label: 'Canada', flag: '🇨🇦' },
-];
+// Get all countries from country-list package
+const ALL_COUNTRIES = getData().map((country) => ({
+  value: country.code.toLowerCase(),
+  label: country.name,
+  flag: getCountryFlag(country.code),
+}));
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -82,6 +76,26 @@ export default function OnboardingPage() {
     vegetarianFrequency: 2,
   });
   const [showCountryTooltip, setShowCountryTooltip] = useState(false);
+  const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
+  const [isDetecting, setIsDetecting] = useState(true);
+
+  // Auto-detect user's country on mount
+  useEffect(() => {
+    detectUserCountry()
+      .then((result) => {
+        if (result.countryCode) {
+          setDetectedCountry(result.countryCode);
+          setFormData((prev) => ({ ...prev, country: result.countryCode! }));
+          console.log('[onboarding] Detected country:', result.countryCode, result.countryName);
+        }
+      })
+      .catch((error) => {
+        console.error('[onboarding] Country detection failed:', error);
+      })
+      .finally(() => {
+        setIsDetecting(false);
+      });
+  }, []);
 
   const savePreferences = trpc.preferences.savePreferences.useMutation({
     onSuccess: () => {
@@ -216,13 +230,29 @@ export default function OnboardingPage() {
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-lg focus:border-primary focus:outline-none"
+                  disabled={isDetecting}
                 >
-                  <option value="">Select your country...</option>
-                  {COUNTRIES.map((country) => (
-                    <option key={country.value} value={country.value}>
-                      {country.flag} {country.label}
-                    </option>
-                  ))}
+                  <option value="">{isDetecting ? 'Detecting your location...' : 'Select your country...'}</option>
+                  
+                  {/* Detected country on top */}
+                  {detectedCountry && (
+                    <>
+                      <option value={detectedCountry}>
+                        {getCountryFlag(detectedCountry)} {ALL_COUNTRIES.find(c => c.value === detectedCountry)?.label} (Detected)
+                      </option>
+                      <option disabled>──────────────────────</option>
+                    </>
+                  )}
+                  
+                  {/* All countries alphabetically */}
+                  {ALL_COUNTRIES
+                    .filter(c => c.value !== detectedCountry)
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .map((country) => (
+                      <option key={country.value} value={country.value}>
+                        {country.flag} {country.label}
+                      </option>
+                    ))}
                 </select>
               </div>
 

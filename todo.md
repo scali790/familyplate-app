@@ -830,9 +830,18 @@
 - [x] Make it visually prominent (targeting families with kids)
 
 ## Country Selector (Phase 1)
-- [ ] Add country selector to onboarding flow (Step 1 or new step)
-- [ ] Add country dropdown to preferences page
-- [ ] Include flags for visual appeal
-- [ ] Update API to ensure country is saved
-- [ ] Use country for seasonal recipe suggestions
-- [ ] Use country for shopping integration later
+- [x] Add country selector to onboarding flow (Step 1 or new step)
+- [x] Add country dropdown to preferences page
+- [x] Include flags for visual appeal
+- [x] Update API to ensure country is saved
+- [ ] Use country for seasonal recipe suggestions (Phase 2)
+- [ ] Use country for shopping integration later (Future)
+
+## Country Auto-Detection (Full List)
+- [ ] Install country-list package
+- [ ] Add IP geolocation utility (ipapi.co)
+- [ ] Auto-detect user's country
+- [ ] Show detected country on top + pre-selected
+- [ ] Add separator between detected and rest
+- [ ] All countries alphabetically sorted
+- [ ] Update onboarding and preferences

@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from 'next/navigimport { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { trpc } from '@/lib/trpc';
-
-// Available options
+import { getData } from 'country-list';
+import { detectUserCountry, getCountryFlag } from '@/lib/geolocation';ailable options
 const MEAL_TYPES = [
   { value: 'breakfast' as const, label: 'Breakfast', emoji: '🍳' },
   { value: 'lunch' as const, label: 'Lunch', emoji: '🥗' },
@@ -81,25 +80,36 @@ const COMMON_DISLIKES = [
   { value: 'bitter-vegetables', label: 'Bitter Vegetables', emoji: '🥬' },
 ];
 
-const COUNTRIES = [
-  { value: 'ae', label: 'United Arab Emirates', flag: '🇦🇪' },
-  { value: 'de', label: 'Germany', flag: '🇩🇪' },
-  { value: 'us', label: 'United States', flag: '🇺🇸' },
-  { value: 'gb', label: 'United Kingdom', flag: '🇬🇧' },
-  { value: 'sa', label: 'Saudi Arabia', flag: '🇸🇦' },
-  { value: 'in', label: 'India', flag: '🇮🇳' },
-  { value: 'ch', label: 'Switzerland', flag: '🇨🇭' },
-  { value: 'at', label: 'Austria', flag: '🇦🇹' },
-  { value: 'fr', label: 'France', flag: '🇫🇷' },
-  { value: 'it', label: 'Italy', flag: '🇮🇹' },
-  { value: 'es', label: 'Spain', flag: '🇪🇸' },
-  { value: 'ca', label: 'Canada', flag: '🇨🇦' },
-];
+// Get all countries from country-list package
+const ALL_COUNTRIES = getData().map((country) => ({
+  value: country.code.toLowerCase(),
+  label: country.name,
+  flag: getCountryFlag(country.code),
+}));
 
 export default function PreferencesPage() {
   const router = useRouter();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showCountryTooltip, setShowCountryTooltip] = useState(false);
+  const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
+  const [isDetecting, setIsDetecting] = useState(true);
+
+  // Auto-detect user's country on mount
+  useEffect(() => {
+    detectUserCountry()
+      .then((result) => {
+        if (result.countryCode) {
+          setDetectedCountry(result.countryCode);
+          console.log('[preferences] Detected country:', result.countryCode, result.countryName);
+        }
+      })
+      .catch((error) => {
+        console.error('[preferences] Country detection failed:', error);
+      })
+      .finally(() => {
+        setIsDetecting(false);
+      });
+  }, []);
   const [formData, setFormData] = useState({
     country: '',
     familyName: '',
@@ -268,13 +278,29 @@ export default function PreferencesPage() {
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                   className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:border-primary focus:outline-none"
+                  disabled={isDetecting}
                 >
-                  <option value="">Select your country...</option>
-                  {COUNTRIES.map((country) => (
-                    <option key={country.value} value={country.value}>
-                      {country.flag} {country.label}
-                    </option>
-                  ))}
+                  <option value="">{isDetecting ? 'Detecting your location...' : 'Select your country...'}</option>
+                  
+                  {/* Detected country on top */}
+                  {detectedCountry && (
+                    <>
+                      <option value={detectedCountry}>
+                        {getCountryFlag(detectedCountry)} {ALL_COUNTRIES.find(c => c.value === detectedCountry)?.label} (Detected)
+                      </option>
+                      <option disabled>──────────────────────</option>
+                    </>
+                  )}
+                  
+                  {/* All countries alphabetically */}
+                  {ALL_COUNTRIES
+                    .filter(c => c.value !== detectedCountry)
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .map((country) => (
+                      <option key={country.value} value={country.value}>
+                        {country.flag} {country.label}
+                      </option>
+                    ))}
                 </select>
               </div>
               
