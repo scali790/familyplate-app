@@ -5,7 +5,7 @@ export const savePreferencesSchema = z.object({
   familyName: z.string().optional(),
   familySize: z.number().min(1).max(20),
   mealTypes: z.array(z.enum(["breakfast", "lunch", "dinner"])).min(1),
-  cuisines: z.array(z.string()).max(5),
+  cuisines: z.array(z.string()).min(1).max(5), // Free tier: max 5 cuisines
   flavors: z.array(z.string()),
   dietaryRestrictions: z.array(z.string()).optional(),
   country: z.string().optional(),

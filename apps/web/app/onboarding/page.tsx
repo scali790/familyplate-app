@@ -393,23 +393,52 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">What cuisines do you enjoy?</h2>
-                <p className="text-muted">Select all that apply</p>
+                <p className="text-muted">Select up to 5 cuisines ({formData.cuisines.length}/5 selected)</p>
               </div>
+              
+              {/* Info banner when limit reached */}
+              {formData.cuisines.length >= 5 && (
+                <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">⚠️</div>
+                    <div>
+                      <p className="text-sm font-semibold text-orange-600 dark:text-orange-400 mb-1">
+                        You've selected 5/5 cuisines
+                      </p>
+                      <p className="text-xs text-muted">
+                        Unlock unlimited cuisines with Premium (coming soon)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {sortedCuisines.map((cuisine) => (
-                  <button
-                    key={cuisine.value}
-                    onClick={() => toggleSelection('cuisines', cuisine.value)}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      formData.cuisines.includes(cuisine.value)
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="text-3xl mb-2">{cuisine.emoji}</div>
-                    <div className="text-sm font-semibold text-foreground">{cuisine.label}</div>
-                  </button>
-                ))}
+                {sortedCuisines.map((cuisine) => {
+                  const isSelected = formData.cuisines.includes(cuisine.value);
+                  const isDisabled = !isSelected && formData.cuisines.length >= 5;
+                  
+                  return (
+                    <button
+                      key={cuisine.value}
+                      onClick={() => !isDisabled && toggleSelection('cuisines', cuisine.value)}
+                      disabled={isDisabled}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/10'
+                          : isDisabled
+                          ? 'border-border bg-muted/20 opacity-50 cursor-not-allowed'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="text-3xl mb-2">{cuisine.emoji}</div>
+                      <div className="text-sm font-semibold text-foreground">{cuisine.label}</div>
+                      {isDisabled && (
+                        <div className="text-xs text-muted mt-1">🔒 Premium</div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
