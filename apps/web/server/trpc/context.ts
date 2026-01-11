@@ -21,6 +21,11 @@ function getSessionFromRequest(req: Request): string | null {
 export async function createContext({ req }: { req: Request }) {
   const sessionId = getSessionFromRequest(req);
   
+  // Extract base URL from request
+  const host = req.headers.get("host") || "localhost:3000";
+  const protocol = req.headers.get("x-forwarded-proto") || "http";
+  const baseUrl = `${protocol}://${host}`;
+  
   let user: User | null = null;
   
   if (sessionId) {
@@ -34,7 +39,11 @@ export async function createContext({ req }: { req: Request }) {
     }
   }
   
-  return { user };
+  return { user, baseUrl };
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;
+
+// Context includes:
+// - user: User | null (authenticated user)
+// - baseUrl: string (e.g., "https://familyplate.vercel.app")

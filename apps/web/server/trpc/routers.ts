@@ -25,7 +25,7 @@ export const appRouter = router({
           name: z.string().min(1).optional(),
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const db = await getDb();
         if (!db) throw new Error("Database not available");
 
@@ -40,8 +40,8 @@ export const appRouter = router({
           used: false,
         });
 
-        const webUrl = process.env.EXPO_PUBLIC_WEB_URL || "http://localhost:3000";
-        const magicLink = `${webUrl}/auth/verify?token=${token}`;
+        // Use baseUrl from context (extracted from Request headers)
+        const magicLink = `${ctx.baseUrl}/auth/verify?token=${token}`;
 
         const emailSent = await sendMagicLinkEmail(
           input.email,
