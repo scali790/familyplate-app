@@ -52,16 +52,16 @@ const DIETARY_RESTRICTIONS = [
 ];
 
 const COOKING_TIMES = [
-  { value: 'quick', label: 'Quick (<30 min)', emoji: '⚡' },
-  { value: 'medium', label: 'Medium (30-60 min)', emoji: '⏱️' },
-  { value: 'elaborate', label: 'Elaborate (60+ min)', emoji: '👨‍🍳' },
+  { value: 'quick' as const, label: 'Quick (<30 min)', emoji: '⚡' },
+  { value: 'medium' as const, label: 'Medium (30-60 min)', emoji: '⏱️' },
+  { value: 'elaborate' as const, label: 'Elaborate (60+ min)', emoji: '👨‍🍳' },
 ];
 
 const SPICE_LEVELS = [
-  { value: 'mild', label: 'Mild', emoji: '🥛' },
-  { value: 'medium', label: 'Medium', emoji: '🌶️' },
-  { value: 'hot', label: 'Hot', emoji: '🔥' },
-  { value: 'extra-hot', label: 'Extra Hot', emoji: '🔥🔥' },
+  { value: 'mild' as const, label: 'Mild', emoji: '🥛' },
+  { value: 'medium' as const, label: 'Medium', emoji: '🌶️' },
+  { value: 'hot' as const, label: 'Hot', emoji: '🔥' },
+  { value: 'extra-hot' as const, label: 'Extra Hot', emoji: '🔥🔥' },
 ];
 
 export default function PreferencesPage() {
