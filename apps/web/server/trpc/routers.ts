@@ -121,6 +121,7 @@ export const appRouter = router({
           userId: ctx.user.id,
           familyName: input.familyName || null,
           familySize: input.familySize,
+          mealTypes: JSON.stringify(input.mealTypes),
           cuisines: JSON.stringify(input.cuisines),
           flavors: JSON.stringify(input.flavors),
           dietaryRestrictions: input.dietaryRestrictions

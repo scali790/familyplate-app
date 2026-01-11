@@ -7,6 +7,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { trpc } from '@/lib/trpc';
 
 // Available options
+const MEAL_TYPES = [
+  { value: 'breakfast', label: 'Breakfast', emoji: '🍳', description: '7 meals/week' },
+  { value: 'lunch', label: 'Lunch', emoji: '🥗', description: '7 meals/week' },
+  { value: 'dinner', label: 'Dinner', emoji: '🍽️', description: '7 meals/week' },
+];
+
 const CUISINES = [
   { value: 'italian', label: 'Italian', emoji: '🇮🇹' },
   { value: 'mexican', label: 'Mexican', emoji: '🇲🇽' },
@@ -49,6 +55,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     familySize: 2,
+    mealTypes: [] as string[],
     cuisines: [] as string[],
     flavors: [] as string[],
     dietaryRestrictions: [] as string[],
@@ -68,20 +75,27 @@ export default function OnboardingPage() {
     },
   });
 
+  const totalMeals = formData.mealTypes.length * 7;
+  const maxFrequency = totalMeals;
+
   const handleNext = () => {
     if (step === 1 && formData.familySize < 1) {
       alert('Please select a family size');
       return;
     }
-    if (step === 2 && formData.cuisines.length === 0) {
+    if (step === 2 && formData.mealTypes.length === 0) {
+      alert('Please select at least one meal type');
+      return;
+    }
+    if (step === 3 && formData.cuisines.length === 0) {
       alert('Please select at least one cuisine');
       return;
     }
-    if (step === 3 && formData.flavors.length === 0) {
+    if (step === 4 && formData.flavors.length === 0) {
       alert('Please select at least one flavor');
       return;
     }
-    if (step < 5) {
+    if (step < 6) {
       setStep(step + 1);
     } else {
       handleSubmit();
@@ -102,7 +116,7 @@ export default function OnboardingPage() {
     }
   };
 
-  const toggleSelection = (field: 'cuisines' | 'flavors' | 'dietaryRestrictions', value: string) => {
+  const toggleSelection = (field: 'mealTypes' | 'cuisines' | 'flavors' | 'dietaryRestrictions', value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: prev[field].includes(value)
@@ -124,7 +138,7 @@ export default function OnboardingPage() {
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex justify-between mb-2">
-              {[1, 2, 3, 4, 5].map((s) => (
+              {[1, 2, 3, 4, 5, 6].map((s) => (
                 <div
                   key={s}
                   className={`w-full h-2 mx-1 rounded-full ${
@@ -134,7 +148,7 @@ export default function OnboardingPage() {
               ))}
             </div>
             <p className="text-sm text-muted text-center">
-              Step {step} of 5
+              Step {step} of 6
             </p>
           </div>
 
@@ -164,8 +178,42 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 2: Cuisines */}
+          {/* Step 2: Meal Types */}
           {step === 2 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-foreground mb-2">Which meals do you want to plan?</h2>
+                <p className="text-muted">Select all that apply</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {MEAL_TYPES.map((mealType) => (
+                  <button
+                    key={mealType.value}
+                    onClick={() => toggleSelection('mealTypes', mealType.value)}
+                    className={`p-6 rounded-lg border-2 transition-all ${
+                      formData.mealTypes.includes(mealType.value)
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="text-4xl mb-2">{mealType.emoji}</div>
+                    <div className="text-lg font-semibold text-foreground mb-1">{mealType.label}</div>
+                    <div className="text-sm text-muted">{mealType.description}</div>
+                  </button>
+                ))}
+              </div>
+              {formData.mealTypes.length > 0 && (
+                <div className="text-center p-4 bg-primary/10 rounded-lg">
+                  <p className="text-foreground font-semibold">
+                    Total: {totalMeals} meals per week
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 3: Cuisines */}
+          {step === 3 && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">What cuisines do you enjoy?</h2>
@@ -190,8 +238,8 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 3: Flavors */}
-          {step === 3 && (
+          {/* Step 4: Flavors */}
+          {step === 4 && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">What flavors do you prefer?</h2>
@@ -216,8 +264,8 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 4: Dietary Restrictions */}
-          {step === 4 && (
+          {/* Step 5: Dietary Restrictions */}
+          {step === 5 && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">Any dietary restrictions?</h2>
@@ -242,12 +290,12 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 5: Protein Frequencies */}
-          {step === 5 && (
+          {/* Step 6: Protein Frequencies */}
+          {step === 6 && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">How often do you want each protein?</h2>
-                <p className="text-muted">Per week (0-7 times)</p>
+                <p className="text-muted">Per week (0-{maxFrequency} times based on {totalMeals} meals)</p>
               </div>
               <div className="space-y-6">
                 {[
@@ -269,7 +317,7 @@ export default function OnboardingPage() {
                     <input
                       type="range"
                       min="0"
-                      max="7"
+                      max={maxFrequency}
                       value={formData[protein.key as keyof typeof formData] as number}
                       onChange={(e) =>
                         setFormData({ ...formData, [protein.key]: parseInt(e.target.value) })
@@ -297,7 +345,7 @@ export default function OnboardingPage() {
               disabled={savePreferences.isPending}
               className="px-6"
             >
-              {step === 5 ? (savePreferences.isPending ? 'Saving...' : 'Complete Setup') : 'Next'}
+              {step === 6 ? (savePreferences.isPending ? 'Saving...' : 'Complete Setup') : 'Next'}
             </Button>
           </div>
         </CardContent>

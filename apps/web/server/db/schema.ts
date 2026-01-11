@@ -14,6 +14,7 @@ export const userPreferences = pgTable("user_preferences", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   familySize: integer("family_size").notNull(),
+  mealTypes: jsonb("meal_types").notNull(),
   cuisines: jsonb("cuisines").notNull(),
   flavors: jsonb("flavors").notNull(),
   dietaryRestrictions: jsonb("dietary_restrictions"),
