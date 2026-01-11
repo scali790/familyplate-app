@@ -222,7 +222,7 @@ export const appRouter = router({
         const promptData = buildMealGenerationPrompt(parsedPrefs as any, undefined, recentMealNames);
         const prompt = formatPromptForAI(promptData);
 
-        // Call OpenAI with compact meal schema
+        // Call OpenAI with compact meal schema and strict JSON enforcement
         const aiResponse = await invokeLLM({
           model: "gpt-4o-2024-08-06",  // Snapshot model for json_schema support
           messages: [
@@ -234,6 +234,40 @@ export const appRouter = router({
             { role: "user", content: prompt },
           ],
           temperature: 0.8,
+          responseFormat: {
+            type: "json_schema",
+            json_schema: {
+              name: "meal_plan_response",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  meals: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        day: { type: "string" },
+                        mealType: { type: "string" },
+                        name: { type: "string" },
+                        description: { type: "string" },
+                        prepTime: { type: "string" },
+                        cookTime: { type: "string" },
+                        difficulty: { type: "string" },
+                        tags: { type: "array", items: { type: "string" } },
+                        emoji: { type: "string" },
+                        recipeId: { type: "string" },
+                      },
+                      required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["meals"],
+                additionalProperties: false,
+              },
+            },
+          },
         });
 
         let meals: Meal[];
