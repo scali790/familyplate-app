@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getDb } from "@/server/db/client";
-import { magicLinkTokens, users } from "@/server/db/schema";
+import { magicLinkTokens, users, userPreferences } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { createSession } from "@/server/auth/sessionStore";
 import { getSessionCookieOptions } from "@/server/auth/session";
@@ -86,8 +86,18 @@ export async function GET(request: NextRequest) {
     
     cookieStore.set("fp_session", sessionId, cookieOptions);
 
-    // Validate and handle redirect (prevent open redirect attacks)
-    const safeRedirectUrl = validateRedirectUrl(redirectTo, "/dashboard");
+    // Check if user has preferences
+    const prefsResult = await db
+      .select()
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, user.id))
+      .limit(1);
+
+    const hasPreferences = prefsResult.length > 0;
+
+    // Redirect to onboarding if no preferences, otherwise to dashboard
+    const defaultRedirect = hasPreferences ? "/dashboard" : "/onboarding";
+    const safeRedirectUrl = validateRedirectUrl(redirectTo, defaultRedirect);
     
     // Handle deep links
     if (safeRedirectUrl.startsWith("familyplate://")) {
