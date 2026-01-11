@@ -87,18 +87,18 @@ export async function sendMagicLinkEmail(
     console.log(`[mailjet] Magic link email sent to ${email}`);
     return true;
   } catch (error: any) {
-    console.error("[mailjet] Failed to send magic link email:", error);
-    console.error("[mailjet] Error message:", error?.message);
-    console.error("[mailjet] Error stack:", error?.stack);
-    console.error("[mailjet] Mailjet response:", error?.response?.body ?? error);
-    console.error("[mailjet] Mailjet statusCode:", error?.statusCode);
-    console.error("[mailjet] Env check:", {
+    console.error("[mailjet] Failed to send magic link email");
+    console.error("[mailjet] statusCode:", error?.statusCode);
+    console.error("[mailjet] response.body:", JSON.stringify(error?.response?.body, null, 2));
+    console.error("[mailjet] message:", error?.message);
+    console.error("[mailjet] stack:", error?.stack);
+    console.error("[mailjet] Env check (no secrets):", {
       hasApiKey: !!process.env.MAILJET_API_KEY,
       hasSecretKey: !!process.env.MAILJET_SECRET_KEY,
-      fromEmail: process.env.MAILJET_FROM_EMAIL,
-      fromName: process.env.MAILJET_FROM_NAME,
       apiKeyLength: process.env.MAILJET_API_KEY?.length,
       secretKeyLength: process.env.MAILJET_SECRET_KEY?.length,
+      fromEmail: process.env.MAILJET_FROM_EMAIL,
+      fromName: process.env.MAILJET_FROM_NAME,
     });
     return false;
   }
