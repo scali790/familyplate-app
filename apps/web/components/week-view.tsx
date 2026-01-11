@@ -27,7 +27,7 @@ export function WeekView({ meals, mealTypes, weekStartDate, onMealClick, onGener
 
   // Detect which meal types exist in current plan
   const existingMealTypes = [...new Set(meals.map(m => m.mealType))];
-  const missingMealTypes = mealTypes.filter(type => !existingMealTypes.includes(type));
+  const missingMealTypes = mealTypes.filter(type => !existingMealTypes.includes(type as any));
 
   // Group meals by day and mealType
   const mealsByDayAndType: Record<string, Record<string, Meal | undefined>> = {};
