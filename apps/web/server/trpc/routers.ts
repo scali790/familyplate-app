@@ -190,12 +190,13 @@ export const appRouter = router({
         // Parse JSON fields and map null to defaults
         const parsedPrefs = {
           ...prefs,
-          cuisines: typeof prefs.cuisines === "string" ? JSON.parse(prefs.cuisines) : prefs.cuisines,
-          flavors: typeof prefs.flavors === "string" ? JSON.parse(prefs.flavors) : prefs.flavors,
+          mealTypes: (typeof prefs.mealTypes === "string" ? JSON.parse(prefs.mealTypes) : prefs.mealTypes) as string[],
+          cuisines: (typeof prefs.cuisines === "string" ? JSON.parse(prefs.cuisines) : prefs.cuisines) as string[],
+          flavors: (typeof prefs.flavors === "string" ? JSON.parse(prefs.flavors) : prefs.flavors) as string[],
           dietaryRestrictions:
-            typeof prefs.dietaryRestrictions === "string"
+            (typeof prefs.dietaryRestrictions === "string"
               ? JSON.parse(prefs.dietaryRestrictions)
-              : prefs.dietaryRestrictions,
+              : prefs.dietaryRestrictions) as string[],
           chickenFrequency: prefs.chickenFrequency ?? 2,
           redMeatFrequency: prefs.redMeatFrequency ?? 2,
           fishFrequency: prefs.fishFrequency ?? 2,
