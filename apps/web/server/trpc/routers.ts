@@ -26,34 +26,52 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database not available");
+        try {
+          console.log("[requestMagicLink] START", { email: input.email, baseUrl: ctx.baseUrl });
+          
+          const db = await getDb();
+          if (!db) {
+            console.error("[requestMagicLink] Database not available");
+            throw new Error("Database not available");
+          }
+          console.log("[requestMagicLink] Database connected");
 
-        const token = randomBytes(32).toString("hex");
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+          const token = randomBytes(32).toString("hex");
+          const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+          console.log("[requestMagicLink] Token generated", { tokenLength: token.length });
 
-        await db.insert(magicLinkTokens).values({
-          email: input.email,
-          name: input.name || input.email.split("@")[0],
-          token,
-          expiresAt,
-          used: false,
-        });
+          await db.insert(magicLinkTokens).values({
+            email: input.email,
+            name: input.name || input.email.split("@")[0],
+            token,
+            expiresAt,
+            used: false,
+          });
+          console.log("[requestMagicLink] Token saved to database");
 
-        // Use baseUrl from context (extracted from Request headers)
-        const magicLink = `${ctx.baseUrl}/auth/verify?token=${token}`;
+          // Use baseUrl from context (extracted from Request headers)
+          const magicLink = `${ctx.baseUrl}/auth/verify?token=${token}`;
+          console.log("[requestMagicLink] Magic link generated", { magicLink });
 
-        const emailSent = await sendMagicLinkEmail(
-          input.email,
-          input.name || input.email.split("@")[0],
-          magicLink
-        );
+          console.log("[requestMagicLink] Calling sendMagicLinkEmail...");
+          const emailSent = await sendMagicLinkEmail(
+            input.email,
+            input.name || input.email.split("@")[0],
+            magicLink
+          );
+          console.log("[requestMagicLink] sendMagicLinkEmail returned", { emailSent });
 
-        if (!emailSent) {
-          console.log(`[Magic Link] ${magicLink}`);
+          if (!emailSent) {
+            console.log(`[Magic Link] Email failed, logging link: ${magicLink}`);
+          }
+
+          console.log("[requestMagicLink] SUCCESS");
+          return { success: true };
+        } catch (error: any) {
+          console.error("[requestMagicLink] ERROR:", error);
+          console.error("[requestMagicLink] Error stack:", error?.stack);
+          throw error;
         }
-
-        return { success: true };
       }),
 
     // Note: Magic link verification is handled by /app/auth/verify/route.ts
