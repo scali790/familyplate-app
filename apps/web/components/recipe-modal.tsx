@@ -81,12 +81,19 @@ export function RecipeModal({ meal, onClose }: RecipeModalProps) {
             </div>
             <div className="rounded-xl p-3.5 bg-surface">
               {meal.ingredients && meal.ingredients.length > 0 ? (
-                meal.ingredients.map((ingredient, index) => (
-                  <div key={index} className="flex items-start mb-2">
-                    <span className="mr-2 text-primary text-sm">•</span>
-                    <span className="flex-1 text-foreground text-sm leading-5">{ingredient}</span>
-                  </div>
-                ))
+                meal.ingredients.map((ingredient, index) => {
+                  // Handle both string and object formats
+                  const ingredientText = typeof ingredient === 'string'
+                    ? ingredient
+                    : `${ingredient.amount} ${ingredient.name}`;
+                  
+                  return (
+                    <div key={index} className="flex items-start mb-2">
+                      <span className="mr-2 text-primary text-sm">•</span>
+                      <span className="flex-1 text-foreground text-sm leading-5">{ingredientText}</span>
+                    </div>
+                  );
+                })
               ) : (
                 <p className="italic text-muted text-sm">No ingredients listed</p>
               )}
