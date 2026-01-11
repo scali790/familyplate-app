@@ -817,8 +817,14 @@
 - [x] Disliked Ingredients (Freitext input)
 
 ## Hybrid Disliked Ingredients (Multi-Select + Freitext)
-- [ ] Update database schema to separate commonDislikes (array) and customDislikes (text)
-- [ ] Add multi-select UI for common disliked ingredients (mushrooms, olives, cilantro, etc.)
-- [ ] Keep optional free text field for edge cases
-- [ ] Update API schema to handle both fields
-- [ ] Combine both fields when generating meal plans
+- [x] Update database schema to separate commonDislikes (array) and customDislikes (text)
+- [x] Add multi-select UI for common disliked ingredients (mushrooms, olives, cilantro, etc.)
+- [x] Keep optional free text field for edge cases
+- [x] Update API schema to handle both fields
+- [x] Combine both fields when generating meal plans
+
+## Kid-Friendly Prominence
+- [ ] Move Kid-Friendly out of Advanced Settings in preferences page
+- [ ] Create dedicated Kid-Friendly section with larger toggle
+- [ ] Add Kid-Friendly toggle to onboarding flow
+- [ ] Make it visually prominent (targeting families with kids)

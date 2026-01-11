@@ -346,6 +346,32 @@ export default function PreferencesPage() {
             </CardContent>
           </Card>
 
+          {/* Kid-Friendly Priority */}
+          <Card>
+            <CardContent className="pt-6">
+              <h2 className="text-2xl font-bold text-foreground mb-4">👶 Kid-Friendly Meals</h2>
+              <p className="text-sm text-muted mb-4">
+                Enable this to prioritize recipes that are appealing and suitable for children.
+              </p>
+              <label className="flex items-center gap-4 p-6 rounded-lg border-2 border-border hover:border-primary cursor-pointer transition-all">
+                <input
+                  type="checkbox"
+                  checked={formData.kidFriendly}
+                  onChange={(e) => setFormData({ ...formData, kidFriendly: e.target.checked })}
+                  className="w-6 h-6"
+                />
+                <div>
+                  <span className="text-lg font-semibold text-foreground block">
+                    Prioritize Kid-Friendly Meals
+                  </span>
+                  <span className="text-sm text-muted">
+                    Recipes will be selected with children's preferences in mind
+                  </span>
+                </div>
+              </label>
+            </CardContent>
+          </Card>
+
           {/* Protein Frequency */}
           <Card>
             <CardContent className="pt-6">
@@ -439,21 +465,6 @@ export default function PreferencesPage() {
                         </button>
                       ))}
                     </div>
-                  </div>
-
-                  {/* Kid-Friendly Priority */}
-                  <div>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.kidFriendly}
-                        onChange={(e) => setFormData({ ...formData, kidFriendly: e.target.checked })}
-                        className="w-5 h-5"
-                      />
-                      <span className="text-sm font-medium text-foreground">
-                        👶 Prioritize Kid-Friendly Meals
-                      </span>
-                    </label>
                   </div>
 
                   {/* Common Dislikes */}

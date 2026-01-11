@@ -59,6 +59,7 @@ export default function OnboardingPage() {
     cuisines: [] as string[],
     flavors: [] as string[],
     dietaryRestrictions: [] as string[],
+    kidFriendly: false,
     chickenFrequency: 2,
     redMeatFrequency: 2,
     fishFrequency: 2,
@@ -95,7 +96,7 @@ export default function OnboardingPage() {
       alert('Please select at least one flavor');
       return;
     }
-    if (step < 6) {
+    if (step < 7) {
       setStep(step + 1);
     } else {
       handleSubmit();
@@ -149,7 +150,7 @@ export default function OnboardingPage() {
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex justify-between mb-2">
-              {[1, 2, 3, 4, 5, 6].map((s) => (
+              {[1, 2, 3, 4, 5, 6, 7].map((s) => (
                 <div
                   key={s}
                   className={`w-full h-2 mx-1 rounded-full ${
@@ -159,7 +160,7 @@ export default function OnboardingPage() {
               ))}
             </div>
             <p className="text-sm text-muted text-center">
-              Step {step} of 6
+              Step {step} of 7
             </p>
           </div>
 
@@ -301,8 +302,36 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 6: Protein Frequencies */}
+          {/* Step 6: Kid-Friendly */}
           {step === 6 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-foreground mb-2">👶 Are you cooking for kids?</h2>
+                <p className="text-muted">We'll prioritize recipes that children will love</p>
+              </div>
+              <div className="flex justify-center">
+                <label className="flex items-center gap-6 p-8 rounded-lg border-2 border-border hover:border-primary cursor-pointer transition-all max-w-md">
+                  <input
+                    type="checkbox"
+                    checked={formData.kidFriendly}
+                    onChange={(e) => setFormData({ ...formData, kidFriendly: e.target.checked })}
+                    className="w-8 h-8"
+                  />
+                  <div>
+                    <span className="text-xl font-semibold text-foreground block mb-2">
+                      Yes, prioritize kid-friendly meals
+                    </span>
+                    <span className="text-sm text-muted">
+                      Recipes will be selected with children's preferences in mind
+                    </span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Step 7: Protein Frequency */}
+          {step === 7 && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">How often do you want each protein?</h2>
