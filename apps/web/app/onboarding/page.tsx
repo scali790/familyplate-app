@@ -15,20 +15,82 @@ const MEAL_TYPES = [
   { value: 'dinner' as const, label: 'Dinner', emoji: '🍽️', description: '7 meals/week' },
 ];
 
-const CUISINES = [
-  { value: 'italian', label: 'Italian', emoji: '🇮🇹' },
-  { value: 'mexican', label: 'Mexican', emoji: '🇲🇽' },
-  { value: 'chinese', label: 'Chinese', emoji: '🇨🇳' },
-  { value: 'indian', label: 'Indian', emoji: '🇮🇳' },
-  { value: 'japanese', label: 'Japanese', emoji: '🇯🇵' },
-  { value: 'thai', label: 'Thai', emoji: '🇹🇭' },
-  { value: 'mediterranean', label: 'Mediterranean', emoji: '🌊' },
-  { value: 'american', label: 'American', emoji: '🇺🇸' },
-  { value: 'french', label: 'French', emoji: '🇫🇷' },
-  { value: 'greek', label: 'Greek', emoji: '🇬🇷' },
-  { value: 'middle-eastern', label: 'Middle Eastern', emoji: '🌙' },
-  { value: 'korean', label: 'Korean', emoji: '🇰🇷' },
+// Top 25 cuisines based on TasteAtlas 2025/26 + Regional favorites
+const ALL_CUISINES = [
+  { value: 'italian', label: 'Italian', emoji: '🇮🇹', rank: 1 },
+  { value: 'greek', label: 'Greek', emoji: '🇬🇷', rank: 2 },
+  { value: 'spanish', label: 'Spanish', emoji: '🇪🇸', rank: 5 },
+  { value: 'portuguese', label: 'Portuguese', emoji: '🇵🇹', rank: 4 },
+  { value: 'japanese', label: 'Japanese', emoji: '🇯🇵', rank: 6 },
+  { value: 'turkish', label: 'Turkish', emoji: '🇹🇷', rank: 7 },
+  { value: 'chinese', label: 'Chinese', emoji: '🇨🇳', rank: 8 },
+  { value: 'french', label: 'French', emoji: '🇫🇷', rank: 9 },
+  { value: 'mexican', label: 'Mexican', emoji: '🇲🇽', rank: 11 },
+  { value: 'indian', label: 'Indian', emoji: '🇮🇳', rank: 13 },
+  { value: 'vietnamese', label: 'Vietnamese', emoji: '🇻🇳', rank: 15 },
+  { value: 'brazilian', label: 'Brazilian', emoji: '🇧🇷', rank: 16 },
+  { value: 'korean', label: 'Korean', emoji: '🇰🇷', rank: 18 },
+  { value: 'lebanese', label: 'Lebanese', emoji: '🇱🇧', rank: 19 },
+  { value: 'thai', label: 'Thai', emoji: '🇹🇭', rank: 20 },
+  { value: 'indonesian', label: 'Indonesian', emoji: '🇮🇩', rank: 10 },
+  { value: 'filipino', label: 'Filipino', emoji: '🇵🇭', rank: 21 },
+  { value: 'argentinian', label: 'Argentinian', emoji: '🇦🇷', rank: 22 },
+  { value: 'malaysian', label: 'Malaysian', emoji: '🇲🇾', rank: 23 },
+  { value: 'moroccan', label: 'Moroccan', emoji: '🇲🇦', rank: 24 },
+  { value: 'peruvian', label: 'Peruvian', emoji: '🇵🇪', rank: 3 },
+  { value: 'mediterranean', label: 'Mediterranean', emoji: '🌊', rank: 0 },
+  { value: 'middle-eastern', label: 'Middle Eastern', emoji: '🌙', rank: 0 },
+  { value: 'american', label: 'American', emoji: '🇺🇸', rank: 0 },
+  { value: 'german', label: 'German', emoji: '🇩🇪', rank: 0 },
 ];
+
+// Country to regional cuisines mapping
+const REGIONAL_CUISINES: Record<string, string[]> = {
+  // Europe
+  'it': ['italian', 'mediterranean'],
+  'gr': ['greek', 'mediterranean'],
+  'es': ['spanish', 'mediterranean'],
+  'pt': ['portuguese', 'mediterranean'],
+  'fr': ['french', 'mediterranean'],
+  'de': ['german'],
+  'tr': ['turkish', 'middle-eastern'],
+  // Asia
+  'jp': ['japanese'],
+  'cn': ['chinese'],
+  'kr': ['korean'],
+  'th': ['thai'],
+  'vn': ['vietnamese'],
+  'in': ['indian'],
+  'id': ['indonesian'],
+  'ph': ['filipino'],
+  'my': ['malaysian'],
+  'lb': ['lebanese', 'middle-eastern'],
+  // Americas
+  'mx': ['mexican'],
+  'us': ['american'],
+  'br': ['brazilian'],
+  'ar': ['argentinian'],
+  'pe': ['peruvian'],
+  // Africa
+  'ma': ['moroccan'],
+};
+
+// Get sorted cuisines based on user's country
+function getSortedCuisines(countryCode: string): typeof ALL_CUISINES {
+  const regional = REGIONAL_CUISINES[countryCode.toLowerCase()] || [];
+  
+  // Sort: regional first, then by rank
+  return [...ALL_CUISINES].sort((a, b) => {
+    const aIsRegional = regional.includes(a.value);
+    const bIsRegional = regional.includes(b.value);
+    
+    if (aIsRegional && !bIsRegional) return -1;
+    if (!aIsRegional && bIsRegional) return 1;
+    
+    // Both regional or both non-regional: sort by rank
+    return a.rank - b.rank;
+  });
+}
 
 const FLAVORS = [
   { value: 'spicy', label: 'Spicy', emoji: '🌶️' },
@@ -78,6 +140,7 @@ export default function OnboardingPage() {
   const [showCountryTooltip, setShowCountryTooltip] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const [isDetecting, setIsDetecting] = useState(true);
+  const [sortedCuisines, setSortedCuisines] = useState(ALL_CUISINES);
 
   // Auto-detect user's country on mount
   useEffect(() => {
@@ -86,6 +149,8 @@ export default function OnboardingPage() {
         if (result.countryCode) {
           setDetectedCountry(result.countryCode);
           setFormData((prev) => ({ ...prev, country: result.countryCode! }));
+          // Sort cuisines based on detected country
+          setSortedCuisines(getSortedCuisines(result.countryCode));
           console.log('[onboarding] Detected country:', result.countryCode, result.countryName);
         }
       })
@@ -96,6 +161,13 @@ export default function OnboardingPage() {
         setIsDetecting(false);
       });
   }, []);
+
+  // Re-sort cuisines when country changes
+  useEffect(() => {
+    if (formData.country) {
+      setSortedCuisines(getSortedCuisines(formData.country));
+    }
+  }, [formData.country]);
 
   const savePreferences = trpc.preferences.savePreferences.useMutation({
     onSuccess: () => {
@@ -322,7 +394,7 @@ export default function OnboardingPage() {
                 <p className="text-muted">Select all that apply</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {CUISINES.map((cuisine) => (
+                {sortedCuisines.map((cuisine) => (
                   <button
                     key={cuisine.value}
                     onClick={() => toggleSelection('cuisines', cuisine.value)}
