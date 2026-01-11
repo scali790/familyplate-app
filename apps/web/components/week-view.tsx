@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import type { Meal } from '@/server/db/schema';
 
 interface WeekViewProps {
   meals: Meal[];
-  mealTypes: string[]; // ["breakfast", "lunch", "dinner"]
+  mealTypes: string[]; // ["breakfast", "lunch", "dinner"] from user preferences
   weekStartDate: string;
   onMealClick: (meal: Meal) => void;
+  onGeneratePartial?: (mealType: string) => Promise<void>;
 }
 
 const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -20,7 +22,13 @@ const mealTypeConfig = {
   dinner: { emoji: '🌙', label: 'Dinner', color: 'text-blue-500' },
 };
 
-export function WeekView({ meals, mealTypes, weekStartDate, onMealClick }: WeekViewProps) {
+export function WeekView({ meals, mealTypes, weekStartDate, onMealClick, onGeneratePartial }: WeekViewProps) {
+  const [generatingMealType, setGeneratingMealType] = useState<string | null>(null);
+
+  // Detect which meal types exist in current plan
+  const existingMealTypes = [...new Set(meals.map(m => m.mealType))];
+  const missingMealTypes = mealTypes.filter(type => !existingMealTypes.includes(type));
+
   // Group meals by day and mealType
   const mealsByDayAndType: Record<string, Record<string, Meal | undefined>> = {};
   
@@ -67,6 +75,20 @@ export function WeekView({ meals, mealTypes, weekStartDate, onMealClick }: WeekV
     return parts.join(' ');
   };
 
+  // Handle partial generation
+  const handleGeneratePartial = async (mealType: string) => {
+    if (!onGeneratePartial) return;
+    
+    setGeneratingMealType(mealType);
+    try {
+      await onGeneratePartial(mealType);
+    } catch (error) {
+      console.error('Failed to generate partial plan:', error);
+    } finally {
+      setGeneratingMealType(null);
+    }
+  };
+
   return (
     <div className="w-full overflow-x-auto">
       <div className="min-w-[800px]">
@@ -86,55 +108,97 @@ export function WeekView({ meals, mealTypes, weekStartDate, onMealClick }: WeekV
           const config = mealTypeConfig[mealType as keyof typeof mealTypeConfig];
           if (!config) return null;
 
+          const isMissing = missingMealTypes.includes(mealType);
+          const isGenerating = generatingMealType === mealType;
+
           return (
             <div key={mealType} className="grid grid-cols-8 gap-2 mb-3">
               {/* Meal Type Label */}
               <div className="flex flex-col items-center justify-center">
-                <div className="text-2xl mb-1">{config.emoji}</div>
-                <div className={`text-xs font-semibold ${config.color}`}>
+                <div className={`text-2xl mb-1 ${isMissing ? 'opacity-40' : ''}`}>
+                  {config.emoji}
+                </div>
+                <div className={`text-xs font-semibold ${config.color} ${isMissing ? 'opacity-40' : ''}`}>
                   {config.label}
                 </div>
               </div>
 
               {/* Day Cells */}
-              {dayNames.map(day => {
-                const meal = mealsByDayAndType[day.toLowerCase()][mealType];
+              {isMissing ? (
+                // Missing meal type - show generate button
+                <div className="col-span-7 flex items-center justify-center">
+                  <div className="bg-surface/50 border border-dashed border-border rounded-lg p-4 w-full">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl opacity-40">{config.emoji}</span>
+                        <div>
+                          <p className="text-sm font-semibold text-muted">
+                            No {config.label} plan yet
+                          </p>
+                          <p className="text-xs text-muted/70">
+                            Generate 7 {config.label.toLowerCase()} meals for this week
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleGeneratePartial(mealType)}
+                        disabled={isGenerating}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <span className="animate-spin mr-2">⏳</span>
+                            Generating...
+                          </>
+                        ) : (
+                          <>+ Generate {config.label}</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Existing meal type - show meals
+                dayNames.map(day => {
+                  const meal = mealsByDayAndType[day.toLowerCase()][mealType];
 
-                return (
-                  <Card
-                    key={`${day}-${mealType}`}
-                    className={`bg-surface border-border hover:border-primary transition-colors ${
-                      meal ? 'cursor-pointer' : 'opacity-50'
-                    }`}
-                    onClick={() => meal && onMealClick(meal)}
-                  >
-                    <CardContent className="p-3">
-                      {meal ? (
-                        <div className="space-y-1">
-                          {/* Emoji */}
-                          <div className="text-2xl text-center">{meal.emoji || '🍽️'}</div>
-                          
-                          {/* Meal Name */}
-                          <div className="text-xs font-semibold text-foreground text-center leading-tight">
-                            {truncateName(meal.name)}
-                          </div>
-
-                          {/* Voting */}
-                          {getVotingDisplay(meal) && (
-                            <div className="text-[10px] text-muted text-center">
-                              {getVotingDisplay(meal)}
+                  return (
+                    <Card
+                      key={`${day}-${mealType}`}
+                      className={`bg-surface border-border hover:border-primary transition-colors ${
+                        meal ? 'cursor-pointer' : 'opacity-50'
+                      }`}
+                      onClick={() => meal && onMealClick(meal)}
+                    >
+                      <CardContent className="p-3">
+                        {meal ? (
+                          <div className="space-y-1">
+                            {/* Emoji */}
+                            <div className="text-2xl text-center">{meal.emoji || '🍽️'}</div>
+                            
+                            {/* Meal Name */}
+                            <div className="text-xs font-semibold text-foreground text-center leading-tight">
+                              {truncateName(meal.name)}
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center text-muted text-xs">
-                          No meal
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+
+                            {/* Voting */}
+                            {getVotingDisplay(meal) && (
+                              <div className="text-[10px] text-muted text-center">
+                                {getVotingDisplay(meal)}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center text-muted text-xs">
+                            No meal
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
             </div>
           );
         })}

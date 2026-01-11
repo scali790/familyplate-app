@@ -20,6 +20,7 @@ export default function DashboardPage() {
   
   // Mutations
   const generateMutation = trpc.mealPlanning.generatePlan.useMutation();
+  const generatePartialMutation = trpc.mealPlanning.generatePartialPlan.useMutation();
 
   const handleGenerateNew = async () => {
     try {
@@ -28,6 +29,19 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Failed to generate meal plan:', error);
       alert('Failed to generate meal plan');
+    }
+  };
+
+  const handleGeneratePartial = async (mealType: string) => {
+    try {
+      await generatePartialMutation.mutateAsync({ 
+        mealType: mealType as "breakfast" | "lunch" | "dinner",
+        weekStartDate: mealPlan?.weekStartDate 
+      });
+      await refetch();
+    } catch (error) {
+      console.error('Failed to generate partial plan:', error);
+      alert(`Failed to generate ${mealType} plan`);
     }
   };
 
@@ -166,6 +180,7 @@ export default function DashboardPage() {
                   onMealClick={(meal) => {
                     setSelectedMeal(meal);
                   }}
+                  onGeneratePartial={handleGeneratePartial}
                 />
               ) : (
                 <DayView
