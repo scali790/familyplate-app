@@ -49,7 +49,9 @@ export default function DashboardPage() {
   };
 
   // Get meal types from preferences (default to all if not set)
-  const mealTypes = preferences?.mealTypes || ['breakfast', 'lunch', 'dinner'];
+  const mealTypes: string[] = Array.isArray(preferences?.mealTypes) && preferences.mealTypes.length > 0
+    ? preferences.mealTypes
+    : ['breakfast', 'lunch', 'dinner'];
 
   if (isLoading) {
     return (
