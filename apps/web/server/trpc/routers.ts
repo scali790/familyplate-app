@@ -1,6 +1,6 @@
 import { publicProcedure, protectedProcedure, router } from "./init";
 import { getDb } from "../db/client";
-import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, type Meal } from "../db/schema";
+import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, mealHistory, mealRegenerationQuota, type Meal } from "../db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
@@ -228,7 +228,7 @@ export const appRouter = router({
             {
               role: "system",
               content:
-                "You are a helpful meal planning assistant. Generate diverse, family-friendly dinner recipes.",
+                "You are a helpful meal planning assistant. Generate diverse, family-friendly meal plans with breakfast, lunch, and dinner for each day. Always return valid JSON.",
             },
             { role: "user", content: prompt },
           ],
@@ -246,6 +246,18 @@ export const appRouter = router({
           throw new Error("Failed to parse AI response");
         }
 
+        // Validate we got correct number of meals based on selected meal types
+        const expectedMealCount = parsedPrefs.mealTypes.length * 7;
+        if (!Array.isArray(meals) || meals.length !== expectedMealCount) {
+          throw new Error(`Expected ${expectedMealCount} meals (${parsedPrefs.mealTypes.join(", ")} × 7 days), got ${meals?.length || 0}`);
+        }
+
+        // Validate all meals have required mealType
+        const invalidMeals = meals.filter(m => !parsedPrefs.mealTypes.includes(m.mealType));
+        if (invalidMeals.length > 0) {
+          throw new Error(`Some meals have invalid mealType. Expected one of: ${parsedPrefs.mealTypes.join(", ")}`);
+        }
+
         // Save meal plan
         const weekStart = input.weekStartDate || new Date().toISOString().split("T")[0];
         await db.insert(mealPlans).values({
@@ -253,6 +265,50 @@ export const appRouter = router({
           weekStartDate: weekStart,
           meals: JSON.stringify(meals),
         });
+
+        // Update meal history for rotation tracking
+        const now = new Date();
+        for (const meal of meals) {
+          // Check if meal already exists in history
+          const existingHistory = await db
+            .select()
+            .from(mealHistory)
+            .where(
+              and(
+                eq(mealHistory.userId, ctx.user.id),
+                eq(mealHistory.mealName, meal.name),
+                eq(mealHistory.mealType, meal.mealType)
+              )
+            )
+            .limit(1);
+
+          if (existingHistory.length > 0) {
+            // Update existing history
+            await db
+              .update(mealHistory)
+              .set({
+                lastServed: now,
+                timesServed: existingHistory[0].timesServed + 1,
+                updatedAt: now,
+              })
+              .where(eq(mealHistory.id, existingHistory[0].id));
+          } else {
+            // Insert new history
+            await db.insert(mealHistory).values({
+              userId: ctx.user.id,
+              mealName: meal.name,
+              mealType: meal.mealType,
+              lastServed: now,
+              timesServed: 1,
+              isFavorite: false,
+              totalUpvotes: 0,
+              totalDownvotes: 0,
+              totalNeutralVotes: 0,
+              cuisine: meal.tags?.find((t) => parsedPrefs.cuisines.includes(t)) || null,
+              tags: JSON.stringify(meal.tags || []),
+            });
+          }
+        }
 
         return { success: true, meals };
       }),

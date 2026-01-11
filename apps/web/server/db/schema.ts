@@ -87,6 +87,55 @@ export const magicLinkTokens = pgTable("magic_link_tokens", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+/**
+ * Meal History Table
+ * Tracks all meals served to enable 4-week rotation logic
+ */
+export const mealHistory = pgTable(
+  "meal_history",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id),
+    mealName: varchar("meal_name", { length: 255 }).notNull(),
+    mealType: varchar("meal_type", { length: 20 }).notNull(), // breakfast, lunch, dinner
+    lastServed: timestamp("last_served").notNull(),
+    timesServed: integer("times_served").notNull().default(1),
+    isFavorite: boolean("is_favorite").notNull().default(false), // auto-set when upvotes >= 3
+    totalUpvotes: integer("total_upvotes").notNull().default(0),
+    totalDownvotes: integer("total_downvotes").notNull().default(0),
+    totalNeutralVotes: integer("total_neutral_votes").notNull().default(0),
+    cuisine: varchar("cuisine", { length: 50 }),
+    tags: jsonb("tags"), // array of tags: ["chicken", "spicy", "healthy"]
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    userMealTypeIdx: index("meal_history_user_meal_type_idx").on(table.userId, table.mealType),
+    lastServedIdx: index("meal_history_last_served_idx").on(table.lastServed),
+    isFavoriteIdx: index("meal_history_is_favorite_idx").on(table.isFavorite),
+  })
+);
+
+/**
+ * Meal Regeneration Quota Table
+ * Tracks meal replacement usage (2 free per week)
+ */
+export const mealRegenerationQuota = pgTable(
+  "meal_regeneration_quota",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id),
+    weekStartDate: varchar("week_start_date", { length: 10 }).notNull(), // YYYY-MM-DD
+    used: integer("used").notNull().default(0), // How many replacements used this week
+    limit: integer("limit").notNull().default(2), // Free limit per week
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    userWeekIdx: index("meal_regeneration_quota_user_week_idx").on(table.userId, table.weekStartDate),
+  })
+);
+
 export type User = typeof users.$inferSelect;
 export type UserPreferences = typeof userPreferences.$inferSelect;
 export type MealPlan = typeof mealPlans.$inferSelect;
@@ -94,15 +143,21 @@ export type MealVote = typeof mealVotes.$inferSelect;
 export type DishVote = typeof dishVotes.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type MagicLinkToken = typeof magicLinkTokens.$inferSelect;
+export type MealHistory = typeof mealHistory.$inferSelect;
+export type MealRegenerationQuota = typeof mealRegenerationQuota.$inferSelect;
 
 export interface Meal {
+  day: string; // monday, tuesday, etc.
+  mealType: "breakfast" | "lunch" | "dinner"; // NEW: meal type
   name: string;
   description: string;
   prepTime: string;
   cookTime: string;
-  ingredients: string[];
+  difficulty: string;
+  ingredients: Array<{ name: string; amount: string; category: string }>; // Structured ingredients
   instructions: string[];
-  tags: string[];
+  tags: string[]; // e.g., ["chicken", "spicy", "healthy"]
+  emoji: string; // Meal emoji (🥣, 🌯, 🍗)
   upVotes?: number;
   downVotes?: number;
   neutralVotes?: number;
