@@ -838,10 +838,10 @@
 - [ ] Use country for shopping integration later (Future)
 
 ## Country Auto-Detection (Full List)
-- [ ] Install country-list package
-- [ ] Add IP geolocation utility (ipapi.co)
-- [ ] Auto-detect user's country
-- [ ] Show detected country on top + pre-selected
-- [ ] Add separator between detected and rest
-- [ ] All countries alphabetically sorted
-- [ ] Update onboarding and preferences
+- [x] Install country-list package
+- [x] Add IP geolocation utility (ipapi.co)
+- [x] Auto-detect user's country
+- [x] Show detected country on top + pre-selected
+- [x] Add separator between detected and rest
+- [x] All countries alphabetically sorted
+- [x] Update onboarding and preferences

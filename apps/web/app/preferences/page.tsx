@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigimport { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { trpc } from '@/lib/trpc';
 import { getData } from 'country-list';
-import { detectUserCountry, getCountryFlag } from '@/lib/geolocation';ailable options
+import { detectUserCountry, getCountryFlag } from '@/lib/geolocation';
+
+// Available options
 const MEAL_TYPES = [
   { value: 'breakfast' as const, label: 'Breakfast', emoji: '🍳' },
   { value: 'lunch' as const, label: 'Lunch', emoji: '🥗' },
