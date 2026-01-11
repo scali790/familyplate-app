@@ -824,7 +824,7 @@
 - [x] Combine both fields when generating meal plans
 
 ## Kid-Friendly Prominence
-- [ ] Move Kid-Friendly out of Advanced Settings in preferences page
-- [ ] Create dedicated Kid-Friendly section with larger toggle
-- [ ] Add Kid-Friendly toggle to onboarding flow
-- [ ] Make it visually prominent (targeting families with kids)
+- [x] Move Kid-Friendly out of Advanced Settings in preferences page
+- [x] Create dedicated Kid-Friendly section with larger toggle
+- [x] Add Kid-Friendly toggle to onboarding flow
+- [x] Make it visually prominent (targeting families with kids)
