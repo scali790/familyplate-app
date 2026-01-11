@@ -18,7 +18,8 @@ export const savePreferencesSchema = z.object({
   cookingTime: z.enum(["quick", "medium", "elaborate"]).default("medium"),
   spiceLevel: z.enum(["mild", "medium", "hot", "extra-hot"]).default("medium"),
   kidFriendly: z.boolean().default(false),
-  dislikedIngredients: z.string().optional(),
+  commonDislikes: z.array(z.string()).optional(),
+  customDislikes: z.string().optional(),
 });
 
 export type SavePreferencesInput = z.infer<typeof savePreferencesSchema>;
@@ -41,7 +42,8 @@ export interface UserPreferences {
   cookingTime: string;
   spiceLevel: string;
   kidFriendly: boolean;
-  dislikedIngredients: string | null;
+  commonDislikes?: string[];
+  customDislikes: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -815,3 +815,10 @@
 - [x] Spice Level (Mild/Medium/Hot/Extra Hot)
 - [x] Kid-Friendly Priority (Toggle)
 - [x] Disliked Ingredients (Freitext input)
+
+## Hybrid Disliked Ingredients (Multi-Select + Freitext)
+- [ ] Update database schema to separate commonDislikes (array) and customDislikes (text)
+- [ ] Add multi-select UI for common disliked ingredients (mushrooms, olives, cilantro, etc.)
+- [ ] Keep optional free text field for edge cases
+- [ ] Update API schema to handle both fields
+- [ ] Combine both fields when generating meal plans

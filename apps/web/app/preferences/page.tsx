@@ -64,6 +64,23 @@ const SPICE_LEVELS = [
   { value: 'extra-hot' as const, label: 'Extra Hot', emoji: '🔥🔥' },
 ];
 
+const COMMON_DISLIKES = [
+  { value: 'mushrooms', label: 'Mushrooms', emoji: '🍄' },
+  { value: 'olives', label: 'Olives', emoji: '🫒' },
+  { value: 'cilantro', label: 'Cilantro', emoji: '🌿' },
+  { value: 'onions', label: 'Onions', emoji: '🧅' },
+  { value: 'garlic', label: 'Garlic', emoji: '🧄' },
+  { value: 'tomatoes', label: 'Tomatoes', emoji: '🍅' },
+  { value: 'peppers', label: 'Peppers', emoji: '🫑' },
+  { value: 'eggplant', label: 'Eggplant', emoji: '🍆' },
+  { value: 'seafood', label: 'Seafood', emoji: '🦐' },
+  { value: 'cheese', label: 'Cheese', emoji: '🧀' },
+  { value: 'eggs', label: 'Eggs', emoji: '🥚' },
+  { value: 'nuts', label: 'Nuts', emoji: '🥜' },
+  { value: 'spicy-food', label: 'Spicy Food', emoji: '🌶️' },
+  { value: 'bitter-vegetables', label: 'Bitter Vegetables', emoji: '🥬' },
+];
+
 export default function PreferencesPage() {
   const router = useRouter();
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -81,7 +98,8 @@ export default function PreferencesPage() {
     cookingTime: 'medium' as 'quick' | 'medium' | 'elaborate',
     spiceLevel: 'medium' as 'mild' | 'medium' | 'hot' | 'extra-hot',
     kidFriendly: false,
-    dislikedIngredients: '',
+    commonDislikes: [] as string[],
+    customDislikes: '',
   });
 
   // Fetch existing preferences
@@ -104,7 +122,8 @@ export default function PreferencesPage() {
         cookingTime: (preferences.cookingTime || 'medium') as 'quick' | 'medium' | 'elaborate',
         spiceLevel: (preferences.spiceLevel || 'medium') as 'mild' | 'medium' | 'hot' | 'extra-hot',
         kidFriendly: preferences.kidFriendly || false,
-        dislikedIngredients: preferences.dislikedIngredients || '',
+        commonDislikes: Array.isArray(preferences.commonDislikes) ? preferences.commonDislikes : [],
+        customDislikes: preferences.customDislikes || '',
       });
     }
   }, [preferences]);
@@ -146,7 +165,7 @@ export default function PreferencesPage() {
     }
   };
 
-  const toggleSelection = (field: 'mealTypes' | 'cuisines' | 'flavors' | 'dietaryRestrictions', value: string) => {
+  const toggleSelection = (field: 'mealTypes' | 'cuisines' | 'flavors' | 'dietaryRestrictions' | 'commonDislikes', value: string) => {
     setFormData((prev) => {
       if (field === 'mealTypes') {
         const mealType = value as 'breakfast' | 'lunch' | 'dinner';
@@ -437,20 +456,41 @@ export default function PreferencesPage() {
                     </label>
                   </div>
 
-                  {/* Disliked Ingredients */}
+                  {/* Common Dislikes */}
                   <div>
+                    <label className="block text-sm font-medium text-foreground mb-3">
+                      🚫 Ingredients to Avoid
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                      {COMMON_DISLIKES.map((item) => (
+                        <button
+                          key={item.value}
+                          onClick={() => toggleSelection('commonDislikes', item.value)}
+                          className={`p-3 rounded-lg border-2 transition-all ${
+                            formData.commonDislikes.includes(item.value)
+                              ? 'border-red-500 bg-red-500/10'
+                              : 'border-border hover:border-red-500/50'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">{item.emoji}</div>
+                          <div className="text-xs font-medium text-foreground">{item.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {/* Custom Dislikes */}
                     <label className="block text-sm font-medium text-foreground mb-2">
-                      Disliked Ingredients (comma-separated)
+                      Other ingredients (optional)
                     </label>
                     <input
                       type="text"
-                      value={formData.dislikedIngredients}
-                      onChange={(e) => setFormData({ ...formData, dislikedIngredients: e.target.value })}
-                      placeholder="e.g., mushrooms, olives, cilantro"
+                      value={formData.customDislikes}
+                      onChange={(e) => setFormData({ ...formData, customDislikes: e.target.value })}
+                      placeholder="e.g., blue cheese, anchovies"
                       className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
                     />
                     <p className="text-xs text-muted mt-1">
-                      These ingredients will be avoided in meal generation
+                      All selected ingredients will be avoided in meal generation
                     </p>
                   </div>
                 </div>

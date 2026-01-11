@@ -28,7 +28,8 @@ export const userPreferences = pgTable("user_preferences", {
   cookingTime: varchar("cooking_time", { length: 50 }).default("medium"), // quick, medium, elaborate
   spiceLevel: varchar("spice_level", { length: 50 }).default("medium"), // mild, medium, hot, extra-hot
   kidFriendly: boolean("kid_friendly").default(false),
-  dislikedIngredients: text("disliked_ingredients"), // comma-separated list
+  commonDislikes: jsonb("common_dislikes"), // array of common disliked ingredients
+  customDislikes: text("custom_dislikes"), // free text for edge cases
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -141,7 +141,8 @@ export const appRouter = router({
           cookingTime: input.cookingTime,
           spiceLevel: input.spiceLevel,
           kidFriendly: input.kidFriendly,
-          dislikedIngredients: input.dislikedIngredients || null,
+          commonDislikes: input.commonDislikes ? JSON.stringify(input.commonDislikes) : null,
+          customDislikes: input.customDislikes || null,
           updatedAt: new Date(),
         };
 
