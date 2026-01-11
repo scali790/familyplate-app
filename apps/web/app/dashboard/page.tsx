@@ -6,18 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RecipeModal } from '@/components/recipe-modal';
 import { trpc } from '@/lib/trpc';
-
-type Meal = {
-  day?: string;
-  name: string;
-  description: string;
-  prepTime: string;
-  cookTime?: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  tags: string[];
-  ingredients: string[];
-  instructions: string[];
-};
+import type { Meal } from '@/server/db/schema';
 
 // Food category icons mapping
 const getIconsForTags = (tags: string[]): string[] => {
@@ -73,9 +62,7 @@ export default function DashboardPage() {
   };
 
   // Get day date
-  const getDayDate = (weekStartDate: string, dayName: string) => {
-    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const dayIndex = dayNames.indexOf(dayName);
+  const getDayDate = (weekStartDate: string, dayIndex: number) => {
     const startDate = new Date(weekStartDate);
     const mealDate = new Date(startDate);
     mealDate.setDate(startDate.getDate() + dayIndex);
@@ -85,11 +72,7 @@ export default function DashboardPage() {
     return `${month} ${day}`;
   };
 
-  const difficultyEmoji = {
-    Easy: '🟢',
-    Medium: '🟡',
-    Hard: '🔴',
-  };
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   if (isLoading) {
     return (
@@ -185,8 +168,8 @@ export default function DashboardPage() {
 
               {/* Meal Cards */}
               <div className="space-y-4">
-                {mealPlan.meals.map((meal: Meal, index: number) => {
-                  const dayName = meal.day || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index];
+                {mealPlan.meals.map((meal, index) => {
+                  const dayName = dayNames[index];
                   
                   return (
                     <Card key={index} className="bg-surface border-border">
@@ -195,7 +178,7 @@ export default function DashboardPage() {
                         <div className="mb-3">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-primary uppercase">{dayName}</span>
-                            <span className="text-sm text-muted">• {getDayDate(mealPlan.weekStartDate, dayName)}</span>
+                            <span className="text-sm text-muted">• {getDayDate(mealPlan.weekStartDate, index)}</span>
                           </div>
                           <div className="flex items-center gap-1.5 mt-1">
                             {meal.tags && meal.tags.length > 0 && (
@@ -210,19 +193,14 @@ export default function DashboardPage() {
 
                         {/* Meta Info */}
                         <div className="flex gap-4 mb-3">
-                          <div className="flex items-center gap-1 text-muted">
-                            <span>⏱️ {meal.prepTime}</span>
+                          <div className="flex items-center gap-1 text-muted text-sm">
+                            <span>⏱️ Prep: {meal.prepTime}</span>
                           </div>
                           {meal.cookTime && (
-                            <div className="flex items-center gap-1 text-muted">
-                              <span>🍳 {meal.cookTime}</span>
+                            <div className="flex items-center gap-1 text-muted text-sm">
+                              <span>🍳 Cook: {meal.cookTime}</span>
                             </div>
                           )}
-                          <div className="flex items-center gap-1 text-muted">
-                            <span>
-                              {difficultyEmoji[meal.difficulty]} {meal.difficulty}
-                            </span>
-                          </div>
                         </div>
 
                         {/* View Recipe Button */}

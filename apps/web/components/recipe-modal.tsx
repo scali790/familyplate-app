@@ -2,16 +2,7 @@
 
 import { Button } from './ui/button';
 
-type Meal = {
-  name: string;
-  description: string;
-  prepTime: string;
-  cookTime?: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  tags: string[];
-  ingredients: string[];
-  instructions: string[];
-};
+import type { Meal } from '@/server/db/schema';
 
 type RecipeModalProps = {
   meal: Meal | null;
@@ -79,9 +70,7 @@ export function RecipeModal({ meal, onClose }: RecipeModalProps) {
                 <span className="font-semibold text-success text-sm">Cook: {meal.cookTime}</span>
               </div>
             )}
-            <div className="px-3 py-1.5 rounded-2xl bg-surface">
-              <span className="font-semibold text-muted text-sm">{meal.difficulty}</span>
-            </div>
+
           </div>
 
           {/* Ingredients */}
