@@ -280,9 +280,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   }
 
   payload.max_tokens = 32768;
-  payload.thinking = {
-    budget_tokens: 128,
-  };
+  // Note: thinking parameter only supported by o1-preview/o1-mini models
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
