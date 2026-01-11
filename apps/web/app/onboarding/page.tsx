@@ -55,7 +55,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     familySize: 2,
-    mealTypes: [] as string[],
+    mealTypes: [] as ('breakfast' | 'lunch' | 'dinner')[],
     cuisines: [] as string[],
     flavors: [] as string[],
     dietaryRestrictions: [] as string[],
