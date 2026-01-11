@@ -8,11 +8,11 @@ export const savePreferencesSchema = z.object({
   flavors: z.array(z.string()),
   dietaryRestrictions: z.array(z.string()).optional(),
   country: z.string().optional(),
-  // Food preference frequencies (0-4: Never, Rarely, Sometimes, Often, Always)
-  chickenFrequency: z.number().min(0).max(4).default(2),
-  redMeatFrequency: z.number().min(0).max(4).default(2),
-  fishFrequency: z.number().min(0).max(4).default(2),
-  vegetarianFrequency: z.number().min(0).max(4).default(2),
+  // Food preference frequencies (0-7: times per week)
+  chickenFrequency: z.number().min(0).max(7).default(2),
+  redMeatFrequency: z.number().min(0).max(7).default(2),
+  fishFrequency: z.number().min(0).max(7).default(2),
+  vegetarianFrequency: z.number().min(0).max(7).default(2),
 });
 
 export type SavePreferencesInput = z.infer<typeof savePreferencesSchema>;
