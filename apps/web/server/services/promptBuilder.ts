@@ -164,31 +164,34 @@ Flavor preferences: ${data.flavors.join(", ")}`;
     return `7 ${type}s (${timeMap[type]})`;
   }).join(", ");
 
-  prompt += `\n\nIMPORTANT REQUIREMENTS:
+  prompt += `
+
+IMPORTANT REQUIREMENTS:
 1. Generate exactly ${totalMeals} meals: ${mealTypeRequirements}
 2. Each meal MUST include a "mealType" field: one of [${data.mealTypes.map(t => `"${t}"`).join(", ")}]
 3. Each meal MUST include a "day" field: "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
 4. Each meal MUST include an "emoji" field with an appropriate food emoji
 5. STRICTLY respect food frequency preferences - count protein types across all meals
-6. Ingredients MUST be structured as objects: {"name": "...", "amount": "...", "category": "..."}
-7. Categories: "Vegetables", "Meat & Fish", "Dairy", "Pantry", "Spices", "Other"
+6. Keep descriptions SHORT (max 160 characters)
+7. DO NOT include ingredients or instructions (will be generated separately on-demand)
 8. Ensure variety - no meal should repeat within the week
 9. Balance nutrition across the week
 
-Return a JSON array of ${totalMeals} meal objects with this exact structure:
+Return a COMPACT JSON array of ${totalMeals} meal objects with this exact structure:
 {
   "day": "monday",
   "mealType": "${data.mealTypes[0]}",
-  "name": "...",
-  "description": "...",
-  "prepTime": "10 mins",
-  "cookTime": "5 mins",
+  "name": "Oatmeal with Berries",
+  "description": "Creamy oats topped with fresh berries and honey",
+  "prepTime": "5 mins",
+  "cookTime": "10 mins",
   "difficulty": "easy",
-  "ingredients": [{"name": "Oats", "amount": "1 cup", "category": "Pantry"}],
-  "instructions": ["Step 1...", "Step 2..."],
-  "tags": ["healthy", "quick", "chicken"],
-  "emoji": "🥣"
-}`;
+  "tags": ["healthy", "quick", "vegetarian"],
+  "emoji": "🥣",
+  "recipeId": "mon-breakfast-001"
+}
+
+NOTE: Keep output compact! No ingredients, no instructions. Total output should be ~1500-2500 tokens.`;
 
   return prompt;
 }

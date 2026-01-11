@@ -266,7 +266,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gpt-4o",
+    model: "gpt-4o-2024-08-06",  // Snapshot model for json_schema support
     messages: messages.map(normalizeMessage),
   };
 
@@ -279,7 +279,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 16384;  // GPT-4o max completion tokens limit
+  payload.max_tokens = 2500;  // Compact week plan generation (21 meals skeleton)
   // Note: thinking parameter only supported by o1-preview/o1-mini models
 
   const normalizedResponseFormat = normalizeResponseFormat({

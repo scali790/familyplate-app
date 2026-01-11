@@ -222,14 +222,14 @@ export const appRouter = router({
         const promptData = buildMealGenerationPrompt(parsedPrefs as any, undefined, recentMealNames);
         const prompt = formatPromptForAI(promptData);
 
-        // Call OpenAI
+        // Call OpenAI with compact meal schema
         const aiResponse = await invokeLLM({
-          model: "gpt-4o-mini",
+          model: "gpt-4o-2024-08-06",  // Snapshot model for json_schema support
           messages: [
             {
               role: "system",
               content:
-                "You are a helpful meal planning assistant. Generate diverse, family-friendly meal plans with breakfast, lunch, and dinner for each day. Always return valid JSON.",
+                "You are a helpful meal planning assistant. Generate diverse, family-friendly meal plans. Return COMPACT meal objects (no ingredients/instructions). Always return valid JSON array.",
             },
             { role: "user", content: prompt },
           ],
@@ -242,9 +242,11 @@ export const appRouter = router({
           if (!content || typeof content !== "string") {
             throw new Error("No valid content in AI response");
           }
-          meals = JSON.parse(content);
+          const parsed = JSON.parse(content);
+          // Handle both array and wrapper object formats
+          meals = Array.isArray(parsed) ? parsed : (parsed.meals || []);
         } catch (e) {
-          throw new Error("Failed to parse AI response");
+          throw new Error(`Failed to parse AI response: ${e}`);
         }
 
         // Validate we got correct number of meals based on selected meal types
