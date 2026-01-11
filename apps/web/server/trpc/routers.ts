@@ -108,6 +108,12 @@ export const appRouter = router({
     savePreferences: protectedProcedure
       .input(savePreferencesSchema)
       .mutation(async ({ ctx, input }) => {
+        console.log('[savePreferences] START', {
+          userId: ctx.user.id,
+          email: ctx.user.email,
+          inputKeys: Object.keys(input),
+        });
+        
         const db = await getDb();
         if (!db) throw new Error("Database not available");
 
@@ -136,14 +142,23 @@ export const appRouter = router({
         };
 
         if (existing[0]) {
+          console.log('[savePreferences] Updating existing preferences', { prefsId: existing[0].id });
           await db
             .update(userPreferences)
             .set(prefsData)
             .where(eq(userPreferences.id, existing[0].id));
         } else {
+          console.log('[savePreferences] Inserting new preferences');
           await db.insert(userPreferences).values(prefsData);
         }
 
+        console.log('[savePreferences] SUCCESS', {
+          userId: ctx.user.id,
+          familySize: input.familySize,
+          mealTypesCount: input.mealTypes.length,
+          cuisinesCount: input.cuisines.length,
+        });
+        
         return { success: true };
       }),
   }),

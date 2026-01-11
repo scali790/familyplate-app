@@ -103,7 +103,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link href="/onboarding/preferences">
+              <Link href="/onboarding">
                 <Button variant="outline" size="sm">
                   Edit Preferences
                 </Button>
