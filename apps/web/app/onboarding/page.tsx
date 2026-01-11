@@ -8,9 +8,9 @@ import { trpc } from '@/lib/trpc';
 
 // Available options
 const MEAL_TYPES = [
-  { value: 'breakfast', label: 'Breakfast', emoji: '🍳', description: '7 meals/week' },
-  { value: 'lunch', label: 'Lunch', emoji: '🥗', description: '7 meals/week' },
-  { value: 'dinner', label: 'Dinner', emoji: '🍽️', description: '7 meals/week' },
+  { value: 'breakfast' as const, label: 'Breakfast', emoji: '🍳', description: '7 meals/week' },
+  { value: 'lunch' as const, label: 'Lunch', emoji: '🥗', description: '7 meals/week' },
+  { value: 'dinner' as const, label: 'Dinner', emoji: '🍽️', description: '7 meals/week' },
 ];
 
 const CUISINES = [
