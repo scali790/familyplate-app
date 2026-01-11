@@ -117,12 +117,23 @@ export default function OnboardingPage() {
   };
 
   const toggleSelection = (field: 'mealTypes' | 'cuisines' | 'flavors' | 'dietaryRestrictions', value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].includes(value)
-        ? prev[field].filter((v) => v !== value)
-        : [...prev[field], value],
-    }));
+    setFormData((prev) => {
+      if (field === 'mealTypes') {
+        const mealType = value as 'breakfast' | 'lunch' | 'dinner';
+        return {
+          ...prev,
+          mealTypes: prev.mealTypes.includes(mealType)
+            ? prev.mealTypes.filter((v) => v !== mealType)
+            : [...prev.mealTypes, mealType],
+        };
+      }
+      return {
+        ...prev,
+        [field]: prev[field].includes(value)
+          ? prev[field].filter((v) => v !== value)
+          : [...prev[field], value],
+      };
+    });
   };
 
   return (
