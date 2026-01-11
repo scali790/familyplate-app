@@ -14,6 +14,11 @@ export const savePreferencesSchema = z.object({
   redMeatFrequency: z.number().min(0).max(21).default(2),
   fishFrequency: z.number().min(0).max(21).default(2),
   vegetarianFrequency: z.number().min(0).max(21).default(2),
+  // Advanced preferences
+  cookingTime: z.enum(["quick", "medium", "elaborate"]).default("medium"),
+  spiceLevel: z.enum(["mild", "medium", "hot", "extra-hot"]).default("medium"),
+  kidFriendly: z.boolean().default(false),
+  dislikedIngredients: z.string().optional(),
 });
 
 export type SavePreferencesInput = z.infer<typeof savePreferencesSchema>;
@@ -33,6 +38,10 @@ export interface UserPreferences {
   redMeatFrequency: number;
   fishFrequency: number;
   vegetarianFrequency: number;
+  cookingTime: string;
+  spiceLevel: string;
+  kidFriendly: boolean;
+  dislikedIngredients: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

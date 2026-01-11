@@ -138,6 +138,10 @@ export const appRouter = router({
           redMeatFrequency: input.redMeatFrequency,
           fishFrequency: input.fishFrequency,
           vegetarianFrequency: input.vegetarianFrequency,
+          cookingTime: input.cookingTime,
+          spiceLevel: input.spiceLevel,
+          kidFriendly: input.kidFriendly,
+          dislikedIngredients: input.dislikedIngredients || null,
           updatedAt: new Date(),
         };
 

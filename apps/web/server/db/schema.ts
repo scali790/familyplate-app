@@ -24,6 +24,11 @@ export const userPreferences = pgTable("user_preferences", {
   redMeatFrequency: integer("red_meat_frequency").default(2),
   fishFrequency: integer("fish_frequency").default(2),
   vegetarianFrequency: integer("vegetarian_frequency").default(2),
+  // New advanced preference fields
+  cookingTime: varchar("cooking_time", { length: 50 }).default("medium"), // quick, medium, elaborate
+  spiceLevel: varchar("spice_level", { length: 50 }).default("medium"), // mild, medium, hot, extra-hot
+  kidFriendly: boolean("kid_friendly").default(false),
+  dislikedIngredients: text("disliked_ingredients"), // comma-separated list
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
