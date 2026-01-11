@@ -42,6 +42,7 @@ const ALL_CUISINES = [
   { value: 'middle-eastern', label: 'Middle Eastern', emoji: '🌙', rank: 0 },
   { value: 'american', label: 'American', emoji: '🇺🇸', rank: 0 },
   { value: 'german', label: 'German', emoji: '🇩🇪', rank: 0 },
+  { value: 'swiss', label: 'Swiss', emoji: '🇨🇭', rank: 0 },
 ];
 
 // Country to regional cuisines mapping
@@ -53,6 +54,7 @@ const REGIONAL_CUISINES: Record<string, string[]> = {
   'pt': ['portuguese', 'mediterranean'],
   'fr': ['french', 'mediterranean'],
   'de': ['german'],
+  'ch': ['swiss', 'german', 'french', 'italian'],
   'tr': ['turkish', 'middle-eastern'],
   // Asia
   'jp': ['japanese'],
