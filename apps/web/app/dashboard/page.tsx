@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { redirect } from 'next/navigation';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { MealCard } from '@/components/meal-card';

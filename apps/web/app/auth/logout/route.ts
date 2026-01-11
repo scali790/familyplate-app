@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       // Delete session from database
       const db = await getDb();
       if (db) {
-        await db.delete(sessions).where(eq(sessions.id, sessionId));
+        await db.delete(sessions).where(eq(sessions.sessionId, sessionId));
       }
     }
 

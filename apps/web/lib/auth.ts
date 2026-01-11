@@ -39,7 +39,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     const sessionResult = await db
       .select()
       .from(sessions)
-      .where(eq(sessions.id, sessionId))
+      .where(eq(sessions.sessionId, sessionId))
       .limit(1);
 
     const session = sessionResult[0];
@@ -51,7 +51,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     // Check if session expired
     if (new Date() > session.expiresAt) {
       // Delete expired session
-      await db.delete(sessions).where(eq(sessions.id, sessionId));
+      await db.delete(sessions).where(eq(sessions.sessionId, sessionId));
       return null;
     }
 
