@@ -94,10 +94,20 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     const hasPreferences = prefsResult.length > 0;
+    
+    console.log('[auth/verify] Redirect decision:', {
+      userId: user.id,
+      email: user.email,
+      hasPreferences,
+      prefsCount: prefsResult.length,
+      defaultRedirect: hasPreferences ? "/dashboard" : "/onboarding",
+    });
 
     // Redirect to onboarding if no preferences, otherwise to dashboard
     const defaultRedirect = hasPreferences ? "/dashboard" : "/onboarding";
     const safeRedirectUrl = validateRedirectUrl(redirectTo, defaultRedirect);
+    
+    console.log('[auth/verify] Final redirect URL:', safeRedirectUrl);
     
     // Handle deep links
     if (safeRedirectUrl.startsWith("familyplate://")) {
