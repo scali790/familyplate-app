@@ -1,6 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
+import { trpc } from '@/lib/trpc';
 
 import type { Meal } from '@/server/db/schema';
 
@@ -26,6 +28,62 @@ const getIconsForTags = (tags: string[]): string[] => {
 };
 
 export function RecipeModal({ meal, onClose }: RecipeModalProps) {
+  const [recipeDetails, setRecipeDetails] = useState<{
+    ingredients: Array<{ name: string; amount: string; category: string }>;
+    instructions: string[];
+  } | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generateRecipeDetailsMutation = trpc.mealPlanning.generateRecipeDetails.useMutation();
+
+  useEffect(() => {
+    // Reset state when meal changes
+    setRecipeDetails(null);
+    setError(null);
+
+    if (!meal) return;
+
+    // Check if meal already has ingredients/instructions (old format)
+    if (meal.ingredients && meal.ingredients.length > 0 && meal.instructions && meal.instructions.length > 0) {
+      setRecipeDetails({
+        ingredients: meal.ingredients,
+        instructions: meal.instructions,
+      });
+      return;
+    }
+
+    // Generate recipe details on-demand
+    const fetchRecipeDetails = async () => {
+      setIsLoadingDetails(true);
+      setError(null);
+
+      try {
+        const result = await generateRecipeDetailsMutation.mutateAsync({
+          recipeId: (meal as any).recipeId || `${meal.day}-${meal.mealType}-${Date.now()}`,
+          mealName: meal.name,
+          mealType: meal.mealType,
+          description: meal.description,
+          difficulty: meal.difficulty,
+          prepTime: meal.prepTime,
+          cookTime: meal.cookTime,
+        });
+
+        setRecipeDetails({
+          ingredients: result.ingredients,
+          instructions: result.instructions,
+        });
+      } catch (err: any) {
+        console.error('Failed to generate recipe details:', err);
+        setError('Failed to load recipe details. Please try again.');
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    };
+
+    fetchRecipeDetails();
+  }, [meal]);
+
   if (!meal) return null;
 
   return (
@@ -70,57 +128,71 @@ export function RecipeModal({ meal, onClose }: RecipeModalProps) {
                 <span className="font-semibold text-success text-sm">Cook: {meal.cookTime}</span>
               </div>
             )}
-
           </div>
 
-          {/* Ingredients */}
-          <div className="mb-5">
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <span className="text-lg">🛒</span>
-              <h3 className="text-lg font-bold text-foreground">Ingredients</h3>
+          {/* Loading State */}
+          {isLoadingDetails && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+              <p className="text-muted text-sm">Generating recipe details...</p>
             </div>
-            <div className="rounded-xl p-3.5 bg-surface">
-              {meal.ingredients && meal.ingredients.length > 0 ? (
-                meal.ingredients.map((ingredient, index) => {
-                  // Handle both string and object formats
-                  const ingredientText = typeof ingredient === 'string'
-                    ? ingredient
-                    : `${ingredient.amount} ${ingredient.name}`;
-                  
-                  return (
-                    <div key={index} className="flex items-start mb-2">
-                      <span className="mr-2 text-primary text-sm">•</span>
-                      <span className="flex-1 text-foreground text-sm leading-5">{ingredientText}</span>
-                    </div>
-                  );
-                })
-              ) : (
-                <p className="italic text-muted text-sm">No ingredients listed</p>
-              )}
-            </div>
-          </div>
+          )}
 
-          {/* Instructions */}
-          <div className="mb-4">
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <span className="text-lg">👨‍🍳</span>
-              <h3 className="text-lg font-bold text-foreground">Instructions</h3>
+          {/* Error State */}
+          {error && (
+            <div className="bg-error/10 border border-error rounded-xl p-4 mb-5">
+              <p className="text-error text-sm">{error}</p>
             </div>
-            <div className="space-y-3.5">
-              {meal.instructions && meal.instructions.length > 0 ? (
-                meal.instructions.map((instruction, index) => (
-                  <div key={index} className="flex items-start">
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2.5 bg-primary flex-shrink-0">
-                      <span className="font-bold text-white text-sm">{index + 1}</span>
-                    </div>
-                    <p className="flex-1 pt-1 text-foreground text-sm leading-5">{instruction}</p>
-                  </div>
-                ))
-              ) : (
-                <p className="italic text-muted text-sm">No instructions available</p>
-              )}
-            </div>
-          </div>
+          )}
+
+          {/* Recipe Details */}
+          {!isLoadingDetails && !error && recipeDetails && (
+            <>
+              {/* Ingredients */}
+              <div className="mb-5">
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  <span className="text-lg">🛒</span>
+                  <h3 className="text-lg font-bold text-foreground">Ingredients</h3>
+                </div>
+                <div className="rounded-xl p-3.5 bg-surface">
+                  {recipeDetails.ingredients.length > 0 ? (
+                    recipeDetails.ingredients.map((ingredient, index) => (
+                      <div key={index} className="flex items-start mb-2">
+                        <span className="mr-2 text-primary text-sm">•</span>
+                        <span className="flex-1 text-foreground text-sm leading-5">
+                          {ingredient.amount} {ingredient.name}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="italic text-muted text-sm">No ingredients listed</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="mb-4">
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  <span className="text-lg">👨‍🍳</span>
+                  <h3 className="text-lg font-bold text-foreground">Instructions</h3>
+                </div>
+                <div className="space-y-3.5">
+                  {recipeDetails.instructions.length > 0 ? (
+                    recipeDetails.instructions.map((instruction, index) => (
+                      <div key={index} className="flex items-start">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2.5 bg-primary flex-shrink-0">
+                          <span className="font-bold text-white text-sm">{index + 1}</span>
+                        </div>
+                        <p className="flex-1 pt-1 text-foreground text-sm leading-5">{instruction}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="italic text-muted text-sm">No instructions available</p>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Close Button - Compact */}

@@ -1,6 +1,6 @@
 import { publicProcedure, protectedProcedure, router } from "./init";
 import { getDb } from "../db/client";
-import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, mealHistory, mealRegenerationQuota, type Meal } from "../db/schema";
+import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, mealHistory, mealRegenerationQuota, recipeDetails, type Meal } from "../db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
@@ -374,6 +374,129 @@ export const appRouter = router({
         createdAt: plan.createdAt,
       };
     }),
+
+    // Generate recipe details on-demand
+    generateRecipeDetails: protectedProcedure
+      .input(
+        z.object({
+          recipeId: z.string(),
+          mealName: z.string(),
+          mealType: z.string(),
+          description: z.string(),
+          difficulty: z.string(),
+          prepTime: z.string(),
+          cookTime: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Check if recipe details already exist (cache)
+        const existingResult = await db
+          .select()
+          .from(recipeDetails)
+          .where(eq(recipeDetails.recipeId, input.recipeId))
+          .limit(1);
+
+        if (existingResult.length > 0) {
+          // Return cached recipe details
+          const cached = existingResult[0];
+          return {
+            recipeId: cached.recipeId,
+            ingredients: typeof cached.ingredients === "string" ? JSON.parse(cached.ingredients) : cached.ingredients,
+            instructions: typeof cached.instructions === "string" ? JSON.parse(cached.instructions) : cached.instructions,
+          };
+        }
+
+        // Generate new recipe details using OpenAI
+        const prompt = `Generate detailed recipe for: ${input.mealName}
+
+Description: ${input.description}
+Difficulty: ${input.difficulty}
+Prep Time: ${input.prepTime}
+Cook Time: ${input.cookTime}
+Meal Type: ${input.mealType}
+
+Provide:
+1. Ingredients list with amounts and categories (Protein, Vegetables, Spices, etc.)
+2. Step-by-step cooking instructions
+
+Be specific with measurements and cooking techniques.`;
+
+        const aiResponse = await invokeLLM({
+          model: "gpt-4o-2024-08-06",
+          messages: [
+            {
+              role: "system",
+              content: "You are a professional chef. Generate detailed recipes with precise ingredients and clear instructions.",
+            },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.7,
+          max_tokens: 1500,
+          responseFormat: {
+            type: "json_schema",
+            json_schema: {
+              name: "recipe_details_response",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  ingredients: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string" },
+                        amount: { type: "string" },
+                        category: { type: "string" },
+                      },
+                      required: ["name", "amount", "category"],
+                      additionalProperties: false,
+                    },
+                  },
+                  instructions: {
+                    type: "array",
+                    items: { type: "string" },
+                  },
+                },
+                required: ["ingredients", "instructions"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        let ingredients: Array<{ name: string; amount: string; category: string }>;
+        let instructions: string[];
+
+        try {
+          const content = aiResponse.choices[0]?.message?.content;
+          if (!content || typeof content !== "string") {
+            throw new Error("No valid content in AI response");
+          }
+          const parsed = JSON.parse(content);
+          ingredients = parsed.ingredients || [];
+          instructions = parsed.instructions || [];
+        } catch (e) {
+          throw new Error(`Failed to parse recipe details: ${e}`);
+        }
+
+        // Save to database (cache for future requests)
+        await db.insert(recipeDetails).values({
+          recipeId: input.recipeId,
+          mealName: input.mealName,
+          ingredients: JSON.stringify(ingredients),
+          instructions: JSON.stringify(instructions),
+        });
+
+        return {
+          recipeId: input.recipeId,
+          ingredients,
+          instructions,
+        };
+      }),
   }),
 });
 

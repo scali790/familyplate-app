@@ -136,6 +136,26 @@ export const mealRegenerationQuota = pgTable(
   })
 );
 
+/**
+ * Recipe Details Table
+ * Stores full recipe details (ingredients + instructions) generated on-demand
+ * Cached to avoid regenerating the same recipe multiple times
+ */
+export const recipeDetails = pgTable(
+  "recipe_details",
+  {
+    id: serial("id").primaryKey(),
+    recipeId: varchar("recipe_id", { length: 255 }).notNull().unique(), // e.g., "mon-dinner-001"
+    mealName: varchar("meal_name", { length: 255 }).notNull(),
+    ingredients: jsonb("ingredients").notNull(), // Array<{ name: string; amount: string; category: string }>
+    instructions: jsonb("instructions").notNull(), // string[]
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    recipeIdIdx: index("recipe_details_recipe_id_idx").on(table.recipeId),
+  })
+);
+
 export type User = typeof users.$inferSelect;
 export type UserPreferences = typeof userPreferences.$inferSelect;
 export type MealPlan = typeof mealPlans.$inferSelect;
@@ -145,6 +165,7 @@ export type Session = typeof sessions.$inferSelect;
 export type MagicLinkToken = typeof magicLinkTokens.$inferSelect;
 export type MealHistory = typeof mealHistory.$inferSelect;
 export type MealRegenerationQuota = typeof mealRegenerationQuota.$inferSelect;
+export type RecipeDetails = typeof recipeDetails.$inferSelect;
 
 export interface Meal {
   day: string; // monday, tuesday, etc.
