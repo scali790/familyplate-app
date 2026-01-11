@@ -21,10 +21,22 @@ function getSessionFromRequest(req: Request): string | null {
 export async function createContext({ req }: { req: Request }) {
   const sessionId = getSessionFromRequest(req);
   
-  // Extract base URL from request
-  const host = req.headers.get("host") || "localhost:3000";
-  const protocol = req.headers.get("x-forwarded-proto") || "http";
-  const baseUrl = `${protocol}://${host}`;
+  // Extract base URL from request or use environment variable fallback
+  const host = req.headers.get("host");
+  const protocol = req.headers.get("x-forwarded-proto") || "https";
+  
+  let baseUrl: string;
+  if (host) {
+    baseUrl = `${protocol}://${host}`;
+  } else if (process.env.NEXT_PUBLIC_APP_URL) {
+    baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+  } else if (process.env.VERCEL_URL) {
+    baseUrl = `https://${process.env.VERCEL_URL}`;
+  } else {
+    baseUrl = "http://localhost:3000";
+  }
+  
+  console.log('[tRPC Context] Base URL:', baseUrl);
   
   let user: User | null = null;
   

@@ -10,6 +10,8 @@ export async function sendMagicLinkEmail(
   name: string,
   magicLink: string
 ): Promise<boolean> {
+  console.log('[mailjet] sendMagicLinkEmail called', { email, name, magicLinkLength: magicLink.length });
+  
   try {
     const fromEmail = process.env.MAILJET_FROM_EMAIL || "noreply@familyplate.ai";
     const fromName = process.env.MAILJET_FROM_NAME || "FamilyPlate";
@@ -86,12 +88,17 @@ export async function sendMagicLinkEmail(
     return true;
   } catch (error: any) {
     console.error("[mailjet] Failed to send magic link email:", error);
-    console.error("[mailjet] MAILJET_ERROR:", error?.response?.body ?? error);
+    console.error("[mailjet] Error message:", error?.message);
+    console.error("[mailjet] Error stack:", error?.stack);
+    console.error("[mailjet] Mailjet response:", error?.response?.body ?? error);
+    console.error("[mailjet] Mailjet statusCode:", error?.statusCode);
     console.error("[mailjet] Env check:", {
       hasApiKey: !!process.env.MAILJET_API_KEY,
       hasSecretKey: !!process.env.MAILJET_SECRET_KEY,
       fromEmail: process.env.MAILJET_FROM_EMAIL,
       fromName: process.env.MAILJET_FROM_NAME,
+      apiKeyLength: process.env.MAILJET_API_KEY?.length,
+      secretKeyLength: process.env.MAILJET_SECRET_KEY?.length,
     });
     return false;
   }
