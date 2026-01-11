@@ -1,110 +1,57 @@
 'use client';
 
 import { useState } from 'react';
-
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { MealCard } from '@/components/meal-card';
+import { Card, CardContent } from '@/components/ui/card';
 import { RecipeModal } from '@/components/recipe-modal';
 import { trpc } from '@/lib/trpc';
 
 type Meal = {
-  day: string;
+  day?: string;
   name: string;
   description: string;
   prepTime: string;
   cookTime?: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   tags: string[];
-  upvotes: number;
-  downvotes: number;
   ingredients: string[];
   instructions: string[];
-  voters?: Array<{
-    name: string;
-    vote: '👍' | '👎';
-  }>;
+};
+
+// Food category icons mapping
+const getIconsForTags = (tags: string[]): string[] => {
+  const iconMap: Record<string, string> = {
+    beef: '🥩',
+    chicken: '🍗',
+    fish: '🐟',
+    vegetarian: '🌱',
+    vegan: '🥬',
+    spicy: '🌶️',
+    'kid-friendly': '👶',
+    healthy: '🥗',
+  };
+
+  return tags.map(tag => iconMap[tag.toLowerCase()] || '').filter(Boolean);
 };
 
 export default function DashboardPage() {
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  const [regeneratingDay, setRegeneratingDay] = useState<string | null>(null);
 
   // Fetch current meal plan and preferences
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getCurrentPlan.useQuery();
   const { data: preferences } = trpc.preferences.getPreferences.useQuery();
   
   // Mutations
-  const voteMutation = trpc.mealPlanning.vote.useMutation();
-  const regenerateMutation = trpc.mealPlanning.regenerateMeal.useMutation();
   const generateMutation = trpc.mealPlanning.generatePlan.useMutation();
-
-  const handleVote = async (mealDay: string, voteType: 'up' | 'down') => {
-    if (!mealPlan) return;
-
-    try {
-      await voteMutation.mutateAsync({
-        mealPlanId: mealPlan.id,
-        mealDay,
-        voteType,
-      });
-      await refetch();
-    } catch (error) {
-      console.error('Failed to save vote:', error);
-      alert('Failed to save vote');
-    }
-  };
-
-  const handleRegenerateMeal = async (dayIndex: number, dayName: string) => {
-    if (!mealPlan) return;
-
-    try {
-      setRegeneratingDay(dayName);
-      await regenerateMutation.mutateAsync({
-        mealPlanId: mealPlan.id,
-        dayIndex,
-      });
-      await refetch();
-    } catch (error) {
-      console.error('Failed to regenerate meal:', error);
-      alert('Failed to regenerate meal');
-    } finally {
-      setRegeneratingDay(null);
-    }
-  };
 
   const handleGenerateNew = async () => {
     try {
-      await generateMutation.mutateAsync();
+      await generateMutation.mutateAsync({});
       await refetch();
     } catch (error) {
       console.error('Failed to generate meal plan:', error);
       alert('Failed to generate meal plan');
-    }
-  };
-
-  const handleShare = async () => {
-    if (!mealPlan) {
-      alert('No meal plan available to share');
-      return;
-    }
-
-    const shareUrl = `${window.location.origin}/shared/${mealPlan.id}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Vote on This Week's Meal Plan",
-          text: `Help choose our family meals for this week:`,
-          url: shareUrl,
-        });
-      } catch (error) {
-        console.error('Share failed:', error);
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(shareUrl);
-      alert('Link copied to clipboard!');
     }
   };
 
@@ -123,6 +70,25 @@ export default function DashboardPage() {
       return `${startMonth} ${startDay}-${endDay}`;
     }
     return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+  };
+
+  // Get day date
+  const getDayDate = (weekStartDate: string, dayName: string) => {
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const dayIndex = dayNames.indexOf(dayName);
+    const startDate = new Date(weekStartDate);
+    const mealDate = new Date(startDate);
+    mealDate.setDate(startDate.getDate() + dayIndex);
+
+    const month = mealDate.toLocaleDateString('en-US', { month: 'short' });
+    const day = mealDate.getDate();
+    return `${month} ${day}`;
+  };
+
+  const difficultyEmoji = {
+    Easy: '🟢',
+    Medium: '🟡',
+    Hard: '🔴',
   };
 
   if (isLoading) {
@@ -159,11 +125,6 @@ export default function DashboardPage() {
                   Edit Preferences
                 </Button>
               </Link>
-              {mealPlan && (
-                <Button variant="outline" size="sm" onClick={handleShare}>
-                  Share to Vote
-                </Button>
-              )}
               <form action="/auth/logout" method="POST">
                 <Button variant="ghost" size="sm" type="submit">
                   Logout
@@ -214,23 +175,6 @@ export default function DashboardPage() {
               <div className="space-y-3 mb-6">
                 <Button
                   variant="outline"
-                  className="w-full border-primary text-primary hover:bg-primary/10"
-                  onClick={handleShare}
-                >
-                  <span className="mr-2">👨‍👩‍👧‍👦</span>
-                  Share with Family to Vote
-                </Button>
-                <Link href={`/shopping-list?mealPlanId=${mealPlan.id}`}>
-                  <Button
-                    variant="outline"
-                    className="w-full border-success text-success hover:bg-success/10"
-                  >
-                    <span className="mr-2">🛒</span>
-                    Generate Shopping List
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
                   className="w-full"
                   onClick={handleGenerateNew}
                   disabled={generateMutation.isPending}
@@ -241,18 +185,58 @@ export default function DashboardPage() {
 
               {/* Meal Cards */}
               <div className="space-y-4">
-                {mealPlan.meals.map((meal: Meal, index: number) => (
-                  <MealCard
-                    key={meal.day}
-                    meal={meal}
-                    weekStartDate={mealPlan.weekStartDate}
-                    familySize={preferences?.familySize}
-                    onVote={(voteType) => handleVote(meal.day, voteType)}
-                    onPress={() => setSelectedMeal(meal)}
-                    onRegenerate={() => handleRegenerateMeal(index, meal.day)}
-                    isRegenerating={regeneratingDay === meal.day}
-                  />
-                ))}
+                {mealPlan.meals.map((meal: Meal, index: number) => {
+                  const dayName = meal.day || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index];
+                  
+                  return (
+                    <Card key={index} className="bg-surface border-border">
+                      <CardContent className="p-5">
+                        {/* Day & Name */}
+                        <div className="mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-primary uppercase">{dayName}</span>
+                            <span className="text-sm text-muted">• {getDayDate(mealPlan.weekStartDate, dayName)}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            {meal.tags && meal.tags.length > 0 && (
+                              <span className="text-base">{getIconsForTags(meal.tags).join(' ')}</span>
+                            )}
+                            <h3 className="text-lg font-bold text-foreground">{meal.name}</h3>
+                          </div>
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-muted mb-3">{meal.description}</p>
+
+                        {/* Meta Info */}
+                        <div className="flex gap-4 mb-3">
+                          <div className="flex items-center gap-1 text-muted">
+                            <span>⏱️ {meal.prepTime}</span>
+                          </div>
+                          {meal.cookTime && (
+                            <div className="flex items-center gap-1 text-muted">
+                              <span>🍳 {meal.cookTime}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1 text-muted">
+                            <span>
+                              {difficultyEmoji[meal.difficulty]} {meal.difficulty}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* View Recipe Button */}
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => setSelectedMeal(meal)}
+                        >
+                          View Full Recipe
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </>
           )}
