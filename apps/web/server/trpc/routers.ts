@@ -190,6 +190,7 @@ export const appRouter = router({
         // Parse JSON fields and map null to defaults
         const parsedPrefs = {
           ...prefs,
+          mealTypes: typeof prefs.mealTypes === "string" ? JSON.parse(prefs.mealTypes) : prefs.mealTypes,
           cuisines: typeof prefs.cuisines === "string" ? JSON.parse(prefs.cuisines) : prefs.cuisines,
           flavors: typeof prefs.flavors === "string" ? JSON.parse(prefs.flavors) : prefs.flavors,
           dietaryRestrictions:
@@ -222,7 +223,8 @@ export const appRouter = router({
         const prompt = formatPromptForAI(promptData);
 
         // Calculate expected meal count
-        const expectedMealCount = 7 * parsedPrefs.mealTypes.length;
+        const mealTypes = (parsedPrefs.mealTypes || []) as string[];
+        const expectedMealCount = 7 * mealTypes.length;
 
         // Define JSON Schema for structured output
         const mealPlanSchema = {
