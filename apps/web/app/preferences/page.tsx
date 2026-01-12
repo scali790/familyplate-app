@@ -16,19 +16,34 @@ const MEAL_TYPES = [
   { value: 'dinner' as const, label: 'Dinner', emoji: '🍽️' },
 ];
 
+// Synchronized with Onboarding - Top 25 cuisines based on TasteAtlas 2025/26
 const CUISINES = [
   { value: 'italian', label: 'Italian', emoji: '🇮🇹' },
-  { value: 'mexican', label: 'Mexican', emoji: '🇲🇽' },
-  { value: 'chinese', label: 'Chinese', emoji: '🇨🇳' },
-  { value: 'indian', label: 'Indian', emoji: '🇮🇳' },
-  { value: 'japanese', label: 'Japanese', emoji: '🇯🇵' },
-  { value: 'thai', label: 'Thai', emoji: '🇹🇭' },
-  { value: 'mediterranean', label: 'Mediterranean', emoji: '🌊' },
-  { value: 'american', label: 'American', emoji: '🇺🇸' },
-  { value: 'french', label: 'French', emoji: '🇫🇷' },
   { value: 'greek', label: 'Greek', emoji: '🇬🇷' },
-  { value: 'middle-eastern', label: 'Middle Eastern', emoji: '🌙' },
+  { value: 'spanish', label: 'Spanish', emoji: '🇪🇸' },
+  { value: 'portuguese', label: 'Portuguese', emoji: '🇵🇹' },
+  { value: 'japanese', label: 'Japanese', emoji: '🇯🇵' },
+  { value: 'turkish', label: 'Turkish', emoji: '🇹🇷' },
+  { value: 'chinese', label: 'Chinese', emoji: '🇨🇳' },
+  { value: 'french', label: 'French', emoji: '🇫🇷' },
+  { value: 'mexican', label: 'Mexican', emoji: '🇲🇽' },
+  { value: 'indian', label: 'Indian', emoji: '🇮🇳' },
+  { value: 'vietnamese', label: 'Vietnamese', emoji: '🇻🇳' },
+  { value: 'brazilian', label: 'Brazilian', emoji: '🇧🇷' },
   { value: 'korean', label: 'Korean', emoji: '🇰🇷' },
+  { value: 'lebanese', label: 'Lebanese', emoji: '🇱🇧' },
+  { value: 'thai', label: 'Thai', emoji: '🇹🇭' },
+  { value: 'indonesian', label: 'Indonesian', emoji: '🇮🇩' },
+  { value: 'filipino', label: 'Filipino', emoji: '🇵🇭' },
+  { value: 'argentinian', label: 'Argentinian', emoji: '🇦🇷' },
+  { value: 'malaysian', label: 'Malaysian', emoji: '🇲🇾' },
+  { value: 'moroccan', label: 'Moroccan', emoji: '🇲🇦' },
+  { value: 'peruvian', label: 'Peruvian', emoji: '🇵🇪' },
+  { value: 'mediterranean', label: 'Mediterranean', emoji: '🌊' },
+  { value: 'middle-eastern', label: 'Middle Eastern', emoji: '🌙' },
+  { value: 'american', label: 'American', emoji: '🇺🇸' },
+  { value: 'german', label: 'German', emoji: '🇩🇪' },
+  { value: 'swiss', label: 'Swiss', emoji: '🇨🇭' },
 ];
 
 const FLAVORS = [
