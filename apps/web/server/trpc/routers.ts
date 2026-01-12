@@ -385,6 +385,17 @@ export const appRouter = router({
           throw new Error("Please complete onboarding first");
         }
 
+        // Check if meal type is in preferences, if not add it
+        const currentMealTypes = typeof prefs.mealTypes === "string" ? JSON.parse(prefs.mealTypes) : (prefs.mealTypes || []);
+        if (!currentMealTypes.includes(input.mealType)) {
+          console.log(`[generatePartialPlan] Adding ${input.mealType} to user preferences`);
+          const updatedMealTypes = [...currentMealTypes, input.mealType];
+          await db
+            .update(userPreferences)
+            .set({ mealTypes: JSON.stringify(updatedMealTypes) })
+            .where(eq(userPreferences.userId, ctx.user.id));
+        }
+
         // Parse JSON fields
         const parsedPrefs = {
           ...prefs,
