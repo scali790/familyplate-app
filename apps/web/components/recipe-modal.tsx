@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from './ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { trpc } from '@/lib/trpc';
 
 import type { Meal } from '@/server/db/schema';
@@ -34,8 +34,12 @@ const getIconsForTags = (tags: string[]): string[] => {
 export function RecipeModal({ meal, mealIndex, day, mealType, onClose, onMealRegenerated }: RecipeModalProps) {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showQuotaExceeded, setShowQuotaExceeded] = useState(false);
+  const [recipeDetails, setRecipeDetails] = useState<{ ingredients: string[]; instructions: string[] } | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [detailsError, setDetailsError] = useState<string | null>(null);
   
   const { data: quota } = trpc.mealPlanning.checkRegenerationQuota.useQuery();
+  const getRecipeDetailsMutation = trpc.mealPlanning.getRecipeDetails.useMutation();
   const regenerateMutation = trpc.mealPlanning.regenerateSingleMeal.useMutation({
     onSuccess: (data) => {
       if (onMealRegenerated) {
@@ -62,6 +66,42 @@ export function RecipeModal({ meal, mealIndex, day, mealType, onClose, onMealReg
       mealType,
     });
   };
+
+  const handleRetryLoadDetails = () => {
+    setDetailsError(null);
+    loadRecipeDetails();
+  };
+
+  const loadRecipeDetails = async () => {
+    if (!meal?.recipeId) return;
+
+    // Check if meal already has details
+    if (meal.ingredients && meal.ingredients.length > 0 && meal.instructions && meal.instructions.length > 0) {
+      setRecipeDetails({
+        ingredients: meal.ingredients,
+        instructions: meal.instructions,
+      });
+      return;
+    }
+
+    // Load details from API
+    setIsLoadingDetails(true);
+    setDetailsError(null);
+    try {
+      const details = await getRecipeDetailsMutation.mutateAsync({ recipeId: meal.recipeId });
+      setRecipeDetails(details);
+    } catch (error) {
+      console.error('[RecipeModal] Failed to load recipe details:', error);
+      setDetailsError('Failed to load recipe details. Please try again.');
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
+
+  // Load recipe details when modal opens
+  useEffect(() => {
+    loadRecipeDetails();
+  }, [meal?.recipeId]);
 
   if (!meal) return null;
 
@@ -116,8 +156,23 @@ export function RecipeModal({ meal, mealIndex, day, mealType, onClose, onMealReg
               <h3 className="text-lg font-bold text-foreground">Ingredients</h3>
             </div>
             <div className="rounded-xl p-3.5 bg-surface">
-              {meal.ingredients && meal.ingredients.length > 0 ? (
-                meal.ingredients.map((ingredient, index) => (
+              {isLoadingDetails ? (
+                <div className="flex flex-col items-center justify-center py-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-3"></div>
+                  <p className="text-sm text-muted">Loading ingredients...</p>
+                </div>
+              ) : detailsError ? (
+                <div className="flex flex-col items-center justify-center py-6">
+                  <p className="text-sm text-destructive mb-3">{detailsError}</p>
+                  <Button
+                    onClick={handleRetryLoadDetails}
+                    className="bg-primary hover:bg-primary/90 text-white text-sm px-4 py-2 rounded-lg"
+                  >
+                    🔄 Retry
+                  </Button>
+                </div>
+              ) : recipeDetails && recipeDetails.ingredients.length > 0 ? (
+                recipeDetails.ingredients.map((ingredient, index) => (
                   <div key={index} className="flex items-start mb-2">
                     <span className="mr-2 text-primary text-sm">•</span>
                     <span className="flex-1 text-foreground text-sm leading-5">{ingredient}</span>
@@ -136,8 +191,23 @@ export function RecipeModal({ meal, mealIndex, day, mealType, onClose, onMealReg
               <h3 className="text-lg font-bold text-foreground">Instructions</h3>
             </div>
             <div className="space-y-3.5">
-              {meal.instructions && meal.instructions.length > 0 ? (
-                meal.instructions.map((instruction, index) => (
+              {isLoadingDetails ? (
+                <div className="flex flex-col items-center justify-center py-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-3"></div>
+                  <p className="text-sm text-muted">Loading instructions...</p>
+                </div>
+              ) : detailsError ? (
+                <div className="flex flex-col items-center justify-center py-6">
+                  <p className="text-sm text-destructive mb-3">{detailsError}</p>
+                  <Button
+                    onClick={handleRetryLoadDetails}
+                    className="bg-primary hover:bg-primary/90 text-white text-sm px-4 py-2 rounded-lg"
+                  >
+                    🔄 Retry
+                  </Button>
+                </div>
+              ) : recipeDetails && recipeDetails.instructions.length > 0 ? (
+                recipeDetails.instructions.map((instruction, index) => (
                   <div key={index} className="flex items-start">
                     <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2.5 bg-primary flex-shrink-0">
                       <span className="font-bold text-white text-sm">{index + 1}</span>

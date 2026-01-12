@@ -259,16 +259,6 @@ export const appRouter = router({
                     },
                     emoji: { type: "string" },
                     recipeId: { type: "string" },
-                    ingredients: {
-                      type: "array",
-                      items: { type: "string" },
-                      description: "List of ingredients with quantities (e.g., '2 chicken breasts', '1 tbsp olive oil')"
-                    },
-                    instructions: {
-                      type: "array",
-                      items: { type: "string" },
-                      description: "Numbered cooking instructions (4-8 steps, short sentences)"
-                    },
                     kidFriendly: {
                       type: "boolean",
                       description: "Whether this meal is suitable for kids"
@@ -279,7 +269,7 @@ export const appRouter = router({
                       description: "Spice level of the dish"
                     }
                   },
-                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "ingredients", "instructions", "kidFriendly", "spiceLevel"],
+                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "kidFriendly", "spiceLevel"],
                   additionalProperties: false
                 }
               }
@@ -510,7 +500,7 @@ export const appRouter = router({
                       description: "Spice level of the dish"
                     }
                   },
-                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "ingredients", "instructions", "kidFriendly", "spiceLevel"],
+                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "kidFriendly", "spiceLevel"],
                   additionalProperties: false
                 }
               }
@@ -821,7 +811,151 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
           quotaRemaining: limit - (used + 1),
         };
       }),
+
+    // Get recipe details (on-demand generation)
+    getRecipeDetails: protectedProcedure
+      .input(z.object({ 
+        recipeId: z.string(),
+        mealPlanId: z.number().optional() 
+      }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        console.log("[getRecipeDetails] START", { recipeId: input.recipeId });
+
+        // 1. Get current meal plan
+        const planResult = await db
+          .select()
+          .from(mealPlans)
+          .where(eq(mealPlans.userId, ctx.user.id))
+          .orderBy(desc(mealPlans.createdAt))
+          .limit(1);
+
+        const plan = planResult[0];
+        if (!plan) throw new Error("No meal plan found");
+
+        const meals: Meal[] = typeof plan.meals === "string" ? JSON.parse(plan.meals) : plan.meals;
+        const meal = meals.find((m) => m.recipeId === input.recipeId);
+        if (!meal) throw new Error("Meal not found");
+
+        // 2. Check if details already exist
+        if (meal.ingredients && meal.ingredients.length > 0 && meal.instructions && meal.instructions.length > 0) {
+          console.log("[getRecipeDetails] Details already cached");
+          return {
+            ingredients: meal.ingredients,
+            instructions: meal.instructions,
+          };
+        }
+
+        // 3. Generate details via OpenAI
+        console.log("[getRecipeDetails] Generating details via OpenAI");
+        const details = await generateRecipeDetails({
+          name: meal.name,
+          description: meal.description,
+          tags: meal.tags,
+          prepTime: meal.prepTime,
+          cookTime: meal.cookTime,
+          difficulty: meal.difficulty || "medium",
+        });
+
+        // 4. Update meal in array
+        meal.ingredients = details.ingredients;
+        meal.instructions = details.instructions;
+
+        // 5. Save updated meal plan to DB
+        await db
+          .update(mealPlans)
+          .set({ meals: JSON.stringify(meals) })
+          .where(eq(mealPlans.id, plan.id));
+
+        console.log("[getRecipeDetails] Details generated and cached");
+        return {
+          ingredients: details.ingredients,
+          instructions: details.instructions,
+        };
+      }),
   }),
 });
+
+// Helper function to generate recipe details
+async function generateRecipeDetails(meal: {
+  name: string;
+  description: string;
+  tags: string[];
+  prepTime: string;
+  cookTime: string;
+  difficulty: string;
+}): Promise<{ ingredients: string[]; instructions: string[] }> {
+  const recipeDetailsSchema = {
+    name: "recipe_details",
+    schema: {
+      type: "object",
+      properties: {
+        ingredients: {
+          type: "array",
+          items: { type: "string" },
+          description: "List of ingredients with quantities (e.g., '2 chicken breasts', '1 tbsp olive oil')"
+        },
+        instructions: {
+          type: "array",
+          items: { type: "string" },
+          description: "Numbered cooking instructions (4-8 steps, short sentences)"
+        }
+      },
+      required: ["ingredients", "instructions"],
+      additionalProperties: false
+    },
+    strict: true
+  };
+
+  const prompt = `Generate detailed recipe instructions for this meal:
+
+Meal Name: ${meal.name}
+Description: ${meal.description}
+Cuisine/Tags: ${meal.tags.join(", ")}
+Prep Time: ${meal.prepTime}
+Cook Time: ${meal.cookTime}
+Difficulty: ${meal.difficulty}
+
+Provide:
+1. A complete list of ingredients with specific quantities (e.g., "2 chicken breasts", "1 tbsp olive oil")
+2. Clear, numbered cooking instructions (4-8 steps)
+
+Output as JSON with "ingredients" and "instructions" arrays.`;
+
+  const aiResponse = await invokeLLM({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: "You are a helpful cooking assistant. Generate detailed recipe ingredients and instructions based on the meal information provided."
+      },
+      { role: "user", content: prompt }
+    ],
+    temperature: 0.5,
+    max_tokens: 1500,
+    outputSchema: recipeDetailsSchema,
+  });
+
+  let content = aiResponse.choices[0]?.message?.content;
+  if (!content || typeof content !== "string") {
+    throw new Error("No valid content in AI response");
+  }
+
+  // Remove markdown code fences if present
+  content = content.trim();
+  if (content.startsWith("```json")) {
+    content = content.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+  } else if (content.startsWith("```")) {
+    content = content.replace(/^```\s*/, "").replace(/\s*```$/, "");
+  }
+
+  const parsed = JSON.parse(content);
+  return {
+    ingredients: parsed.ingredients,
+    instructions: parsed.instructions,
+  };
+}
 
 export type AppRouter = typeof appRouter;
