@@ -818,7 +818,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         recipeId: z.string(),
         mealPlanId: z.number().optional() 
       }))
-      .query(async ({ ctx, input }) => {
+      .mutation(async ({ ctx, input }) => {
         const db = await getDb();
         if (!db) throw new Error("Database not available");
 
