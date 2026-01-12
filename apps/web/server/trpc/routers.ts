@@ -364,6 +364,229 @@ export const appRouter = router({
         return { success: true, meals };
       }),
 
+    // Generate partial meal plan (only specific meal type)
+    generatePartialPlan: protectedProcedure
+      .input(z.object({ mealType: z.enum(["breakfast", "lunch", "dinner"]) }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        console.log("[generatePartialPlan] START", { mealType: input.mealType });
+
+        // Get user preferences
+        const prefsResult = await db
+          .select()
+          .from(userPreferences)
+          .where(eq(userPreferences.userId, ctx.user.id))
+          .limit(1);
+
+        const prefs = prefsResult[0];
+        if (!prefs) {
+          throw new Error("Please complete onboarding first");
+        }
+
+        // Parse JSON fields
+        const parsedPrefs = {
+          ...prefs,
+          mealTypes: [input.mealType], // Only generate for this meal type
+          cuisines: typeof prefs.cuisines === "string" ? JSON.parse(prefs.cuisines) : prefs.cuisines,
+          flavors: typeof prefs.flavors === "string" ? JSON.parse(prefs.flavors) : prefs.flavors,
+          dietaryRestrictions:
+            typeof prefs.dietaryRestrictions === "string"
+              ? JSON.parse(prefs.dietaryRestrictions)
+              : prefs.dietaryRestrictions,
+          chickenFrequency: prefs.chickenFrequency ?? 2,
+          redMeatFrequency: prefs.redMeatFrequency ?? 2,
+          fishFrequency: prefs.fishFrequency ?? 2,
+          vegetarianFrequency: prefs.vegetarianFrequency ?? 2,
+        };
+
+        // Get recent meal history
+        const historyResult = await db
+          .select()
+          .from(mealPlans)
+          .where(eq(mealPlans.userId, ctx.user.id))
+          .orderBy(desc(mealPlans.createdAt))
+          .limit(4);
+
+        const recentMealNames: string[] = [];
+        historyResult.forEach((plan) => {
+          const meals: Meal[] =
+            typeof plan.meals === "string" ? JSON.parse(plan.meals) : plan.meals;
+          meals.forEach((meal) => recentMealNames.push(meal.name));
+        });
+
+        // Build prompt
+        const promptData = buildMealGenerationPrompt(parsedPrefs as any, undefined, recentMealNames);
+        const prompt = formatPromptForAI(promptData);
+
+        // Expected count: 7 meals for one meal type
+        const expectedMealCount = 7;
+
+        // Define JSON Schema
+        const mealPlanSchema = {
+          name: "meal_plan",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              meals: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    day: {
+                      type: "string",
+                      enum: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+                      description: "Day of the week"
+                    },
+                    mealType: {
+                      type: "string",
+                      enum: ["breakfast", "lunch", "dinner"],
+                      description: "Type of meal"
+                    },
+                    name: {
+                      type: "string",
+                      description: "Name of the dish"
+                    },
+                    description: {
+                      type: "string",
+                      description: "Short description (1-2 sentences, max 200 chars)"
+                    },
+                    prepTime: {
+                      type: "string",
+                      description: "Preparation time (e.g., '10 mins')"
+                    },
+                    cookTime: {
+                      type: "string",
+                      description: "Cooking time (e.g., '25 mins')"
+                    },
+                    difficulty: {
+                      type: "string",
+                      enum: ["easy", "medium", "hard"],
+                      description: "Difficulty level"
+                    },
+                    tags: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "Tags like cuisine, protein type, dietary info"
+                    },
+                    emoji: {
+                      type: "string",
+                      description: "Single emoji representing the dish"
+                    },
+                    recipeId: {
+                      type: "string",
+                      description: "Unique recipe ID (e.g., 'mon-breakfast-001')"
+                    },
+                    ingredients: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "List of ingredients with quantities (e.g., '2 chicken breasts', '1 tbsp olive oil')"
+                    },
+                    instructions: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "Numbered cooking instructions (4-8 steps, short sentences)"
+                    },
+                    kidFriendly: {
+                      type: "boolean",
+                      description: "Whether this meal is suitable for kids"
+                    },
+                    spiceLevel: {
+                      type: "string",
+                      enum: ["mild", "medium", "spicy"],
+                      description: "Spice level of the dish"
+                    }
+                  },
+                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "ingredients", "instructions"],
+                  additionalProperties: false
+                }
+              }
+            },
+            required: ["meals"],
+            additionalProperties: false
+          }
+        };
+
+        // Call OpenAI
+        const aiResponse = await invokeLLM({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a helpful meal planning assistant. Generate diverse, family-friendly recipes with complete cooking instructions. " +
+                "For each meal, provide: " +
+                "1) A clear list of ingredients with quantities (e.g., '2 chicken breasts', '1 tbsp olive oil') " +
+                "2) 4-8 numbered cooking steps with short, clear sentences " +
+                "3) Accurate prep and cook times " +
+                "4) Appropriate difficulty level and tags",
+            },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.6,
+          outputSchema: mealPlanSchema,
+        });
+
+        // Parse response
+        let meals: Meal[];
+        try {
+          const content = aiResponse.choices[0]?.message?.content;
+          if (!content) throw new Error("No content in AI response");
+
+          // Remove markdown code fences if present
+          const cleanedContent = content.replace(/```json\n?|```\n?/g, "").trim();
+          const parsed = JSON.parse(cleanedContent);
+          meals = parsed.meals || parsed;
+
+          // Validate meal count
+          if (meals.length !== expectedMealCount) {
+            console.warn(`[generatePartialPlan] Expected ${expectedMealCount} meals, got ${meals.length}`);
+          }
+
+          // Validate required fields
+          meals.forEach((meal, index) => {
+            if (!meal.name || !meal.description || !meal.prepTime || !meal.cookTime) {
+              throw new Error(`Meal at index ${index} is missing required fields`);
+            }
+          });
+        } catch (e) {
+          const errorMessage = e instanceof Error ? e.message : "Unknown error";
+          console.error("[generatePartialPlan] Failed to parse AI response:", errorMessage);
+          throw new Error(`Failed to parse AI response: ${errorMessage}`);
+        }
+
+        // Get current meal plan
+        const currentPlanResult = await db
+          .select()
+          .from(mealPlans)
+          .where(eq(mealPlans.userId, ctx.user.id))
+          .orderBy(desc(mealPlans.createdAt))
+          .limit(1);
+
+        const currentPlan = currentPlanResult[0];
+        if (!currentPlan) {
+          throw new Error("No existing meal plan found. Please generate a full plan first.");
+        }
+
+        // Merge new meals with existing meals
+        const existingMeals: Meal[] = typeof currentPlan.meals === "string" ? JSON.parse(currentPlan.meals) : currentPlan.meals;
+        const mergedMeals = [...existingMeals, ...meals];
+
+        // Update meal plan
+        await db
+          .update(mealPlans)
+          .set({
+            meals: JSON.stringify(mergedMeals),
+          })
+          .where(eq(mealPlans.id, currentPlan.id));
+
+        console.log("[generatePartialPlan] SUCCESS", { mealType: input.mealType, mealsAdded: meals.length });
+
+        return { success: true, meals: mergedMeals };
+      }),
+
     // Get current meal plan
     getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
       const db = await getDb();
