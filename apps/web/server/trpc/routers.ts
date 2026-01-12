@@ -480,16 +480,6 @@ export const appRouter = router({
                       type: "string",
                       description: "Unique recipe ID (e.g., 'mon-breakfast-001')"
                     },
-                    ingredients: {
-                      type: "array",
-                      items: { type: "string" },
-                      description: "List of ingredients with quantities (e.g., '2 chicken breasts', '1 tbsp olive oil')"
-                    },
-                    instructions: {
-                      type: "array",
-                      items: { type: "string" },
-                      description: "Numbered cooking instructions (4-8 steps, short sentences)"
-                    },
                     kidFriendly: {
                       type: "boolean",
                       description: "Whether this meal is suitable for kids"
