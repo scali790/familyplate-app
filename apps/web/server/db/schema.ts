@@ -123,6 +123,11 @@ export interface Meal {
   ingredients: string[];
   instructions: string[];
   tags: string[];
+  day?: string; // e.g., "monday", "tuesday", etc.
+  mealType?: string; // e.g., "breakfast", "lunch", "dinner"
+  difficulty?: string; // e.g., "easy", "medium", "hard"
+  emoji?: string; // e.g., "🍝", "🥗", "🍕"
+  recipeId?: string; // e.g., "mon-dinner-001"
   upVotes?: number;
   downVotes?: number;
   neutralVotes?: number;
