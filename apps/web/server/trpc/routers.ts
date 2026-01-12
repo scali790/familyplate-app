@@ -221,29 +221,110 @@ export const appRouter = router({
         const promptData = buildMealGenerationPrompt(parsedPrefs as any, undefined, recentMealNames);
         const prompt = formatPromptForAI(promptData);
 
-        // Call OpenAI
+        // Calculate expected meal count
+        const expectedMealCount = 7 * parsedPrefs.mealTypes.length;
+
+        // Define JSON Schema for structured output
+        const mealPlanSchema = {
+          name: "meal_plan",
+          schema: {
+            type: "object",
+            properties: {
+              meals: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    day: {
+                      type: "string",
+                      enum: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+                    },
+                    mealType: {
+                      type: "string",
+                      enum: ["breakfast", "lunch", "dinner"]
+                    },
+                    name: { type: "string" },
+                    description: { type: "string" },
+                    prepTime: { type: "string" },
+                    cookTime: { type: "string" },
+                    difficulty: {
+                      type: "string",
+                      enum: ["easy", "medium", "hard"]
+                    },
+                    tags: {
+                      type: "array",
+                      items: { type: "string" }
+                    },
+                    emoji: { type: "string" },
+                    recipeId: { type: "string" }
+                  },
+                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId"],
+                  additionalProperties: false
+                }
+              }
+            },
+            required: ["meals"],
+            additionalProperties: false
+          },
+          strict: true
+        };
+
+        // Call OpenAI with JSON Schema
         const aiResponse = await invokeLLM({
           model: "gpt-4o-mini",
           messages: [
             {
               role: "system",
               content:
-                "You are a helpful meal planning assistant. Generate diverse, family-friendly dinner recipes.",
+                "You are a helpful meal planning assistant. Generate diverse, family-friendly recipes based on user preferences.",
             },
             { role: "user", content: prompt },
           ],
-          temperature: 0.8,
+          temperature: 0.6,  // Lower temperature for more consistent output
+          outputSchema: mealPlanSchema,
         });
 
         let meals: Meal[];
         try {
-          const content = aiResponse.choices[0]?.message?.content;
+          let content = aiResponse.choices[0]?.message?.content;
           if (!content || typeof content !== "string") {
             throw new Error("No valid content in AI response");
           }
-          meals = JSON.parse(content);
+
+          // Remove markdown code fences if present
+          content = content.trim();
+          if (content.startsWith("```json")) {
+            content = content.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+          } else if (content.startsWith("```")) {
+            content = content.replace(/^```\s*/, "").replace(/\s*```$/, "");
+          }
+
+          const parsed = JSON.parse(content);
+          
+          // Handle both direct array and {meals: [...]} format
+          meals = Array.isArray(parsed) ? parsed : parsed.meals;
+
+          if (!Array.isArray(meals)) {
+            throw new Error("Parsed content is not an array");
+          }
+
+          // Validate meal count
+          if (meals.length !== expectedMealCount) {
+            console.warn(`[generatePlan] Expected ${expectedMealCount} meals, got ${meals.length}`);
+            // Don't throw - allow partial plans for now
+          }
+
+          // Validate each meal has required fields
+          meals.forEach((meal, idx) => {
+            if (!meal.day || !meal.mealType || !meal.name) {
+              throw new Error(`Meal at index ${idx} is missing required fields`);
+            }
+          });
+
         } catch (e) {
-          throw new Error("Failed to parse AI response");
+          const errorMessage = e instanceof Error ? e.message : "Unknown error";
+          console.error("[generatePlan] Failed to parse AI response:", errorMessage);
+          throw new Error(`Failed to parse AI response: ${errorMessage}`);
         }
 
         // Save meal plan
