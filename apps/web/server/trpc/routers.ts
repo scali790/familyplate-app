@@ -546,8 +546,11 @@ export const appRouter = router({
           const content = aiResponse.choices[0]?.message?.content;
           if (!content) throw new Error("No content in AI response");
 
+          // Ensure content is a string
+          const contentString = typeof content === 'string' ? content : JSON.stringify(content);
+
           // Remove markdown code fences if present
-          const cleanedContent = content.replace(/```json\n?|```\n?/g, "").trim();
+          const cleanedContent = contentString.replace(/```json\n?|```\n?/g, "").trim();
           const parsed = JSON.parse(cleanedContent);
           meals = parsed.meals || parsed;
 
