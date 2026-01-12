@@ -3,16 +3,29 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { RecipeModal } from '@/components/recipe-modal';
-import { WeekView } from '@/components/week-view';
-import { DayView } from '@/components/day-view';
 import { trpc } from '@/lib/trpc';
 import type { Meal } from '@/server/db/schema';
 
+// Food category icons mapping
+const getIconsForTags = (tags: string[]): string[] => {
+  const iconMap: Record<string, string> = {
+    beef: '🥩',
+    chicken: '🍗',
+    fish: '🐟',
+    vegetarian: '🌱',
+    vegan: '🥬',
+    spicy: '🌶️',
+    'kid-friendly': '👶',
+    healthy: '🥗',
+  };
+
+  return tags.map(tag => iconMap[tag.toLowerCase()] || '').filter(Boolean);
+};
+
 export default function DashboardPage() {
-  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
-  const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [selectedMeal, setSelectedMeal] = useState<{ meal: Meal; index: number; day: string; mealType: string } | null>(null);
 
   // Fetch current meal plan and preferences
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getCurrentPlan.useQuery();
@@ -20,7 +33,6 @@ export default function DashboardPage() {
   
   // Mutations
   const generateMutation = trpc.mealPlanning.generatePlan.useMutation();
-  const generatePartialMutation = trpc.mealPlanning.generatePartialPlan.useMutation();
 
   const handleGenerateNew = async () => {
     try {
@@ -29,19 +41,6 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Failed to generate meal plan:', error);
       alert('Failed to generate meal plan');
-    }
-  };
-
-  const handleGeneratePartial = async (mealType: string) => {
-    try {
-      await generatePartialMutation.mutateAsync({ 
-        mealType: mealType as "breakfast" | "lunch" | "dinner",
-        weekStartDate: mealPlan?.weekStartDate 
-      });
-      await refetch();
-    } catch (error) {
-      console.error('Failed to generate partial plan:', error);
-      alert(`Failed to generate ${mealType} plan`);
     }
   };
 
@@ -62,10 +61,18 @@ export default function DashboardPage() {
     return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
   };
 
-  // Get meal types from preferences (default to all if not set)
-  const mealTypes: string[] = Array.isArray(preferences?.mealTypes) && preferences.mealTypes.length > 0
-    ? preferences.mealTypes
-    : ['breakfast', 'lunch', 'dinner'];
+  // Get day date
+  const getDayDate = (weekStartDate: string, dayIndex: number) => {
+    const startDate = new Date(weekStartDate);
+    const mealDate = new Date(startDate);
+    mealDate.setDate(startDate.getDate() + dayIndex);
+
+    const month = mealDate.toLocaleDateString('en-US', { month: 'short' });
+    const day = mealDate.getDate();
+    return `${month} ${day}`;
+  };
+
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   if (isLoading) {
     return (
@@ -113,7 +120,7 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {!mealPlan ? (
             /* Empty State */
             <div className="text-center py-16">
@@ -134,29 +141,17 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
-              {/* Week Header & View Toggle */}
+              {/* Week Selector */}
               <div className="flex items-center justify-between mb-6">
+                <Button variant="ghost" size="sm" disabled>
+                  ← Previous Week
+                </Button>
                 <h2 className="text-xl font-semibold text-foreground">
-                  Week of {formatWeekRange(mealPlan.weekStartDate)}
+                  {formatWeekRange(mealPlan.weekStartDate)}
                 </h2>
-
-                {/* View Mode Toggle */}
-                <div className="flex gap-2">
-                  <Button
-                    variant={viewMode === 'week' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('week')}
-                  >
-                    Week View
-                  </Button>
-                  <Button
-                    variant={viewMode === 'day' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('day')}
-                  >
-                    Day View
-                  </Button>
-                </div>
+                <Button variant="ghost" size="sm" disabled>
+                  Next Week →
+                </Button>
               </div>
 
               {/* Action Buttons */}
@@ -167,34 +162,60 @@ export default function DashboardPage() {
                   onClick={handleGenerateNew}
                   disabled={generateMutation.isPending}
                 >
-                  {generateMutation.isPending ? 'Generating...' : '🔄 Generate New Plan'}
+                  {generateMutation.isPending ? 'Generating...' : 'Generate New Plan'}
                 </Button>
               </div>
 
-              {/* Week View or Day View */}
-              {viewMode === 'week' ? (
-                <WeekView
-                  meals={mealPlan.meals}
-                  mealTypes={mealTypes}
-                  weekStartDate={mealPlan.weekStartDate}
-                  onMealClick={(meal) => {
-                    setSelectedMeal(meal);
-                  }}
-                  onGeneratePartial={handleGeneratePartial}
-                />
-              ) : (
-                <DayView
-                  meals={mealPlan.meals}
-                  mealTypes={mealTypes}
-                  currentDayIndex={currentDayIndex}
-                  weekStartDate={mealPlan.weekStartDate}
-                  onMealClick={(meal) => {
-                    setSelectedMeal(meal);
-                  }}
-                  onPrevDay={() => setCurrentDayIndex(Math.max(0, currentDayIndex - 1))}
-                  onNextDay={() => setCurrentDayIndex(Math.min(6, currentDayIndex + 1))}
-                />
-              )}
+              {/* Meal Cards */}
+              <div className="space-y-4">
+                {mealPlan.meals.map((meal, index) => {
+                  const dayName = dayNames[index];
+                  
+                  return (
+                    <Card key={index} className="bg-surface border-border">
+                      <CardContent className="p-5">
+                        {/* Day & Name */}
+                        <div className="mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-primary uppercase">{dayName}</span>
+                            <span className="text-sm text-muted">• {getDayDate(mealPlan.weekStartDate, index)}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            {meal.tags && meal.tags.length > 0 && (
+                              <span className="text-base">{getIconsForTags(meal.tags).join(' ')}</span>
+                            )}
+                            <h3 className="text-lg font-bold text-foreground">{meal.name}</h3>
+                          </div>
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-muted mb-3">{meal.description}</p>
+
+                        {/* Meta Info */}
+                        <div className="flex gap-4 mb-3">
+                          <div className="flex items-center gap-1 text-muted text-sm">
+                            <span>⏱️ Prep: {meal.prepTime}</span>
+                          </div>
+                          {meal.cookTime && (
+                            <div className="flex items-center gap-1 text-muted text-sm">
+                              <span>🍳 Cook: {meal.cookTime}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* View Recipe Button */}
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => setSelectedMeal({ meal, index, day: dayName.toLowerCase(), mealType: 'dinner' })}
+                        >
+                          View Full Recipe
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </>
           )}
         </div>
@@ -203,8 +224,15 @@ export default function DashboardPage() {
       {/* Recipe Modal */}
       {selectedMeal && (
         <RecipeModal
-          meal={selectedMeal}
+          meal={selectedMeal.meal}
+          mealIndex={selectedMeal.index}
+          day={selectedMeal.day}
+          mealType={selectedMeal.mealType}
           onClose={() => setSelectedMeal(null)}
+          onMealRegenerated={(newMeal) => {
+            refetch(); // Refresh meal plan
+            setSelectedMeal(null); // Close modal
+          }}
         />
       )}
     </div>

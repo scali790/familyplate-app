@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
+import { useState } from 'react';
 import { trpc } from '@/lib/trpc';
 
 import type { Meal } from '@/server/db/schema';
 
 type RecipeModalProps = {
   meal: Meal | null;
+  mealIndex: number;
+  day: string;
+  mealType: string;
   onClose: () => void;
+  onMealRegenerated?: (newMeal: Meal) => void;
 };
 
 // Food category icons mapping (from Expo app)
@@ -27,62 +31,37 @@ const getIconsForTags = (tags: string[]): string[] => {
   return tags.map(tag => iconMap[tag.toLowerCase()] || '').filter(Boolean);
 };
 
-export function RecipeModal({ meal, onClose }: RecipeModalProps) {
-  const [recipeDetails, setRecipeDetails] = useState<{
-    ingredients: Array<{ name: string; amount: string; category: string }>;
-    instructions: string[];
-  } | null>(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const generateRecipeDetailsMutation = trpc.mealPlanning.generateRecipeDetails.useMutation();
-
-  useEffect(() => {
-    // Reset state when meal changes
-    setRecipeDetails(null);
-    setError(null);
-
-    if (!meal) return;
-
-    // Check if meal already has ingredients/instructions (old format)
-    if (meal.ingredients && meal.ingredients.length > 0 && meal.instructions && meal.instructions.length > 0) {
-      setRecipeDetails({
-        ingredients: meal.ingredients,
-        instructions: meal.instructions,
-      });
-      return;
-    }
-
-    // Generate recipe details on-demand
-    const fetchRecipeDetails = async () => {
-      setIsLoadingDetails(true);
-      setError(null);
-
-      try {
-        const result = await generateRecipeDetailsMutation.mutateAsync({
-          recipeId: (meal as any).recipeId || `${meal.day}-${meal.mealType}-${Date.now()}`,
-          mealName: meal.name,
-          mealType: meal.mealType,
-          description: meal.description,
-          difficulty: meal.difficulty,
-          prepTime: meal.prepTime,
-          cookTime: meal.cookTime,
-        });
-
-        setRecipeDetails({
-          ingredients: result.ingredients,
-          instructions: result.instructions,
-        });
-      } catch (err: any) {
-        console.error('Failed to generate recipe details:', err);
-        setError('Failed to load recipe details. Please try again.');
-      } finally {
-        setIsLoadingDetails(false);
+export function RecipeModal({ meal, mealIndex, day, mealType, onClose, onMealRegenerated }: RecipeModalProps) {
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showQuotaExceeded, setShowQuotaExceeded] = useState(false);
+  
+  const { data: quota } = trpc.mealPlanning.checkRegenerationQuota.useQuery();
+  const regenerateMutation = trpc.mealPlanning.regenerateSingleMeal.useMutation({
+    onSuccess: (data) => {
+      if (onMealRegenerated) {
+        onMealRegenerated(data.newMeal);
       }
-    };
+      setShowConfirmDialog(false);
+      onClose();
+    },
+    onError: (error) => {
+      if (error.message === 'QUOTA_EXCEEDED') {
+        setShowQuotaExceeded(true);
+      }
+    },
+  });
 
-    fetchRecipeDetails();
-  }, [meal]);
+  const handleRegenerateClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmRegenerate = () => {
+    regenerateMutation.mutate({
+      mealIndex,
+      day,
+      mealType,
+    });
+  };
 
   if (!meal) return null;
 
@@ -130,81 +109,149 @@ export function RecipeModal({ meal, onClose }: RecipeModalProps) {
             )}
           </div>
 
-          {/* Loading State */}
-          {isLoadingDetails && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-              <p className="text-muted text-sm">Generating recipe details...</p>
+          {/* Ingredients */}
+          <div className="mb-5">
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <span className="text-lg">🛒</span>
+              <h3 className="text-lg font-bold text-foreground">Ingredients</h3>
             </div>
-          )}
-
-          {/* Error State */}
-          {error && (
-            <div className="bg-error/10 border border-error rounded-xl p-4 mb-5">
-              <p className="text-error text-sm">{error}</p>
+            <div className="rounded-xl p-3.5 bg-surface">
+              {meal.ingredients && meal.ingredients.length > 0 ? (
+                meal.ingredients.map((ingredient, index) => (
+                  <div key={index} className="flex items-start mb-2">
+                    <span className="mr-2 text-primary text-sm">•</span>
+                    <span className="flex-1 text-foreground text-sm leading-5">{ingredient}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="italic text-muted text-sm">No ingredients listed</p>
+              )}
             </div>
-          )}
+          </div>
 
-          {/* Recipe Details */}
-          {!isLoadingDetails && !error && recipeDetails && (
-            <>
-              {/* Ingredients */}
-              <div className="mb-5">
-                <div className="flex items-center gap-1.5 mb-2.5">
-                  <span className="text-lg">🛒</span>
-                  <h3 className="text-lg font-bold text-foreground">Ingredients</h3>
-                </div>
-                <div className="rounded-xl p-3.5 bg-surface">
-                  {recipeDetails.ingredients.length > 0 ? (
-                    recipeDetails.ingredients.map((ingredient, index) => (
-                      <div key={index} className="flex items-start mb-2">
-                        <span className="mr-2 text-primary text-sm">•</span>
-                        <span className="flex-1 text-foreground text-sm leading-5">
-                          {ingredient.amount} {ingredient.name}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="italic text-muted text-sm">No ingredients listed</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="mb-4">
-                <div className="flex items-center gap-1.5 mb-2.5">
-                  <span className="text-lg">👨‍🍳</span>
-                  <h3 className="text-lg font-bold text-foreground">Instructions</h3>
-                </div>
-                <div className="space-y-3.5">
-                  {recipeDetails.instructions.length > 0 ? (
-                    recipeDetails.instructions.map((instruction, index) => (
-                      <div key={index} className="flex items-start">
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2.5 bg-primary flex-shrink-0">
-                          <span className="font-bold text-white text-sm">{index + 1}</span>
-                        </div>
-                        <p className="flex-1 pt-1 text-foreground text-sm leading-5">{instruction}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="italic text-muted text-sm">No instructions available</p>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
+          {/* Instructions */}
+          <div className="mb-4">
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <span className="text-lg">👨‍🍳</span>
+              <h3 className="text-lg font-bold text-foreground">Instructions</h3>
+            </div>
+            <div className="space-y-3.5">
+              {meal.instructions && meal.instructions.length > 0 ? (
+                meal.instructions.map((instruction, index) => (
+                  <div key={index} className="flex items-start">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2.5 bg-primary flex-shrink-0">
+                      <span className="font-bold text-white text-sm">{index + 1}</span>
+                    </div>
+                    <p className="flex-1 pt-1 text-foreground text-sm leading-5">{instruction}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="italic text-muted text-sm">No instructions available</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Close Button - Compact */}
-        <div className="px-4 py-3 border-t border-border">
+        {/* Action Buttons */}
+        <div className="px-4 py-3 border-t border-border space-y-2">
+          {/* Regeneration Quota Info */}
+          {quota && (
+            <div className="text-center text-xs text-muted mb-1">
+              {quota.canRegenerate ? (
+                <span>🔄 {quota.remaining}/{quota.limit} regenerations remaining today</span>
+              ) : (
+                <span>⚠️ Daily regeneration limit reached</span>
+              )}
+            </div>
+          )}
+
+          {/* Regenerate Button */}
+          <Button
+            onClick={handleRegenerateClick}
+            disabled={regenerateMutation.isPending || !quota?.canRegenerate}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {regenerateMutation.isPending ? '⏳ Generating...' : '🔄 Regenerate this meal'}
+          </Button>
+
+          {/* Close Button */}
           <Button
             onClick={onClose}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-2xl"
+            className="w-full bg-surface hover:bg-surface/80 text-foreground font-bold py-3 rounded-2xl"
           >
             Close
           </Button>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
+          onClick={() => setShowConfirmDialog(false)}
+        >
+          <div 
+            className="bg-background rounded-2xl p-6 max-w-sm mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-foreground mb-3">Replace this meal?</h3>
+            <p className="text-muted mb-5">
+              This will generate a new meal and save the current one to your history.
+              {quota && <span className="block mt-2 text-sm">You have {quota.remaining} regenerations left today.</span>}
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowConfirmDialog(false)}
+                className="flex-1 bg-surface hover:bg-surface/80 text-foreground font-bold py-3 rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmRegenerate}
+                disabled={regenerateMutation.isPending}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl"
+              >
+                {regenerateMutation.isPending ? 'Generating...' : 'Yes, Replace'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quota Exceeded Dialog */}
+      {showQuotaExceeded && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
+          onClick={() => setShowQuotaExceeded(false)}
+        >
+          <div 
+            className="bg-background rounded-2xl p-6 max-w-sm mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="text-5xl mb-3">💎</div>
+              <h3 className="text-xl font-bold text-foreground mb-3">Daily Limit Reached</h3>
+              <p className="text-muted mb-5">
+                You've used all 2 free regenerations today. Upgrade to Premium for unlimited regenerations!
+              </p>
+              <div className="space-y-2">
+                <Button
+                  onClick={() => setShowQuotaExceeded(false)}
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl"
+                >
+                  Upgrade to Premium
+                </Button>
+                <Button
+                  onClick={() => setShowQuotaExceeded(false)}
+                  className="w-full bg-surface hover:bg-surface/80 text-foreground font-bold py-3 rounded-xl"
+                >
+                  Maybe Later
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

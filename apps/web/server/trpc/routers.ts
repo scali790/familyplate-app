@@ -1,6 +1,6 @@
 import { publicProcedure, protectedProcedure, router } from "./init";
 import { getDb } from "../db/client";
-import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, mealHistory, mealRegenerationQuota, recipeDetails, type Meal } from "../db/schema";
+import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, mealRegenerationQuota, mealHistory, type Meal } from "../db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
@@ -190,13 +190,12 @@ export const appRouter = router({
         // Parse JSON fields and map null to defaults
         const parsedPrefs = {
           ...prefs,
-          mealTypes: (typeof prefs.mealTypes === "string" ? JSON.parse(prefs.mealTypes) : prefs.mealTypes) as string[],
-          cuisines: (typeof prefs.cuisines === "string" ? JSON.parse(prefs.cuisines) : prefs.cuisines) as string[],
-          flavors: (typeof prefs.flavors === "string" ? JSON.parse(prefs.flavors) : prefs.flavors) as string[],
+          cuisines: typeof prefs.cuisines === "string" ? JSON.parse(prefs.cuisines) : prefs.cuisines,
+          flavors: typeof prefs.flavors === "string" ? JSON.parse(prefs.flavors) : prefs.flavors,
           dietaryRestrictions:
-            (typeof prefs.dietaryRestrictions === "string"
+            typeof prefs.dietaryRestrictions === "string"
               ? JSON.parse(prefs.dietaryRestrictions)
-              : prefs.dietaryRestrictions) as string[],
+              : prefs.dietaryRestrictions,
           chickenFrequency: prefs.chickenFrequency ?? 2,
           redMeatFrequency: prefs.redMeatFrequency ?? 2,
           fishFrequency: prefs.fishFrequency ?? 2,
@@ -222,52 +221,18 @@ export const appRouter = router({
         const promptData = buildMealGenerationPrompt(parsedPrefs as any, undefined, recentMealNames);
         const prompt = formatPromptForAI(promptData);
 
-        // Call OpenAI with compact meal schema and strict JSON enforcement
+        // Call OpenAI
         const aiResponse = await invokeLLM({
-          model: "gpt-4o-2024-08-06",  // Snapshot model for json_schema support
+          model: "gpt-4o-mini",
           messages: [
             {
               role: "system",
               content:
-                "You are a helpful meal planning assistant. Generate diverse, family-friendly meal plans. Return COMPACT meal objects (no ingredients/instructions). Always return valid JSON array.",
+                "You are a helpful meal planning assistant. Generate diverse, family-friendly dinner recipes.",
             },
             { role: "user", content: prompt },
           ],
           temperature: 0.8,
-          responseFormat: {
-            type: "json_schema",
-            json_schema: {
-              name: "meal_plan_response",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  meals: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        day: { type: "string" },
-                        mealType: { type: "string" },
-                        name: { type: "string" },
-                        description: { type: "string" },
-                        prepTime: { type: "string" },
-                        cookTime: { type: "string" },
-                        difficulty: { type: "string" },
-                        tags: { type: "array", items: { type: "string" } },
-                        emoji: { type: "string" },
-                        recipeId: { type: "string" },
-                      },
-                      required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId"],
-                      additionalProperties: false,
-                    },
-                  },
-                },
-                required: ["meals"],
-                additionalProperties: false,
-              },
-            },
-          },
         });
 
         let meals: Meal[];
@@ -276,23 +241,9 @@ export const appRouter = router({
           if (!content || typeof content !== "string") {
             throw new Error("No valid content in AI response");
           }
-          const parsed = JSON.parse(content);
-          // Handle both array and wrapper object formats
-          meals = Array.isArray(parsed) ? parsed : (parsed.meals || []);
+          meals = JSON.parse(content);
         } catch (e) {
-          throw new Error(`Failed to parse AI response: ${e}`);
-        }
-
-        // Validate we got correct number of meals based on selected meal types
-        const expectedMealCount = parsedPrefs.mealTypes.length * 7;
-        if (!Array.isArray(meals) || meals.length !== expectedMealCount) {
-          throw new Error(`Expected ${expectedMealCount} meals (${parsedPrefs.mealTypes.join(", ")} × 7 days), got ${meals?.length || 0}`);
-        }
-
-        // Validate all meals have required mealType
-        const invalidMeals = meals.filter(m => !parsedPrefs.mealTypes.includes(m.mealType));
-        if (invalidMeals.length > 0) {
-          throw new Error(`Some meals have invalid mealType. Expected one of: ${parsedPrefs.mealTypes.join(", ")}`);
+          throw new Error("Failed to parse AI response");
         }
 
         // Save meal plan
@@ -302,50 +253,6 @@ export const appRouter = router({
           weekStartDate: weekStart,
           meals: JSON.stringify(meals),
         });
-
-        // Update meal history for rotation tracking
-        const now = new Date();
-        for (const meal of meals) {
-          // Check if meal already exists in history
-          const existingHistory = await db
-            .select()
-            .from(mealHistory)
-            .where(
-              and(
-                eq(mealHistory.userId, ctx.user.id),
-                eq(mealHistory.mealName, meal.name),
-                eq(mealHistory.mealType, meal.mealType)
-              )
-            )
-            .limit(1);
-
-          if (existingHistory.length > 0) {
-            // Update existing history
-            await db
-              .update(mealHistory)
-              .set({
-                lastServed: now,
-                timesServed: existingHistory[0].timesServed + 1,
-                updatedAt: now,
-              })
-              .where(eq(mealHistory.id, existingHistory[0].id));
-          } else {
-            // Insert new history
-            await db.insert(mealHistory).values({
-              userId: ctx.user.id,
-              mealName: meal.name,
-              mealType: meal.mealType,
-              lastServed: now,
-              timesServed: 1,
-              isFavorite: false,
-              totalUpvotes: 0,
-              totalDownvotes: 0,
-              totalNeutralVotes: 0,
-              cuisine: meal.tags?.find((t) => parsedPrefs.cuisines.includes(t)) || null,
-              tags: JSON.stringify(meal.tags || []),
-            });
-          }
-        }
 
         return { success: true, meals };
       }),
@@ -375,18 +282,84 @@ export const appRouter = router({
       };
     }),
 
-    // Generate partial meal plan (add missing meal type)
-    generatePartialPlan: protectedProcedure
+    // Check regeneration quota
+    checkRegenerationQuota: protectedProcedure.query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const today = new Date().toISOString().split("T")[0];
+      const quotaResult = await db
+        .select()
+        .from(mealRegenerationQuota)
+        .where(and(eq(mealRegenerationQuota.userId, ctx.user.id), eq(mealRegenerationQuota.date, today)))
+        .limit(1);
+
+      const quota = quotaResult[0];
+      const used = quota?.count || 0;
+      const limit = 2; // Free tier limit
+      const remaining = Math.max(0, limit - used);
+
+      return {
+        used,
+        limit,
+        remaining,
+        canRegenerate: remaining > 0,
+      };
+    }),
+
+    // Regenerate single meal
+    regenerateSingleMeal: protectedProcedure
       .input(
         z.object({
-          mealType: z.enum(["breakfast", "lunch", "dinner"]),
-          weekStartDate: z.string().optional(),
+          mealIndex: z.number(), // Index in meals array
+          day: z.string(), // e.g., "monday"
+          mealType: z.string(), // e.g., "dinner"
         })
       )
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
         if (!db) throw new Error("Database not available");
 
+        // 1. Check quota
+        const today = new Date().toISOString().split("T")[0];
+        const quotaResult = await db
+          .select()
+          .from(mealRegenerationQuota)
+          .where(and(eq(mealRegenerationQuota.userId, ctx.user.id), eq(mealRegenerationQuota.date, today)))
+          .limit(1);
+
+        const quota = quotaResult[0];
+        const used = quota?.count || 0;
+        const limit = 2; // Free tier
+
+        if (used >= limit) {
+          throw new Error("QUOTA_EXCEEDED");
+        }
+
+        // 2. Get current meal plan
+        const planResult = await db
+          .select()
+          .from(mealPlans)
+          .where(eq(mealPlans.userId, ctx.user.id))
+          .orderBy(desc(mealPlans.createdAt))
+          .limit(1);
+
+        const plan = planResult[0];
+        if (!plan) throw new Error("No meal plan found");
+
+        const meals: Meal[] = typeof plan.meals === "string" ? JSON.parse(plan.meals) : plan.meals;
+        const oldMeal = meals[input.mealIndex];
+        if (!oldMeal) throw new Error("Meal not found");
+
+        // 3. Save old meal to history
+        await db.insert(mealHistory).values({
+          userId: ctx.user.id,
+          mealName: oldMeal.name,
+          mealData: JSON.stringify(oldMeal),
+          reason: "regenerated",
+        });
+
+        // 4. Get user preferences
         const prefsResult = await db
           .select()
           .from(userPreferences)
@@ -394,27 +367,23 @@ export const appRouter = router({
           .limit(1);
 
         const prefs = prefsResult[0];
-        if (!prefs) {
-          throw new Error("Please complete onboarding first");
-        }
+        if (!prefs) throw new Error("Preferences not found");
 
-        // Parse JSON fields
         const parsedPrefs = {
           ...prefs,
-          mealTypes: (typeof prefs.mealTypes === "string" ? JSON.parse(prefs.mealTypes) : prefs.mealTypes) as string[],
-          cuisines: (typeof prefs.cuisines === "string" ? JSON.parse(prefs.cuisines) : prefs.cuisines) as string[],
-          flavors: (typeof prefs.flavors === "string" ? JSON.parse(prefs.flavors) : prefs.flavors) as string[],
+          cuisines: typeof prefs.cuisines === "string" ? JSON.parse(prefs.cuisines) : prefs.cuisines,
+          flavors: typeof prefs.flavors === "string" ? JSON.parse(prefs.flavors) : prefs.flavors,
           dietaryRestrictions:
-            (typeof prefs.dietaryRestrictions === "string"
+            typeof prefs.dietaryRestrictions === "string"
               ? JSON.parse(prefs.dietaryRestrictions)
-              : prefs.dietaryRestrictions) as string[],
+              : prefs.dietaryRestrictions,
           chickenFrequency: prefs.chickenFrequency ?? 2,
           redMeatFrequency: prefs.redMeatFrequency ?? 2,
           fishFrequency: prefs.fishFrequency ?? 2,
           vegetarianFrequency: prefs.vegetarianFrequency ?? 2,
         };
 
-        // Get recent meal history to avoid repeats
+        // 5. Get meal history to avoid repeats
         const historyResult = await db
           .select()
           .from(mealPlans)
@@ -423,296 +392,89 @@ export const appRouter = router({
           .limit(4);
 
         const recentMealNames: string[] = [];
-        historyResult.forEach((plan) => {
-          const meals: Meal[] =
-            typeof plan.meals === "string" ? JSON.parse(plan.meals) : plan.meals;
-          meals.forEach((meal) => recentMealNames.push(meal.name));
+        historyResult.forEach((p) => {
+          const m: Meal[] = typeof p.meals === "string" ? JSON.parse(p.meals) : p.meals;
+          m.forEach((meal) => recentMealNames.push(meal.name));
         });
 
-        // Build prompt for ONLY the requested meal type
-        const promptData = buildMealGenerationPrompt(
-          { ...parsedPrefs, mealTypes: [input.mealType] } as any,
-          undefined,
-          recentMealNames
-        );
-        const prompt = formatPromptForAI(promptData);
+        // 6. Generate new meal with AI
+        const prompt = `Generate ONE ${input.mealType} meal for ${input.day}.
 
-        // Call OpenAI with compact meal schema
+User Preferences:
+- Family Size: ${parsedPrefs.familySize}
+- Cuisines: ${parsedPrefs.cuisines.join(", ")}
+- Flavors: ${parsedPrefs.flavors.join(", ")}
+- Dietary Restrictions: ${parsedPrefs.dietaryRestrictions?.join(", ") || "None"}
+- Chicken Frequency: ${parsedPrefs.chickenFrequency}/4
+- Red Meat Frequency: ${parsedPrefs.redMeatFrequency}/4
+- Fish Frequency: ${parsedPrefs.fishFrequency}/4
+- Vegetarian Frequency: ${parsedPrefs.vegetarianFrequency}/4
+
+Avoid these recent meals:
+${recentMealNames.slice(0, 20).join(", ")}
+
+Return ONLY a JSON object (no markdown, no extra text) with this structure:
+{
+  "name": "Meal Name",
+  "description": "Brief description",
+  "prepTime": "15 mins",
+  "cookTime": "30 mins",
+  "ingredients": ["ingredient 1", "ingredient 2"],
+  "instructions": ["step 1", "step 2"],
+  "tags": ["protein-type", "dietary-style"]
+}`;
+
         const aiResponse = await invokeLLM({
-          model: "gpt-4o-2024-08-06",
+          model: "gpt-4o-mini",
           messages: [
             {
               role: "system",
-              content:
-                "You are a helpful meal planning assistant. Generate diverse, family-friendly meal plans. Return COMPACT meal objects (no ingredients/instructions). Always return valid JSON array.",
+              content: "You are a meal planning assistant. Generate ONE meal as valid JSON.",
             },
             { role: "user", content: prompt },
           ],
-          temperature: 0.8,
-          responseFormat: {
-            type: "json_schema",
-            json_schema: {
-              name: "meal_plan_response",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  meals: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        day: { type: "string" },
-                        mealType: { type: "string" },
-                        name: { type: "string" },
-                        description: { type: "string" },
-                        prepTime: { type: "string" },
-                        cookTime: { type: "string" },
-                        difficulty: { type: "string" },
-                        tags: { type: "array", items: { type: "string" } },
-                        emoji: { type: "string" },
-                        recipeId: { type: "string" },
-                      },
-                      required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId"],
-                      additionalProperties: false,
-                    },
-                  },
-                },
-                required: ["meals"],
-                additionalProperties: false,
-              },
-            },
-          },
+          temperature: 0.9, // Higher for more variety
         });
 
-        let newMeals: Meal[];
+        let newMeal: Meal;
         try {
           const content = aiResponse.choices[0]?.message?.content;
           if (!content || typeof content !== "string") {
             throw new Error("No valid content in AI response");
           }
-          const parsed = JSON.parse(content);
-          newMeals = Array.isArray(parsed) ? parsed : (parsed.meals || []);
+          newMeal = JSON.parse(content);
         } catch (e) {
-          throw new Error(`Failed to parse AI response: ${e}`);
+          throw new Error("Failed to parse AI response");
         }
 
-        // Validate we got 7 meals for the requested meal type
-        if (!Array.isArray(newMeals) || newMeals.length !== 7) {
-          throw new Error(`Expected 7 ${input.mealType} meals, got ${newMeals?.length || 0}`);
-        }
+        // 7. Replace meal in plan
+        meals[input.mealIndex] = newMeal;
 
-        // Get existing meal plan for this week
-        const weekStart = input.weekStartDate || new Date().toISOString().split("T")[0];
-        const existingPlanResult = await db
-          .select()
-          .from(mealPlans)
-          .where(
-            and(
-              eq(mealPlans.userId, ctx.user.id),
-              eq(mealPlans.weekStartDate, weekStart)
-            )
-          )
-          .orderBy(desc(mealPlans.createdAt))
-          .limit(1);
+        // 8. Update meal plan
+        await db
+          .update(mealPlans)
+          .set({ meals: JSON.stringify(meals) })
+          .where(eq(mealPlans.id, plan.id));
 
-        let allMeals: Meal[];
-        if (existingPlanResult.length > 0) {
-          // Merge with existing plan
-          const existingMeals: Meal[] =
-            typeof existingPlanResult[0].meals === "string"
-              ? JSON.parse(existingPlanResult[0].meals)
-              : existingPlanResult[0].meals;
-
-          // Remove any existing meals of this type (in case of regeneration)
-          const filteredExistingMeals = existingMeals.filter(
-            (m) => m.mealType !== input.mealType
-          );
-
-          // Combine filtered existing meals with new meals
-          allMeals = [...filteredExistingMeals, ...newMeals];
-
-          // Update existing plan
+        // 9. Update quota
+        if (quota) {
           await db
-            .update(mealPlans)
-            .set({
-              meals: JSON.stringify(allMeals),
-            })
-            .where(eq(mealPlans.id, existingPlanResult[0].id));
+            .update(mealRegenerationQuota)
+            .set({ count: used + 1, updatedAt: new Date() })
+            .where(eq(mealRegenerationQuota.id, quota.id));
         } else {
-          // Create new plan
-          allMeals = newMeals;
-          await db.insert(mealPlans).values({
+          await db.insert(mealRegenerationQuota).values({
             userId: ctx.user.id,
-            weekStartDate: weekStart,
-            meals: JSON.stringify(allMeals),
+            date: today,
+            count: 1,
           });
         }
 
-        // Update meal history for rotation tracking
-        const now = new Date();
-        for (const meal of newMeals) {
-          const existingHistory = await db
-            .select()
-            .from(mealHistory)
-            .where(
-              and(
-                eq(mealHistory.userId, ctx.user.id),
-                eq(mealHistory.mealName, meal.name),
-                eq(mealHistory.mealType, meal.mealType)
-              )
-            )
-            .limit(1);
-
-          if (existingHistory.length > 0) {
-            await db
-              .update(mealHistory)
-              .set({
-                lastServed: now,
-                timesServed: existingHistory[0].timesServed + 1,
-                updatedAt: now,
-              })
-              .where(eq(mealHistory.id, existingHistory[0].id));
-          } else {
-            await db.insert(mealHistory).values({
-              userId: ctx.user.id,
-              mealName: meal.name,
-              mealType: meal.mealType,
-              lastServed: now,
-              timesServed: 1,
-              isFavorite: false,
-              totalUpvotes: 0,
-              totalDownvotes: 0,
-              totalNeutralVotes: 0,
-              cuisine: meal.tags?.find((t) => parsedPrefs.cuisines.includes(t)) || null,
-              tags: JSON.stringify(meal.tags || []),
-            });
-          }
-        }
-
-        return { success: true, meals: allMeals, addedMealType: input.mealType };
-      }),
-
-    // Generate recipe details on-demand
-    generateRecipeDetails: protectedProcedure
-      .input(
-        z.object({
-          recipeId: z.string(),
-          mealName: z.string(),
-          mealType: z.string(),
-          description: z.string(),
-          difficulty: z.string(),
-          prepTime: z.string(),
-          cookTime: z.string(),
-        })
-      )
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database not available");
-
-        // Check if recipe details already exist (cache)
-        const existingResult = await db
-          .select()
-          .from(recipeDetails)
-          .where(eq(recipeDetails.recipeId, input.recipeId))
-          .limit(1);
-
-        if (existingResult.length > 0) {
-          // Return cached recipe details
-          const cached = existingResult[0];
-          return {
-            recipeId: cached.recipeId,
-            ingredients: typeof cached.ingredients === "string" ? JSON.parse(cached.ingredients) : cached.ingredients,
-            instructions: typeof cached.instructions === "string" ? JSON.parse(cached.instructions) : cached.instructions,
-          };
-        }
-
-        // Generate new recipe details using OpenAI
-        const prompt = `Generate detailed recipe for: ${input.mealName}
-
-Description: ${input.description}
-Difficulty: ${input.difficulty}
-Prep Time: ${input.prepTime}
-Cook Time: ${input.cookTime}
-Meal Type: ${input.mealType}
-
-Provide:
-1. Ingredients list with amounts and categories (Protein, Vegetables, Spices, etc.)
-2. Step-by-step cooking instructions
-
-Be specific with measurements and cooking techniques.`;
-
-        const aiResponse = await invokeLLM({
-          model: "gpt-4o-2024-08-06",
-          messages: [
-            {
-              role: "system",
-              content: "You are a professional chef. Generate detailed recipes with precise ingredients and clear instructions.",
-            },
-            { role: "user", content: prompt },
-          ],
-          temperature: 0.7,
-          max_tokens: 1500,
-          responseFormat: {
-            type: "json_schema",
-            json_schema: {
-              name: "recipe_details_response",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  ingredients: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        name: { type: "string" },
-                        amount: { type: "string" },
-                        category: { type: "string" },
-                      },
-                      required: ["name", "amount", "category"],
-                      additionalProperties: false,
-                    },
-                  },
-                  instructions: {
-                    type: "array",
-                    items: { type: "string" },
-                  },
-                },
-                required: ["ingredients", "instructions"],
-                additionalProperties: false,
-              },
-            },
-          },
-        });
-
-        let ingredients: Array<{ name: string; amount: string; category: string }>;
-        let instructions: string[];
-
-        try {
-          const content = aiResponse.choices[0]?.message?.content;
-          if (!content || typeof content !== "string") {
-            throw new Error("No valid content in AI response");
-          }
-          const parsed = JSON.parse(content);
-          ingredients = parsed.ingredients || [];
-          instructions = parsed.instructions || [];
-        } catch (e) {
-          throw new Error(`Failed to parse recipe details: ${e}`);
-        }
-
-        // Save to database (cache for future requests)
-        await db.insert(recipeDetails).values({
-          recipeId: input.recipeId,
-          mealName: input.mealName,
-          ingredients: JSON.stringify(ingredients),
-          instructions: JSON.stringify(instructions),
-        });
-
         return {
-          recipeId: input.recipeId,
-          ingredients,
-          instructions,
+          success: true,
+          newMeal,
+          quotaUsed: used + 1,
+          quotaRemaining: limit - (used + 1),
         };
       }),
   }),
