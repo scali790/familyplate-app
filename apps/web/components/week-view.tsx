@@ -40,7 +40,7 @@ export function WeekView({ meals, mealTypes, weekStartDate, onMealClick, onGener
   });
 
   meals.forEach(meal => {
-    if (mealsByDayAndType[meal.day]) {
+    if (meal.day && meal.mealType && mealsByDayAndType[meal.day]) {
       mealsByDayAndType[meal.day][meal.mealType] = meal;
     }
   });
