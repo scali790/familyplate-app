@@ -279,7 +279,7 @@ export const appRouter = router({
                       description: "Spice level of the dish"
                     }
                   },
-                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "ingredients", "instructions"],
+                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "ingredients", "instructions", "kidFriendly", "spiceLevel"],
                   additionalProperties: false
                 }
               }
@@ -510,7 +510,7 @@ export const appRouter = router({
                       description: "Spice level of the dish"
                     }
                   },
-                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "ingredients", "instructions"],
+                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "ingredients", "instructions", "kidFriendly", "spiceLevel"],
                   additionalProperties: false
                 }
               }
