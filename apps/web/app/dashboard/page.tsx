@@ -26,6 +26,8 @@ const getIconsForTags = (tags: string[]): string[] => {
 
 export default function DashboardPage() {
   const [selectedMeal, setSelectedMeal] = useState<{ meal: Meal; index: number; day: string; mealType: string } | null>(null);
+  const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0); // 0 = Monday
 
   // Fetch current meal plan and preferences
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getCurrentPlan.useQuery();
@@ -141,18 +143,60 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
-              {/* Week Selector */}
-              <div className="flex items-center justify-between mb-6">
-                <Button variant="ghost" size="sm" disabled>
-                  ← Previous Week
+              {/* View Toggle */}
+              <div className="flex items-center justify-end mb-4 gap-2">
+                <Button
+                  variant={viewMode === 'week' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('week')}
+                >
+                  Week View
                 </Button>
-                <h2 className="text-xl font-semibold text-foreground">
-                  {formatWeekRange(mealPlan.weekStartDate)}
-                </h2>
-                <Button variant="ghost" size="sm" disabled>
-                  Next Week →
+                <Button
+                  variant={viewMode === 'day' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('day')}
+                >
+                  Day View
                 </Button>
               </div>
+
+              {/* Week/Day Selector */}
+              {viewMode === 'week' ? (
+                <div className="flex items-center justify-between mb-6">
+                  <Button variant="ghost" size="sm" disabled>
+                    ← Previous Week
+                  </Button>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    {formatWeekRange(mealPlan.weekStartDate)}
+                  </h2>
+                  <Button variant="ghost" size="sm" disabled>
+                    Next Week →
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between mb-6">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setSelectedDayIndex(Math.max(0, selectedDayIndex - 1))}
+                    disabled={selectedDayIndex === 0}
+                  >
+                    ← Previous Day
+                  </Button>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    {dayNames[selectedDayIndex]} • {getDayDate(mealPlan.weekStartDate, selectedDayIndex)}
+                  </h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setSelectedDayIndex(Math.min(6, selectedDayIndex + 1))}
+                    disabled={selectedDayIndex === 6}
+                  >
+                    Next Day →
+                  </Button>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="space-y-3 mb-6">
@@ -168,17 +212,20 @@ export default function DashboardPage() {
 
               {/* Meal Cards */}
               <div className="space-y-4">
-                {mealPlan.meals.map((meal, index) => {
-                  const dayName = dayNames[index];
+                {mealPlan.meals
+                  .filter((_, index) => viewMode === 'week' || index === selectedDayIndex)
+                  .map((meal, displayIndex) => {
+                    const actualIndex = viewMode === 'week' ? displayIndex : selectedDayIndex;
+                    const dayName = dayNames[actualIndex];
                   
                   return (
-                    <Card key={index} className="bg-surface border-border">
+                    <Card key={actualIndex} className="bg-surface border-border">
                       <CardContent className="p-5">
                         {/* Day & Name */}
                         <div className="mb-3">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-primary uppercase">{dayName}</span>
-                            <span className="text-sm text-muted">• {getDayDate(mealPlan.weekStartDate, index)}</span>
+                            <span className="text-sm text-muted">• {getDayDate(mealPlan.weekStartDate, actualIndex)}</span>
                           </div>
                           <div className="flex items-center gap-1.5 mt-1">
                             {meal.tags && meal.tags.length > 0 && (
@@ -207,7 +254,7 @@ export default function DashboardPage() {
                         <Button
                           variant="outline"
                           className="w-full"
-                          onClick={() => setSelectedMeal({ meal, index, day: dayName.toLowerCase(), mealType: 'dinner' })}
+                          onClick={() => setSelectedMeal({ meal, index: actualIndex, day: dayName.toLowerCase(), mealType: 'dinner' })}
                         >
                           View Full Recipe
                         </Button>
