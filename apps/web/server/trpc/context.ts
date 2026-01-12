@@ -8,14 +8,29 @@ const COOKIE_NAME = "fp_session";
  */
 function getSessionFromRequest(req: Request): string | null {
   const cookieHeader = req.headers.get("cookie");
-  if (!cookieHeader) return null;
+  
+  console.log('[tRPC Context] Cookie header:', cookieHeader ? `${cookieHeader.substring(0, 100)}...` : 'null');
+  
+  if (!cookieHeader) {
+    console.log('[tRPC Context] No cookie header found');
+    return null;
+  }
   
   const cookies = cookieHeader.split(";").map(c => c.trim());
   const sessionCookie = cookies.find(c => c.startsWith(`${COOKIE_NAME}=`));
   
-  if (!sessionCookie) return null;
+  console.log('[tRPC Context] Looking for cookie:', COOKIE_NAME);
+  console.log('[tRPC Context] Available cookies:', cookies.map(c => c.split('=')[0]).join(', '));
   
-  return sessionCookie.split("=")[1] || null;
+  if (!sessionCookie) {
+    console.log('[tRPC Context] Session cookie not found');
+    return null;
+  }
+  
+  const sessionId = sessionCookie.split("=")[1] || null;
+  console.log('[tRPC Context] Session ID found:', sessionId ? `${sessionId.substring(0, 16)}...` : 'null');
+  
+  return sessionId;
 }
 
 export async function createContext({ req }: { req: Request }) {
@@ -53,10 +68,14 @@ export async function createContext({ req }: { req: Request }) {
       user = await getUserFromSession(sessionId);
       if (user) {
         console.log(`[tRPC Context] User authenticated: ${user.email} (ID: ${user.id})`);
+      } else {
+        console.log('[tRPC Context] Session ID valid but no user found (expired or revoked)');
       }
     } catch (error) {
       console.error("[tRPC Context] Failed to get user from session:", error);
     }
+  } else {
+    console.log('[tRPC Context] No session ID extracted from request');
   }
   
   return { user, baseUrl };

@@ -574,9 +574,14 @@ export const appRouter = router({
           throw new Error("No existing meal plan found. Please generate a full plan first.");
         }
 
-        // Merge new meals with existing meals
+        // Merge new meals with existing meals (replace meals with same day+mealType)
         const existingMeals: Meal[] = typeof currentPlan.meals === "string" ? JSON.parse(currentPlan.meals) : currentPlan.meals;
-        const mergedMeals = [...existingMeals, ...meals];
+        
+        // Remove existing meals for this meal type
+        const filteredMeals = existingMeals.filter(m => m.mealType !== input.mealType);
+        
+        // Add new meals
+        const mergedMeals = [...filteredMeals, ...meals];
 
         // Update meal plan
         await db
