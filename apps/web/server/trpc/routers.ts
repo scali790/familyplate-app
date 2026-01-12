@@ -258,9 +258,28 @@ export const appRouter = router({
                       items: { type: "string" }
                     },
                     emoji: { type: "string" },
-                    recipeId: { type: "string" }
+                    recipeId: { type: "string" },
+                    ingredients: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "List of ingredients with quantities (e.g., '2 chicken breasts', '1 tbsp olive oil')"
+                    },
+                    instructions: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "Numbered cooking instructions (4-8 steps, short sentences)"
+                    },
+                    kidFriendly: {
+                      type: "boolean",
+                      description: "Whether this meal is suitable for kids"
+                    },
+                    spiceLevel: {
+                      type: "string",
+                      enum: ["mild", "medium", "spicy"],
+                      description: "Spice level of the dish"
+                    }
                   },
-                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId"],
+                  required: ["day", "mealType", "name", "description", "prepTime", "cookTime", "difficulty", "tags", "emoji", "recipeId", "ingredients", "instructions"],
                   additionalProperties: false
                 }
               }
@@ -278,7 +297,12 @@ export const appRouter = router({
             {
               role: "system",
               content:
-                "You are a helpful meal planning assistant. Generate diverse, family-friendly recipes based on user preferences.",
+                "You are a helpful meal planning assistant. Generate diverse, family-friendly recipes with complete cooking instructions. " +
+                "For each meal, provide: " +
+                "1) A clear list of ingredients with quantities (e.g., '2 chicken breasts', '1 tbsp olive oil') " +
+                "2) 4-8 numbered cooking steps with short, clear sentences " +
+                "3) Accurate prep and cook times " +
+                "4) Appropriate difficulty level and tags",
             },
             { role: "user", content: prompt },
           ],
