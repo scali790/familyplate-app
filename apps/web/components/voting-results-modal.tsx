@@ -229,14 +229,14 @@ export default function VotingResultsModal({
         <div className="flex gap-3 p-6 border-t bg-gray-50">
           <button
             onClick={handleResetVotes}
-            disabled={resetVotesMutation.isLoading}
+            disabled={resetVotesMutation.isPending}
             className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors disabled:opacity-50"
           >
             Reset Votes
           </button>
           <button
             onClick={handleCloseSession}
-            disabled={closeSessionMutation.isLoading}
+            disabled={closeSessionMutation.isPending}
             className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
           >
             Close Session
