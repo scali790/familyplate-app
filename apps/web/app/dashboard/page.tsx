@@ -145,8 +145,8 @@ export default function DashboardPage() {
 
   // Check if meal type is enabled in user preferences
   const isMealTypeEnabled = (mealType: string) => {
-    if (!preferences?.mealTypes) return true; // Default to enabled if no preferences
-    return preferences.mealTypes.includes(mealType as any);
+    if (!preferences?.mealTypes || !Array.isArray(preferences.mealTypes)) return true; // Default to enabled if no preferences
+    return (preferences.mealTypes as string[]).includes(mealType);
   };
 
   if (isLoading) {
