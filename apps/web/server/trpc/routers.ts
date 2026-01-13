@@ -1039,6 +1039,28 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
           throw new Error("Session not found or unauthorized");
         }
 
+        // Get session meals for names
+        const session = sessionResult[0] as any;
+        let meals: any[] = [];
+        if (session.meals) {
+          try {
+            meals = typeof session.meals === "string" ? JSON.parse(session.meals) : session.meals;
+            if (typeof meals === "string") meals = JSON.parse(meals);
+            if (!Array.isArray(meals)) meals = [];
+          } catch (err) {
+            console.error('[getResults] Failed to parse meals:', err);
+            meals = [];
+          }
+        }
+
+        // Create meal lookup map (recipeId -> name)
+        const mealNames: Record<string, string> = {};
+        meals.forEach((meal: any) => {
+          if (meal.recipeId && meal.name) {
+            mealNames[meal.recipeId] = meal.name;
+          }
+        });
+
         // Get all votes
         const votesResult = await db.execute(
           sql`SELECT meal_id, voter_name, reaction, created_at 
@@ -1050,13 +1072,19 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         const votes = votesResult as any[];
 
         // Aggregate by meal
-        const mealAggregates: Record<string, { up: number; neutral: number; down: number; score: number }> = {};
+        const mealAggregates: Record<string, { up: number; neutral: number; down: number; score: number; name: string }> = {};
         const voterBreakdown: Record<string, Array<{ mealId: string; reaction: string }>> = {};
 
         votes.forEach((vote) => {
           // Meal aggregates
           if (!mealAggregates[vote.meal_id]) {
-            mealAggregates[vote.meal_id] = { up: 0, neutral: 0, down: 0, score: 0 };
+            mealAggregates[vote.meal_id] = { 
+              up: 0, 
+              neutral: 0, 
+              down: 0, 
+              score: 0,
+              name: mealNames[vote.meal_id] || vote.meal_id
+            };
           }
           if (vote.reaction === "up") {
             mealAggregates[vote.meal_id].up++;

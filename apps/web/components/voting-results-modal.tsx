@@ -181,7 +181,7 @@ export default function VotingResultsModal({
                   <div key={mealId} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800 text-lg">{mealId}</h3>
+                        <h3 className="font-semibold text-gray-800 text-lg">{stats.name}</h3>
                       </div>
                       <div className={`text-2xl font-bold ${scoreColor}`}>
                         {stats.score > 0 ? "+" : ""}
