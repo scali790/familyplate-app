@@ -110,7 +110,10 @@ export const voteSessions = pgTable("vote_sessions", {
   id: varchar("id", { length: 36 }).primaryKey(), // UUID
   userId: integer("user_id").notNull().references(() => users.id), // Manager
   mealPlanId: integer("meal_plan_id").notNull().references(() => mealPlans.id),
+  meals: jsonb("meals"), // Snapshot of meals at creation time
   status: varchar("status", { length: 20 }).notNull().default("open"), // 'open' | 'closed'
+  closedReason: varchar("closed_reason", { length: 30 }), // 'manual' | 'meal_plan_changed' | 'expired'
+  closedAt: timestamp("closed_at"),
   maxVoters: integer("max_voters").notNull().default(10),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),

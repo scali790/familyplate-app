@@ -345,11 +345,27 @@ export const appRouter = router({
 
         // Save meal plan
         const weekStart = input.weekStartDate || new Date().toISOString().split("T")[0];
-        await db.insert(mealPlans).values({
+        const insertResult = await db.insert(mealPlans).values({
           userId: ctx.user.id,
           weekStartDate: weekStart,
           meals: JSON.stringify(meals),
-        });
+        }).returning({ id: mealPlans.id });
+        
+        const newMealPlanId = insertResult[0]?.id;
+
+        // Auto-close any open voting sessions for previous meal plans
+        if (newMealPlanId) {
+          await db.execute(
+            sql`UPDATE vote_sessions 
+                SET status = 'closed', 
+                    closed_reason = 'meal_plan_changed', 
+                    closed_at = NOW() 
+                WHERE user_id = ${ctx.user.id} 
+                AND meal_plan_id != ${newMealPlanId} 
+                AND status = 'open'`
+          );
+          console.log('[generatePlan] Auto-closed open voting sessions for previous meal plans');
+        }
 
         return { success: true, meals };
       }),
@@ -1038,6 +1054,8 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         return {
           sessionId: session.id,
           status: session.status,
+          closedReason: session.closed_reason,
+          closedAt: session.closed_at,
           isOpen,
           isExpired,
           expiresAt: session.expires_at,
@@ -1137,6 +1155,9 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         });
 
         return {
+          status: session.status,
+          closedReason: session.closed_reason,
+          closedAt: session.closed_at,
           mealAggregates,
           voterBreakdown,
           totalVoters: Object.keys(voterBreakdown).length,
@@ -1151,9 +1172,15 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         if (!db) throw new Error("Database not available");
 
         await db.execute(
-          sql`UPDATE vote_sessions SET status = 'closed' WHERE id = ${input.sessionId} AND user_id = ${ctx.user.id}`
+          sql`UPDATE vote_sessions 
+              SET status = 'closed', 
+                  closed_reason = 'manual', 
+                  closed_at = NOW() 
+              WHERE id = ${input.sessionId} 
+              AND user_id = ${ctx.user.id}`
         );
 
+        console.log('[voteSessions.close] Session closed manually', { sessionId: input.sessionId });
         return { success: true };
       }),
 

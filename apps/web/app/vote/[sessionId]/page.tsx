@@ -131,16 +131,37 @@ export default function VotePage() {
 
   // Session closed
   if (!session.isOpen) {
+    const getClosedMessage = () => {
+      if (session.closedReason === 'meal_plan_changed') {
+        return "This menu was updated or the voting has been closed by the family manager.";
+      }
+      if (session.closedReason === 'manual') {
+        return "The family manager has closed this voting session.";
+      }
+      if (session.isExpired || session.closedReason === 'expired') {
+        return "This voting session has expired.";
+      }
+      return "This voting session is no longer active.";
+    };
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           <div className="text-6xl mb-4">🔒</div>
           <h1 className="text-2xl font-bold mb-2 text-gray-800">Voting Closed</h1>
-          <p className="text-gray-600">
-            {session.isExpired
-              ? "This voting session has expired."
-              : "The meal plan manager has closed this voting session."}
+          <p className="text-gray-600 mb-6">
+            {getClosedMessage()}
           </p>
+          {session.closedAt && (
+            <p className="text-sm text-gray-400">
+              Closed on {new Date(session.closedAt).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                hour: 'numeric', 
+                minute: '2-digit' 
+              })}
+            </p>
+          )}
         </div>
       </div>
     );

@@ -68,8 +68,33 @@ export default function VotingResultsModal({
     );
   }
 
-  const { mealAggregates, voterBreakdown, totalVoters } = results;
+  const { status, closedReason, closedAt, mealAggregates, voterBreakdown, totalVoters } = results;
   const mealCount = Object.keys(mealAggregates).length;
+  const isOpen = status === 'open';
+
+  const getStatusBadge = () => {
+    if (isOpen) {
+      return (
+        <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+          Open
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+        <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
+        Closed
+      </span>
+    );
+  };
+
+  const getClosedReasonText = () => {
+    if (closedReason === 'meal_plan_changed') return 'Closed because meal plan changed';
+    if (closedReason === 'manual') return 'Closed manually';
+    if (closedReason === 'expired') return 'Closed due to expiration';
+    return null;
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -77,10 +102,19 @@ export default function VotingResultsModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-orange-50 to-amber-50">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Voting Results</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-2xl font-bold text-gray-800">Voting Results</h2>
+              {getStatusBadge()}
+            </div>
+            <p className="text-sm text-gray-600">
               {totalVoters} voter{totalVoters !== 1 ? "s" : ""} • {mealCount} meal{mealCount !== 1 ? "s" : ""}
             </p>
+            {!isOpen && getClosedReasonText() && (
+              <p className="text-xs text-gray-500 mt-1">
+                {getClosedReasonText()}
+                {closedAt && ` on ${new Date(closedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`}
+              </p>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -275,8 +309,9 @@ export default function VotingResultsModal({
           </button>
           <button
             onClick={handleCloseSession}
-            disabled={closeSessionMutation.isPending}
-            className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+            disabled={closeSessionMutation.isPending || !isOpen}
+            className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title={!isOpen ? "Session is already closed" : ""}
           >
             Close Session
           </button>
