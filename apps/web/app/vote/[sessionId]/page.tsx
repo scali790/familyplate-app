@@ -57,7 +57,7 @@ export default function PublicVotePage() {
   // Load existing votes when available
   useEffect(() => {
     if (existingVotes?.votes) {
-      setVotes(existingVotes.votes);
+      setVotes(existingVotes.votes as Record<string, Reaction>);
     }
   }, [existingVotes]);
 
