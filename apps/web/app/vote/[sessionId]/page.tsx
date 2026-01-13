@@ -355,26 +355,47 @@ export default function VotePage() {
           <div className="grid grid-cols-3 gap-4 mt-8">
             <button
               onClick={() => handleVote("down")}
-              className="flex flex-col items-center justify-center py-6 bg-red-50 hover:bg-red-100 border-2 border-red-200 rounded-2xl transition-all hover:scale-105 active:scale-95"
+              className={`flex flex-col items-center justify-center py-6 border-2 rounded-2xl transition-all hover:scale-105 active:scale-95 ${
+                votes[currentMeal.recipeId] === "down"
+                  ? "bg-red-200 border-red-500 shadow-lg scale-105"
+                  : "bg-red-50 hover:bg-red-100 border-red-200"
+              }`}
             >
               <span className="text-5xl mb-2">👎</span>
               <span className="text-sm font-semibold text-red-700">No thanks</span>
+              {votes[currentMeal.recipeId] === "down" && (
+                <span className="text-xs text-red-600 mt-1">✓ Selected</span>
+              )}
             </button>
 
             <button
               onClick={() => handleVote("neutral")}
-              className="flex flex-col items-center justify-center py-6 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-2xl transition-all hover:scale-105 active:scale-95"
+              className={`flex flex-col items-center justify-center py-6 border-2 rounded-2xl transition-all hover:scale-105 active:scale-95 ${
+                votes[currentMeal.recipeId] === "neutral"
+                  ? "bg-gray-200 border-gray-500 shadow-lg scale-105"
+                  : "bg-gray-50 hover:bg-gray-100 border-gray-200"
+              }`}
             >
               <span className="text-5xl mb-2">😐</span>
               <span className="text-sm font-semibold text-gray-700">Okay</span>
+              {votes[currentMeal.recipeId] === "neutral" && (
+                <span className="text-xs text-gray-600 mt-1">✓ Selected</span>
+              )}
             </button>
 
             <button
               onClick={() => handleVote("up")}
-              className="flex flex-col items-center justify-center py-6 bg-green-50 hover:bg-green-100 border-2 border-green-200 rounded-2xl transition-all hover:scale-105 active:scale-95"
+              className={`flex flex-col items-center justify-center py-6 border-2 rounded-2xl transition-all hover:scale-105 active:scale-95 ${
+                votes[currentMeal.recipeId] === "up"
+                  ? "bg-green-200 border-green-500 shadow-lg scale-105"
+                  : "bg-green-50 hover:bg-green-100 border-green-200"
+              }`}
             >
               <span className="text-5xl mb-2">👍</span>
               <span className="text-sm font-semibold text-green-700">Would eat!</span>
+              {votes[currentMeal.recipeId] === "up" && (
+                <span className="text-xs text-green-600 mt-1">✓ Selected</span>
+              )}
             </button>
           </div>
         </div>
