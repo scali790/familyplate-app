@@ -386,7 +386,7 @@ export default function VotePage() {
               onClick={() => handleVote("down")}
               className={`flex flex-col items-center justify-center py-6 border-2 rounded-2xl transition-all hover:scale-105 active:scale-95 ${
                 votes[currentMeal.recipeId] === "down"
-                  ? "bg-red-200 border-red-500 shadow-lg scale-105"
+                  ? "bg-red-300 border-red-600 shadow-2xl scale-110 ring-4 ring-red-200"
                   : "bg-red-50 hover:bg-red-100 border-red-200"
               }`}
             >
@@ -401,12 +401,12 @@ export default function VotePage() {
               onClick={() => handleVote("neutral")}
               className={`flex flex-col items-center justify-center py-6 border-2 rounded-2xl transition-all hover:scale-105 active:scale-95 ${
                 votes[currentMeal.recipeId] === "neutral"
-                  ? "bg-gray-200 border-gray-500 shadow-lg scale-105"
+                  ? "bg-gray-300 border-gray-600 shadow-2xl scale-110 ring-4 ring-gray-200"
                   : "bg-gray-50 hover:bg-gray-100 border-gray-200"
               }`}
             >
               <span className="text-5xl mb-2">😐</span>
-              <span className="text-sm font-semibold text-gray-700">Okay</span>
+              <span className="text-sm font-semibold text-gray-700">It's okay</span>
               {votes[currentMeal.recipeId] === "neutral" && (
                 <span className="text-xs text-gray-600 mt-1">✓ Selected</span>
               )}
@@ -416,12 +416,12 @@ export default function VotePage() {
               onClick={() => handleVote("up")}
               className={`flex flex-col items-center justify-center py-6 border-2 rounded-2xl transition-all hover:scale-105 active:scale-95 ${
                 votes[currentMeal.recipeId] === "up"
-                  ? "bg-green-200 border-green-500 shadow-lg scale-105"
+                  ? "bg-green-300 border-green-600 shadow-2xl scale-110 ring-4 ring-green-200"
                   : "bg-green-50 hover:bg-green-100 border-green-200"
               }`}
             >
               <span className="text-5xl mb-2">👍</span>
-              <span className="text-sm font-semibold text-green-700">Would eat!</span>
+              <span className="text-sm font-semibold text-green-700">Love it!</span>
               {votes[currentMeal.recipeId] === "up" && (
                 <span className="text-xs text-green-600 mt-1">✓ Selected</span>
               )}
@@ -429,15 +429,7 @@ export default function VotePage() {
           </div>
         </div>
 
-        {/* Skip Button */}
-        <div className="text-center mt-6">
-          <button
-            onClick={() => setCurrentMealIndex((prev) => prev + 1)}
-            className="text-gray-500 hover:text-gray-700 text-sm font-medium"
-          >
-            Skip for now →
-          </button>
-        </div>
+
       </div>
     </div>
   );
