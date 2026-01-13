@@ -943,7 +943,12 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         const currentVoterCount = parseInt((voterCountResult[0] as any).count || "0");
 
         // Parse meals and add formatted day names
-        const meals = typeof session.meals === "string" ? JSON.parse(session.meals) : session.meals;
+        let meals = typeof session.meals === "string" ? JSON.parse(session.meals) : session.meals;
+        
+        // Ensure meals is an array
+        if (!Array.isArray(meals)) {
+          meals = [];
+        }
         
         // Add formatted day display (e.g., "Monday, Jan 13")
         const weekStart = new Date(session.week_start_date);

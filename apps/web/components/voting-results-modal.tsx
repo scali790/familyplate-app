@@ -104,22 +104,35 @@ export default function VotingResultsModal({
         </div>
 
         {/* Share Link */}
-        <div className="px-6 py-4 bg-white border-b">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            📋 Share this link with your family
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={shareUrl}
-              readOnly
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm font-mono"
-            />
+        <div className="px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-1">
+                📋 Share voting link with your family
+              </p>
+              <p className="text-xs text-gray-600">
+                Click the button to copy the link to clipboard
+              </p>
+            </div>
             <button
               onClick={handleCopyLink}
-              className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
             >
-              {copied ? "✓ Copied!" : "Copy"}
+              {copied ? (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                  <span>Share Link</span>
+                </>
+              )}
             </button>
           </div>
         </div>
