@@ -7,27 +7,25 @@ import { trpc } from "@/lib/trpc";
 type Meal = {
   recipeId: string;
   name: string;
-  description: string;
-  emoji?: string;
+  emoji: string;
+  description?: string;
   tags?: string[];
-  prepTime?: string;
-  cookTime?: string;
-  difficulty?: string;
   mealType?: string;
   day?: string;
 };
 
 type Reaction = "up" | "neutral" | "down";
 
-export default function PublicVotePage() {
+export default function VotePage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
 
   const [voterName, setVoterName] = useState("");
-  const [hasEnteredName, setHasEnteredName] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [hasEnteredName, setHasEnteredName] = useState(false);
+  const [currentMealIndex, setCurrentMealIndex] = useState(0);
   const [votes, setVotes] = useState<Record<string, Reaction>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
 
   // Load session data
   const { data: session, isLoading, error } = trpc.voteSessions.getPublic.useQuery(
@@ -65,49 +63,53 @@ export default function PublicVotePage() {
     e.preventDefault();
     if (nameInput.trim().length < 2) return;
 
-    const trimmedName = nameInput.trim();
-    setVoterName(trimmedName);
+    const sanitizedName = nameInput.trim();
+    setVoterName(sanitizedName);
     setHasEnteredName(true);
 
     // Save to localStorage
     const storageKey = `fp_vote_${sessionId}_name`;
-    localStorage.setItem(storageKey, trimmedName);
+    localStorage.setItem(storageKey, sanitizedName);
   };
 
-  const handleVote = async (mealId: string, reaction: Reaction) => {
-    if (!voterName || isSubmitting) return;
+  const handleVote = async (reaction: Reaction) => {
+    if (!meals || currentMealIndex >= meals.length) return;
 
+    const meal = meals[currentMealIndex];
+    
     // Optimistic update
-    setVotes((prev) => ({ ...prev, [mealId]: reaction }));
+    setVotes((prev) => ({ ...prev, [meal.recipeId]: reaction }));
 
-    setIsSubmitting(true);
+    // Trigger swipe animation
+    if (reaction === "up") setSwipeDirection("right");
+    if (reaction === "down") setSwipeDirection("left");
+
+    // Save vote
     try {
       await voteMutation.mutateAsync({
         sessionId,
         voterName,
-        mealId,
+        mealId: meal.recipeId,
         reaction,
       });
-    } catch (error) {
-      console.error("Vote failed:", error);
-      // Revert on error
-      setVotes((prev) => {
-        const newVotes = { ...prev };
-        delete newVotes[mealId];
-        return newVotes;
-      });
-    } finally {
-      setIsSubmitting(false);
+    } catch (err) {
+      console.error("Failed to save vote:", err);
     }
+
+    // Advance to next meal after animation
+    setTimeout(() => {
+      setSwipeDirection(null);
+      setCurrentMealIndex((prev) => prev + 1);
+    }, 300);
   };
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">🍽️</div>
-          <p className="text-muted-foreground">Loading voting session...</p>
+          <div className="text-6xl mb-4 animate-bounce">🍽️</div>
+          <p className="text-lg text-gray-600">Loading meal plan...</p>
         </div>
       </div>
     );
@@ -116,46 +118,41 @@ export default function PublicVotePage() {
   // Error state
   if (error || !session) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-card rounded-lg border p-8 text-center">
-          <div className="text-4xl mb-4">❌</div>
-          <h1 className="text-2xl font-bold mb-2">Session Not Found</h1>
-          <p className="text-muted-foreground">
-            This voting session doesn't exist or has been deleted.
-          </p>
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="text-6xl mb-4">❌</div>
+          <h1 className="text-2xl font-bold mb-2 text-gray-800">Oops!</h1>
+          <p className="text-gray-600">This voting session could not be found.</p>
         </div>
       </div>
     );
   }
 
-  // Session closed/expired state
+  // Session closed
   if (!session.isOpen) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-card rounded-lg border p-8 text-center">
-          <div className="text-4xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold mb-2">Voting Closed</h1>
-          <p className="text-muted-foreground mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold mb-2 text-gray-800">Voting Closed</h1>
+          <p className="text-gray-600">
             {session.isExpired
               ? "This voting session has expired."
               : "The meal plan manager has closed this voting session."}
           </p>
-          <p className="text-sm text-muted-foreground">
-            Expired: {new Date(session.expiresAt).toLocaleDateString()}
-          </p>
         </div>
       </div>
     );
   }
 
-  // Max voters reached (and not an existing voter)
+  // Max voters reached
   if (session.currentVoterCount >= session.maxVoters && !hasEnteredName) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-card rounded-lg border p-8 text-center">
-          <div className="text-4xl mb-4">👥</div>
-          <h1 className="text-2xl font-bold mb-2">Voting Completed</h1>
-          <p className="text-muted-foreground">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="text-6xl mb-4">👥</div>
+          <h1 className="text-2xl font-bold mb-2 text-gray-800">Voting Completed</h1>
+          <p className="text-gray-600">
             Maximum number of voters ({session.maxVoters}) has been reached.
           </p>
         </div>
@@ -163,201 +160,177 @@ export default function PublicVotePage() {
     );
   }
 
-  // Name Gate Screen
+  // Name Gate
   if (!hasEnteredName) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-card rounded-lg border p-8">
+      <div className="min-h-screen bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🍽️</div>
-            <h1 className="text-3xl font-bold mb-2">Who are you?</h1>
-            <p className="text-muted-foreground">
-              Enter your name to start voting on this week's meals
-            </p>
+            <div className="text-6xl mb-4">👋</div>
+            <h1 className="text-3xl font-bold mb-2 text-gray-800">Welcome!</h1>
+            <p className="text-gray-600">Who are you?</p>
           </div>
 
           <form onSubmit={handleNameSubmit} className="space-y-4">
-            <div>
-              <input
-                type="text"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                placeholder="Your name (e.g., Mom 👩, Dad 👨, Sarah 👧)"
-                className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                minLength={2}
-                maxLength={32}
-                required
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                Min 2 characters. Emojis allowed! 😊
-              </p>
-            </div>
+            <input
+              type="text"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg focus:border-orange-400 focus:outline-none transition-colors"
+              minLength={2}
+              maxLength={32}
+              required
+              autoFocus
+            />
 
             <button
               type="submit"
-              disabled={nameInput.trim().length < 2}
-              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 rounded-xl text-lg font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg hover:shadow-xl"
             >
-              Continue 🍽️
+              Start Voting
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Week of {session.weekStartDate}</p>
-            <p className="mt-1">
-              {session.currentVoterCount} / {session.maxVoters} voters
-            </p>
+          <div className="mt-6 text-center text-sm text-gray-500">
+            {session.currentVoterCount} / {session.maxVoters} voters
           </div>
         </div>
       </div>
     );
   }
 
-  // Voting Screen
+  // Parse meals
   const meals: Meal[] = Array.isArray(session.meals)
     ? session.meals
     : typeof session.meals === "string"
     ? JSON.parse(session.meals)
     : [];
+
+  // Voting Complete
+  if (currentMealIndex >= meals.length) {
+    const votedCount = Object.keys(votes).length;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
+          <div className="text-7xl mb-6 animate-bounce">🎉</div>
+          <h1 className="text-3xl font-bold mb-3 text-gray-800">All Done!</h1>
+          <p className="text-xl text-gray-600 mb-2">Thanks for voting, {voterName}!</p>
+          <p className="text-gray-500">
+            You voted on {votedCount} meal{votedCount !== 1 ? "s" : ""}.
+          </p>
+          
+          <button
+            onClick={() => setCurrentMealIndex(0)}
+            className="mt-6 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg"
+          >
+            Review & Change Votes
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Current meal
+  const currentMeal = meals[currentMealIndex];
   const votedCount = Object.keys(votes).length;
-  const totalMeals = meals.length;
-  const progressPercent = totalMeals > 0 ? (votedCount / totalMeals) * 100 : 0;
+  const progressPercent = (votedCount / meals.length) * 100;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       {/* Header */}
-      <div className="bg-card border-b sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h1 className="text-xl font-bold">Vote on Meals</h1>
-              <p className="text-sm text-muted-foreground">
-                Hi, {voterName}! 👋
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-primary">
-                {votedCount}/{totalMeals}
-              </p>
-              <p className="text-xs text-muted-foreground">meals voted</p>
-            </div>
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="text-center mb-3">
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center justify-center gap-2">
+              <span>👨‍👩‍👧‍👦</span>
+              <span>{session.familyName || "Your Family"}</span>
+            </h1>
+            <p className="text-sm text-gray-500">Week of {new Date(session.weekStartDate).toLocaleDateString()}</p>
           </div>
 
-          {/* Progress Bar */}
-          <div className="w-full bg-muted rounded-full h-2">
-            <div
-              className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progressPercent}%` }}
-            />
+          {/* Progress */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span className="font-medium">{currentMeal.mealType || "Meals"}</span>
+              <span>{votedCount} / {meals.length} voted</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-orange-400 to-amber-400 transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Meal Cards */}
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-        {meals.map((meal) => {
-          const currentVote = votes[meal.recipeId];
+      {/* Meal Card */}
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div
+          className={`bg-white rounded-3xl shadow-2xl p-8 transition-all duration-300 ${
+            swipeDirection === "left" ? "-translate-x-full opacity-0" : ""
+          } ${swipeDirection === "right" ? "translate-x-full opacity-0" : ""}`}
+        >
+          <div className="text-center mb-6">
+            <div className="text-8xl mb-4">{currentMeal.emoji}</div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">{currentMeal.name}</h2>
+            {currentMeal.description && (
+              <p className="text-gray-600 text-lg">{currentMeal.description}</p>
+            )}
+          </div>
 
-          return (
-            <div
-              key={meal.recipeId}
-              className="bg-card rounded-lg border p-4 shadow-sm"
+          {currentMeal.tags && currentMeal.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-center mb-6">
+              {currentMeal.tags.map((tag, i) => (
+                <span
+                  key={i}
+                  className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Vote Buttons */}
+          <div className="grid grid-cols-3 gap-4 mt-8">
+            <button
+              onClick={() => handleVote("down")}
+              className="flex flex-col items-center justify-center py-6 bg-red-50 hover:bg-red-100 border-2 border-red-200 rounded-2xl transition-all hover:scale-105 active:scale-95"
             >
-              {/* Meal Info */}
-              <div className="mb-4">
-                <div className="flex items-start gap-3">
-                  {meal.emoji && (
-                    <div className="text-4xl flex-shrink-0">{meal.emoji}</div>
-                  )}
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-1">{meal.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {meal.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 text-xs">
-                      {meal.mealType && (
-                        <span className="px-2 py-1 bg-muted rounded">
-                          {meal.mealType}
-                        </span>
-                      )}
-                      {meal.day && (
-                        <span className="px-2 py-1 bg-muted rounded capitalize">
-                          {meal.day}
-                        </span>
-                      )}
-                      {meal.prepTime && (
-                        <span className="px-2 py-1 bg-muted rounded">
-                          ⏱️ {meal.prepTime}
-                        </span>
-                      )}
-                      {meal.difficulty && (
-                        <span className="px-2 py-1 bg-muted rounded capitalize">
-                          {meal.difficulty}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <span className="text-5xl mb-2">👎</span>
+              <span className="text-sm font-semibold text-red-700">No thanks</span>
+            </button>
 
-              {/* Voting Buttons */}
-              <div className="grid grid-cols-3 gap-3">
-                <button
-                  onClick={() => handleVote(meal.recipeId, "up")}
-                  disabled={isSubmitting}
-                  className={`py-4 rounded-lg font-semibold text-lg transition-all ${
-                    currentVote === "up"
-                      ? "bg-green-500 text-white scale-105 shadow-lg"
-                      : "bg-muted hover:bg-green-100 dark:hover:bg-green-900"
-                  } disabled:opacity-50`}
-                >
-                  <div className="text-3xl mb-1">👍</div>
-                  <div className="text-xs">Would eat</div>
-                </button>
+            <button
+              onClick={() => handleVote("neutral")}
+              className="flex flex-col items-center justify-center py-6 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-2xl transition-all hover:scale-105 active:scale-95"
+            >
+              <span className="text-5xl mb-2">😐</span>
+              <span className="text-sm font-semibold text-gray-700">Okay</span>
+            </button>
 
-                <button
-                  onClick={() => handleVote(meal.recipeId, "neutral")}
-                  disabled={isSubmitting}
-                  className={`py-4 rounded-lg font-semibold text-lg transition-all ${
-                    currentVote === "neutral"
-                      ? "bg-yellow-500 text-white scale-105 shadow-lg"
-                      : "bg-muted hover:bg-yellow-100 dark:hover:bg-yellow-900"
-                  } disabled:opacity-50`}
-                >
-                  <div className="text-3xl mb-1">😐</div>
-                  <div className="text-xs">Okay</div>
-                </button>
-
-                <button
-                  onClick={() => handleVote(meal.recipeId, "down")}
-                  disabled={isSubmitting}
-                  className={`py-4 rounded-lg font-semibold text-lg transition-all ${
-                    currentVote === "down"
-                      ? "bg-red-500 text-white scale-105 shadow-lg"
-                      : "bg-muted hover:bg-red-100 dark:hover:bg-red-900"
-                  } disabled:opacity-50`}
-                >
-                  <div className="text-3xl mb-1">👎</div>
-                  <div className="text-xs">Please not</div>
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Completion Message */}
-      {votedCount === totalMeals && (
-        <div className="max-w-4xl mx-auto px-4 pb-8">
-          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-6 text-center">
-            <div className="text-4xl mb-2">🎉</div>
-            <h2 className="text-xl font-bold mb-1">Thanks, {voterName}!</h2>
-            <p className="text-muted-foreground">
-              Your votes are saved. You can change them anytime before voting closes.
-            </p>
+            <button
+              onClick={() => handleVote("up")}
+              className="flex flex-col items-center justify-center py-6 bg-green-50 hover:bg-green-100 border-2 border-green-200 rounded-2xl transition-all hover:scale-105 active:scale-95"
+            >
+              <span className="text-5xl mb-2">👍</span>
+              <span className="text-sm font-semibold text-green-700">Would eat!</span>
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Skip Button */}
+        <div className="text-center mt-6">
+          <button
+            onClick={() => setCurrentMealIndex((prev) => prev + 1)}
+            className="text-gray-500 hover:text-gray-700 text-sm font-medium"
+          >
+            Skip for now →
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

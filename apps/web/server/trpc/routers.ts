@@ -916,11 +916,13 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         const db = await getDb();
         if (!db) throw new Error("Database not available");
 
-        // Get session
+        // Get session with family name
         const sessionResult = await db.execute(
-          sql`SELECT vs.*, mp.meals, mp.week_start_date 
+          sql`SELECT vs.*, mp.meals, mp.week_start_date, up.family_name 
            FROM vote_sessions vs 
            JOIN meal_plans mp ON vs.meal_plan_id = mp.id 
+           JOIN users u ON vs.user_id = u.id
+           LEFT JOIN user_preferences up ON u.id = up.user_id
            WHERE vs.id = ${input.sessionId}`
         );
 
@@ -952,6 +954,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
           maxVoters: session.max_voters,
           currentVoterCount,
           weekStartDate: session.week_start_date,
+          familyName: session.family_name,
           meals,
         };
       }),
