@@ -924,11 +924,11 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
            WHERE vs.id = ${input.sessionId}`
         );
 
-        if (sessionResult.rows.length === 0) {
+        if (sessionResult.length === 0) {
           throw new Error("Session not found");
         }
 
-        const session = sessionResult.rows[0] as any;
+        const session = sessionResult[0] as any;
 
         // Check if expired
         const isExpired = new Date() > new Date(session.expires_at);
@@ -938,7 +938,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         const voterCountResult = await db.execute(
           sql`SELECT COUNT(DISTINCT voter_name) as count FROM public_meal_votes WHERE vote_session_id = ${input.sessionId}`
         );
-        const currentVoterCount = parseInt((voterCountResult.rows[0] as any).count || "0");
+        const currentVoterCount = parseInt((voterCountResult[0] as any).count || "0");
 
         // Parse meals
         const meals = typeof session.meals === "string" ? JSON.parse(session.meals) : session.meals;
@@ -968,7 +968,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
           sql`SELECT * FROM vote_sessions WHERE id = ${input.sessionId} AND user_id = ${ctx.user.id}`
         );
 
-        if (sessionResult.rows.length === 0) {
+        if (sessionResult.length === 0) {
           throw new Error("Session not found or unauthorized");
         }
 
@@ -980,7 +980,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
            ORDER BY created_at DESC`
         );
 
-        const votes = votesResult.rows as any[];
+        const votes = votesResult as any[];
 
         // Aggregate by meal
         const mealAggregates: Record<string, { up: number; neutral: number; down: number; score: number }> = {};
@@ -1044,7 +1044,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
           sql`SELECT * FROM vote_sessions WHERE id = ${input.sessionId} AND user_id = ${ctx.user.id}`
         );
 
-        if (sessionResult.rows.length === 0) {
+        if (sessionResult.length === 0) {
           throw new Error("Session not found or unauthorized");
         }
 
@@ -1108,11 +1108,11 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
           sql`SELECT status, expires_at, max_voters FROM vote_sessions WHERE id = ${input.sessionId}`
         );
 
-        if (sessionResult.rows.length === 0) {
+        if (sessionResult.length === 0) {
           throw new Error("Session not found");
         }
 
-        const session = sessionResult.rows[0] as any;
+        const session = sessionResult[0] as any;
         const isExpired = new Date() > new Date(session.expires_at);
 
         if (session.status !== "open" || isExpired) {
@@ -1123,13 +1123,13 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         const voterCountResult = await db.execute(
           sql`SELECT COUNT(DISTINCT voter_name) as count FROM public_meal_votes WHERE vote_session_id = ${input.sessionId}`
         );
-        const currentVoterCount = parseInt((voterCountResult.rows[0] as any).count || "0");
+        const currentVoterCount = parseInt((voterCountResult[0] as any).count || "0");
 
         // Check if this is a new voter
         const existingVoterResult = await db.execute(
           sql`SELECT COUNT(*) as count FROM public_meal_votes WHERE vote_session_id = ${input.sessionId} AND voter_name = ${sanitizedName}`
         );
-        const isExistingVoter = parseInt((existingVoterResult.rows[0] as any).count || "0") > 0;
+        const isExistingVoter = parseInt((existingVoterResult[0] as any).count || "0") > 0;
 
         if (!isExistingVoter && currentVoterCount >= session.max_voters) {
           throw new Error("Maximum voters reached");
@@ -1166,7 +1166,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         );
 
         const votes: Record<string, string> = {};
-        votesResult.rows.forEach((row: any) => {
+        votesResult.forEach((row: any) => {
           votes[row.meal_id] = row.reaction;
         });
 
