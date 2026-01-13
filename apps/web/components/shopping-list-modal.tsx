@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from './ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { trpc } from '@/lib/trpc';
 import type { Meal } from '@/server/db/schema';
 
@@ -17,15 +17,29 @@ type MealWithIngredients = {
   error: string | null;
 };
 
+const CONCURRENCY_LIMIT = 3;
+
 export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
   const [mealsList, setMealsList] = useState<MealWithIngredients[]>([]);
-  const [loadingCount, setLoadingCount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
+  const [loadedCount, setLoadedCount] = useState(0);
+  const [failedCount, setFailedCount] = useState(0);
+  const [totalToLoad, setTotalToLoad] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const getRecipeDetailsMutation = trpc.mealPlanning.getRecipeDetails.useMutation();
 
   useEffect(() => {
+    // Create abort controller for cleanup
+    abortControllerRef.current = new AbortController();
+    
     initializeAndLoadIngredients();
+
+    // Cleanup on unmount
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   const initializeAndLoadIngredients = async () => {
@@ -40,47 +54,127 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
     setMealsList(initialMeals);
 
     // Find meals that need loading
-    const mealsToLoad = initialMeals.filter(m => !m.ingredients && m.meal.recipeId);
-    setTotalCount(mealsToLoad.length);
+    const mealsToLoad = initialMeals
+      .map((m, index) => ({ ...m, originalIndex: index }))
+      .filter(m => !m.ingredients && m.meal.recipeId);
+    
+    setTotalToLoad(mealsToLoad.length);
+    setLoadedCount(0);
+    setFailedCount(0);
 
     if (mealsToLoad.length === 0) {
       return; // All meals already have ingredients
     }
 
-    // Load ingredients for meals that don't have them
-    for (let i = 0; i < mealsToLoad.length; i++) {
-      const mealToLoad = mealsToLoad[i];
-      const mealIndex = initialMeals.findIndex(m => m.meal.recipeId === mealToLoad.meal.recipeId);
+    // Load with controlled concurrency
+    await loadIngredientsWithConcurrency(mealsToLoad);
+  };
 
-      // Mark as loading
-      setMealsList(prev => prev.map((m, idx) => 
-        idx === mealIndex ? { ...m, isLoading: true } : m
-      ));
+  const loadIngredientsWithConcurrency = async (
+    mealsToLoad: Array<MealWithIngredients & { originalIndex: number }>
+  ) => {
+    const queue = [...mealsToLoad];
+    const activePromises: Promise<void>[] = [];
 
-      try {
-        const details = await getRecipeDetailsMutation.mutateAsync({ 
-          recipeId: mealToLoad.meal.recipeId! 
-        });
-
-        // Update with loaded ingredients
-        setMealsList(prev => prev.map((m, idx) => 
-          idx === mealIndex 
-            ? { ...m, ingredients: details.ingredients, isLoading: false, error: null }
-            : m
-        ));
-      } catch (err) {
-        console.error(`Failed to load ingredients for ${mealToLoad.meal.name}:`, err);
-        
-        // Mark as error
-        setMealsList(prev => prev.map((m, idx) => 
-          idx === mealIndex 
-            ? { ...m, isLoading: false, error: 'Failed to load' }
-            : m
-        ));
+    while (queue.length > 0 || activePromises.length > 0) {
+      // Check if aborted
+      if (abortControllerRef.current?.signal.aborted) {
+        break;
       }
 
-      setLoadingCount(i + 1);
+      // Fill up to concurrency limit
+      while (activePromises.length < CONCURRENCY_LIMIT && queue.length > 0) {
+        const mealToLoad = queue.shift()!;
+        const promise = loadSingleMeal(mealToLoad).finally(() => {
+          // Remove from active promises when done
+          const index = activePromises.indexOf(promise);
+          if (index > -1) {
+            activePromises.splice(index, 1);
+          }
+        });
+        activePromises.push(promise);
+      }
+
+      // Wait for at least one to complete
+      if (activePromises.length > 0) {
+        await Promise.race(activePromises);
+      }
     }
+  };
+
+  const loadSingleMeal = async (
+    mealToLoad: MealWithIngredients & { originalIndex: number }
+  ) => {
+    const mealIndex = mealToLoad.originalIndex;
+
+    // Check if aborted before starting
+    if (abortControllerRef.current?.signal.aborted) {
+      return;
+    }
+
+    // Mark as loading
+    setMealsList(prev => prev.map((m, idx) => 
+      idx === mealIndex ? { ...m, isLoading: true } : m
+    ));
+
+    try {
+      const details = await getRecipeDetailsMutation.mutateAsync({ 
+        recipeId: mealToLoad.meal.recipeId! 
+      });
+
+      // Check if aborted after loading
+      if (abortControllerRef.current?.signal.aborted) {
+        return;
+      }
+
+      // Update with loaded ingredients
+      setMealsList(prev => prev.map((m, idx) => 
+        idx === mealIndex 
+          ? { ...m, ingredients: details.ingredients, isLoading: false, error: null }
+          : m
+      ));
+
+      setLoadedCount(prev => prev + 1);
+    } catch (err) {
+      // Check if aborted
+      if (abortControllerRef.current?.signal.aborted) {
+        return;
+      }
+
+      console.error(`Failed to load ingredients for ${mealToLoad.meal.name}:`, err);
+      
+      // Mark as error
+      setMealsList(prev => prev.map((m, idx) => 
+        idx === mealIndex 
+          ? { ...m, isLoading: false, error: 'Failed to load' }
+          : m
+      ));
+
+      setFailedCount(prev => prev + 1);
+      setLoadedCount(prev => prev + 1); // Count as "processed"
+    }
+  };
+
+  const retryFailed = () => {
+    // Reset failed meals and retry
+    const failedMeals = mealsList
+      .map((m, index) => ({ ...m, originalIndex: index }))
+      .filter(m => m.error);
+
+    if (failedMeals.length === 0) return;
+
+    // Reset error state
+    setMealsList(prev => prev.map(m => 
+      m.error ? { ...m, error: null, isLoading: false } : m
+    ));
+
+    // Reset counters
+    setTotalToLoad(failedMeals.length);
+    setLoadedCount(0);
+    setFailedCount(0);
+
+    // Retry loading
+    loadIngredientsWithConcurrency(failedMeals);
   };
 
   const copyToClipboard = () => {
@@ -97,6 +191,7 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
 
   const mealsWithIngredients = mealsList.filter(m => m.ingredients && m.ingredients.length > 0);
   const isStillLoading = mealsList.some(m => m.isLoading);
+  const hasErrors = failedCount > 0;
 
   return (
     <div 
@@ -107,33 +202,71 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
         className="bg-background rounded-3xl max-h-[90vh] w-full max-w-3xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center px-6 pt-6 pb-4 border-b border-border">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">📝 Shopping List</h2>
-            <p className="text-sm text-muted mt-1">
-              {isStillLoading 
-                ? `Loading ingredients... ${loadingCount} of ${totalCount}`
-                : `Ingredients for ${mealsWithIngredients.length} meal${mealsWithIngredients.length !== 1 ? 's' : ''}`
-              }
-            </p>
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-10 bg-background rounded-t-3xl border-b border-border">
+          <div className="flex justify-between items-center px-6 pt-6 pb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">📝 Shopping List</h2>
+              <div className="text-sm text-muted mt-1">
+                {isStillLoading ? (
+                  <div className="flex items-center gap-2">
+                    <span className="animate-pulse">Loading {loadedCount} of {totalToLoad} meals...</span>
+                    {failedCount > 0 && (
+                      <span className="text-destructive">({failedCount} failed)</span>
+                    )}
+                  </div>
+                ) : hasErrors ? (
+                  <span className="text-destructive">
+                    {failedCount} meal{failedCount !== 1 ? 's' : ''} failed to load
+                  </span>
+                ) : (
+                  `Ingredients for ${mealsWithIngredients.length} meal${mealsWithIngredients.length !== 1 ? 's' : ''}`
+                )}
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 text-muted hover:text-foreground transition-colors"
+            >
+              <span className="text-3xl leading-none">×</span>
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-muted hover:text-foreground transition-colors"
-          >
-            <span className="text-3xl leading-none">×</span>
-          </button>
+
+          {/* Progress Bar */}
+          {isStillLoading && totalToLoad > 0 && (
+            <div className="px-6 pb-4">
+              <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
+                <div 
+                  className="bg-primary h-full transition-all duration-300 ease-out"
+                  style={{ width: `${(loadedCount / totalToLoad) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Retry Button */}
+          {!isStillLoading && hasErrors && (
+            <div className="px-6 pb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={retryFailed}
+                className="w-full"
+              >
+                🔄 Retry Failed ({failedCount})
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {mealsWithIngredients.length === 0 && !isStillLoading ? (
+          {mealsWithIngredients.length === 0 && !isStillLoading && !hasErrors ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="text-4xl mb-4">📝</div>
               <p className="text-foreground font-semibold mb-2">No ingredients available</p>
               <p className="text-muted text-sm max-w-md">
-                Unable to load ingredients for your meals. Please try again or view individual recipes.
+                Unable to load ingredients for your meals. Please try again later.
               </p>
             </div>
           ) : (
@@ -144,7 +277,16 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
                 }
 
                 return (
-                  <div key={index} className="bg-surface rounded-2xl p-4 border border-border">
+                  <div 
+                    key={index} 
+                    className={`bg-surface rounded-2xl p-4 border transition-all ${
+                      item.isLoading 
+                        ? 'border-primary/50 animate-pulse' 
+                        : item.error 
+                        ? 'border-destructive/50' 
+                        : 'border-border'
+                    }`}
+                  >
                     <div className="flex items-center gap-3 mb-3">
                       <span className="text-3xl">{item.meal.emoji || '🍽️'}</span>
                       <div className="flex-1">
@@ -152,18 +294,23 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
                         <p className="text-xs text-muted capitalize">{item.meal.mealType} • {item.meal.day}</p>
                       </div>
                       {item.isLoading && (
-                        <div className="text-xs text-muted">Loading...</div>
+                        <div className="text-xs text-muted flex items-center gap-1">
+                          <span className="animate-spin">🔄</span>
+                          Loading...
+                        </div>
                       )}
                     </div>
                     
                     {item.isLoading ? (
-                      <div className="flex items-center gap-2 text-sm text-muted">
-                        <div className="animate-spin">🔄</div>
-                        <span>Loading ingredients...</span>
+                      <div className="space-y-2">
+                        <div className="h-4 bg-muted/20 rounded animate-pulse" />
+                        <div className="h-4 bg-muted/20 rounded animate-pulse w-3/4" />
+                        <div className="h-4 bg-muted/20 rounded animate-pulse w-5/6" />
                       </div>
                     ) : item.error ? (
-                      <div className="text-sm text-destructive">
-                        ⚠️ {item.error}
+                      <div className="text-sm text-destructive flex items-center gap-2">
+                        <span>⚠️</span>
+                        <span>{item.error}</span>
                       </div>
                     ) : item.ingredients ? (
                       <ul className="space-y-1.5">
