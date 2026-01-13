@@ -947,8 +947,11 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         
         // Ensure meals is an array
         if (!Array.isArray(meals)) {
+          console.error('[voteSessions.getPublic] meals is not an array:', typeof meals, meals);
           meals = [];
         }
+        
+        console.log('[voteSessions.getPublic] Parsed meals count:', meals.length);
         
         // Add formatted day display (e.g., "Monday, Jan 13")
         const weekStart = new Date(session.week_start_date);

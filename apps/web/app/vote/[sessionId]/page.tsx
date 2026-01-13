@@ -178,7 +178,7 @@ export default function VotePage() {
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               placeholder="Enter your name"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg focus:border-orange-400 focus:outline-none transition-colors"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-800 placeholder:text-gray-400 focus:border-orange-400 focus:outline-none transition-colors"
               minLength={2}
               maxLength={32}
               required
