@@ -287,7 +287,7 @@ export default function VotePage() {
           <div className="text-center mb-3">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center justify-center gap-2">
               <span>👨‍👩‍👧‍👦</span>
-              <span>{session.familyName || "Your Family"}</span>
+              <span>{session.familyName ? `${session.familyName}'s Weekly Meals` : "Your Family's Weekly Meals"}</span>
             </h1>
             <p className="text-sm text-gray-600">Week of {new Date(session.weekStartDate).toLocaleDateString()}</p>
           </div>
