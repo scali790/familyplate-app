@@ -6,7 +6,7 @@ import { trpc } from "@/lib/trpc";
 type VotingResultsModalProps = {
   sessionId: string;
   shareUrl: string;
-  familyName?: string;
+  familyName?: string | null;
   weekStartDate: string;
   onClose: () => void;
 };
