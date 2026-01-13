@@ -330,9 +330,9 @@ export default function VotePage() {
       </div>
 
       {/* Meal Card */}
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-4">
         <div
-          className={`bg-white rounded-3xl shadow-2xl p-8 transition-all duration-300 border-4 ${
+          className={`bg-white rounded-3xl shadow-2xl p-6 transition-all duration-300 border-4 ${
             swipeDirection === "left" ? "-translate-x-full opacity-0" : ""
           } ${swipeDirection === "right" ? "translate-x-full opacity-0" : ""} ${
             currentMeal.mealType === "breakfast" ? "border-orange-400" :
@@ -342,8 +342,8 @@ export default function VotePage() {
           }`}
         >
           {/* Meal Type Badge - Prominent */}
-          <div className="flex justify-center mb-4">
-            <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-lg shadow-lg ${
+          <div className="flex justify-center mb-3">
+            <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-2xl font-bold text-base shadow-lg ${
               currentMeal.mealType === "breakfast" ? "bg-gradient-to-r from-orange-400 to-yellow-400 text-white" :
               currentMeal.mealType === "lunch" ? "bg-gradient-to-r from-blue-400 to-cyan-400 text-white" :
               currentMeal.mealType === "dinner" ? "bg-gradient-to-r from-purple-500 to-indigo-500 text-white" :
@@ -359,29 +359,16 @@ export default function VotePage() {
             </div>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="text-8xl mb-4">{currentMeal.emoji}</div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">{currentMeal.name}</h2>
+          <div className="text-center mb-4">
+            <div className="text-6xl mb-3">{currentMeal.emoji}</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">{currentMeal.name}</h2>
             {currentMeal.description && (
-              <p className="text-gray-600 text-lg">{currentMeal.description}</p>
+              <p className="text-gray-600 text-base">{currentMeal.description}</p>
             )}
           </div>
 
-          {currentMeal.tags && currentMeal.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-center mb-6">
-              {currentMeal.tags.map((tag, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
           {/* Vote Buttons */}
-          <div className="grid grid-cols-3 gap-4 mt-8">
+          <div className="grid grid-cols-3 gap-4 mt-6">
             <button
               onClick={() => handleVote("down")}
               className={`flex flex-col items-center justify-center py-6 border-2 rounded-2xl transition-all hover:scale-105 active:scale-95 ${
