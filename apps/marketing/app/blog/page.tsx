@@ -28,7 +28,7 @@ export default function BlogPage() {
           <div className="text-6xl mb-6">📝</div>
           <h2 className="text-2xl font-bold text-foreground mb-4">Coming Soon</h2>
           <p className="text-muted text-lg mb-8 max-w-2xl mx-auto">
-            We're working on bringing you helpful content about family meal planning, 
+            We&apos;re working on bringing you helpful content about family meal planning, 
             nutrition tips, and recipe ideas. Stay tuned!
           </p>
           <Link 

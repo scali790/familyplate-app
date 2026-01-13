@@ -35,7 +35,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-bold text-foreground mb-4">2. How We Use Your Information</h2>
             <p className="text-muted leading-relaxed mb-4">
               We use the information we collect to provide, maintain, and improve our services, including generating 
-              personalized meal plans and learning from your family's preferences.
+              personalized meal plans and learning from your family&apos;s preferences.
             </p>
           </section>
 

@@ -75,7 +75,7 @@ export default function HomePage() {
           <div className="relative">
             <div className="bg-surface border-4 border-foreground rounded-3xl p-6 shadow-2xl max-w-sm mx-auto">
               <div className="bg-background rounded-2xl p-4">
-                <div className="text-sm font-semibold text-foreground mb-2">This Week's Meals</div>
+                <div className="text-sm font-semibold text-foreground mb-2">This Week&apos;s Meals</div>
                 <div className="text-xs text-muted mb-4">Jan 5 - Jan 11</div>
                 
                 {[
@@ -152,7 +152,7 @@ export default function HomePage() {
               <div className="text-5xl mb-4 text-center">👨‍👩‍👧‍👦</div>
               <h3 className="text-2xl font-bold mb-3 text-center">Family Voting</h3>
               <p className="text-purple-100 leading-relaxed">
-                Everyone votes 👍 😐 👎 on every meal. No more arguments. No more "I don't like this." Just meals your whole family actually wants to eat.
+                Everyone votes 👍 😐 👎 on every meal. No more arguments. No more &ldquo;I don&apos;t like this.&rdquo; Just meals your whole family actually wants to eat.
               </p>
             </div>
 
@@ -188,12 +188,12 @@ export default function HomePage() {
               {
                 icon: '👨‍👩‍👧‍👦',
                 title: 'Family Voting ⭐',
-                description: 'Share your meal plan with a simple link. Everyone votes on each meal. Our AI learns from every "yes" and "no" to make next week\'s plan even better.',
+                description: 'Share your meal plan with a simple link. Everyone votes on each meal. Our AI learns from every &ldquo;yes&rdquo; and &ldquo;no&rdquo; to make next week&apos;s plan even better.',
               },
               {
                 icon: '🤖',
                 title: 'AI-Powered Meal Plans',
-                description: 'Our AI learns your family\'s unique tastes and generates personalized 7-day meal plans in seconds. No more endless recipe scrolling.',
+                description: 'Our AI learns your family&apos;s unique tastes and generates personalized 7-day meal plans in seconds. No more endless recipe scrolling.',
               },
               {
                 icon: '🥗',
@@ -203,7 +203,7 @@ export default function HomePage() {
               {
                 icon: '🔄',
                 title: 'Instant Meal Swaps',
-                description: 'Don\'t like a meal? Swap it instantly. Get fresh alternatives that still match your preferences. 2 free swaps every week!',
+                description: 'Don&apos;t like a meal? Swap it instantly. Get fresh alternatives that still match your preferences. 2 free swaps every week!',
               },
               {
                 icon: '🛒',
@@ -313,7 +313,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-lg text-muted">Start free, upgrade when you're ready</p>
+            <p className="text-lg text-muted">Start free, upgrade when you&apos;re ready</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -405,7 +405,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 max-w-2xl text-center">
           <h2 className="text-4xl font-bold text-foreground mb-4">Ready to End Dinner Debates?</h2>
           <p className="text-lg text-muted mb-8 leading-relaxed">
-            Click below to get started. We'll send you a magic link to create your account (no password needed).
+            Click below to get started. We&apos;ll send you a magic link to create your account (no password needed).
           </p>
 
           <Link 
