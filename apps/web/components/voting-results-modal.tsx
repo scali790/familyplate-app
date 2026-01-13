@@ -215,25 +215,51 @@ export default function VotingResultsModal({
               })}
             </div>
           ) : (
-            <div className="space-y-6">
-              {Object.entries(voterBreakdown).map(([voterName, votes]) => (
-                <div key={voterName} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                  <h3 className="font-semibold text-gray-800 text-lg mb-3 flex items-center gap-2">
-                    <span>👤</span>
-                    <span>{voterName}</span>
-                  </h3>
-                  <div className="space-y-2">
-                    {votes.map((vote, i) => (
-                      <div key={i} className="flex items-center justify-between text-sm">
-                        <span className="text-gray-700">{vote.mealId}</span>
-                        <span className="text-2xl">
-                          {vote.reaction === "up" ? "👍" : vote.reaction === "down" ? "👎" : "😐"}
-                        </span>
-                      </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="sticky left-0 z-10 bg-gray-100 px-4 py-3 text-left font-semibold text-gray-700 border-b-2 border-gray-300">
+                      Voter
+                    </th>
+                    {Object.keys(mealAggregates).map((mealId) => (
+                      <th key={mealId} className="px-3 py-3 text-center font-medium text-gray-700 border-b-2 border-gray-300 min-w-[120px]">
+                        <div className="text-sm">{mealAggregates[mealId].name}</div>
+                      </th>
                     ))}
-                  </div>
-                </div>
-              ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(voterBreakdown).map(([voterName, votes]) => {
+                    // Create meal lookup for this voter
+                    const voterVotes: Record<string, string> = {};
+                    votes.forEach((vote) => {
+                      voterVotes[vote.mealId] = vote.reaction;
+                    });
+
+                    return (
+                      <tr key={voterName} className="hover:bg-gray-50 transition-colors">
+                        <td className="sticky left-0 z-10 bg-white hover:bg-gray-50 px-4 py-3 font-medium text-gray-800 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <span>👤</span>
+                            <span>{voterName}</span>
+                          </div>
+                        </td>
+                        {Object.keys(mealAggregates).map((mealId) => (
+                          <td key={mealId} className="px-3 py-3 text-center border-b border-gray-200">
+                            <span className="text-3xl">
+                              {voterVotes[mealId] === "up" ? "👍" : 
+                               voterVotes[mealId] === "down" ? "👎" : 
+                               voterVotes[mealId] === "neutral" ? "😐" : 
+                               <span className="text-gray-300 text-xl">—</span>}
+                            </span>
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
