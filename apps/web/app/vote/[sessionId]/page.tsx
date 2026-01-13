@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { trpc } from "@/lib/trpc/client";
+import { trpc } from "@/lib/trpc";
 
 type Meal = {
   recipeId: string;
