@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RecipeModal } from '@/components/recipe-modal';
 import VotingResultsModal from '@/components/voting-results-modal';
+import { ShoppingListModal } from '@/components/shopping-list-modal';
 import { trpc } from '@/lib/trpc';
 import type { Meal } from '@/server/db/schema';
 
@@ -61,6 +62,7 @@ const groupMealsByType = (meals: Meal[]) => {
 export default function DashboardPage() {
   const [selectedMeal, setSelectedMeal] = useState<{ meal: Meal; index: number; day: string; mealType: string } | null>(null);
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
+  const [showShoppingList, setShowShoppingList] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0); // 0 = Monday
   const [votingSession, setVotingSession] = useState<{ sessionId: string; shareUrl: string } | null>(null);
   const [showVotingModal, setShowVotingModal] = useState(false);
@@ -147,6 +149,15 @@ export default function DashboardPage() {
   const isMealTypeEnabled = (mealType: string) => {
     if (!preferences?.mealTypes || !Array.isArray(preferences.mealTypes)) return true; // Default to enabled if no preferences
     return (preferences.mealTypes as string[]).includes(mealType);
+  };
+
+  // Get today's day index (0 = Monday, 6 = Sunday)
+  const getTodayIndex = (weekStartDate: string) => {
+    const today = new Date();
+    const startDate = new Date(weekStartDate);
+    const diffTime = today.getTime() - startDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays < 7 ? diffDays : -1; // Return -1 if not in current week
   };
 
   if (isLoading) {
@@ -245,6 +256,13 @@ export default function DashboardPage() {
                   🪄 {generateMutation.isPending ? 'Generating...' : 'Generate New Plan'}
                 </Button>
                 <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => setShowShoppingList(true)}
+                >
+                  📝 Shopping List
+                </Button>
+                <Button
                   variant="default"
                   className="flex-1"
                   onClick={handleShareForVoting}
@@ -260,12 +278,24 @@ export default function DashboardPage() {
                   {/* Day Headers */}
                   <div className="grid grid-cols-8 gap-2">
                     <div className="col-span-1"></div>
-                    {dayShortNames.map((day, index) => (
-                      <div key={day} className="text-center">
-                        <div className="font-semibold text-foreground">{day}</div>
-                        <div className="text-xs text-muted">{getDayDate(mealPlan.weekStartDate, index).split(' ')[1]}</div>
-                      </div>
-                    ))}
+                    {dayShortNames.map((day, index) => {
+                      const isToday = getTodayIndex(mealPlan.weekStartDate) === index;
+                      return (
+                        <div key={day} className={`text-center rounded-lg p-2 transition-colors ${
+                          isToday ? 'bg-gradient-to-br from-orange-100 to-amber-100 border-2 border-orange-400' : ''
+                        }`}>
+                          <div className={`font-semibold ${
+                            isToday ? 'text-orange-600' : 'text-foreground'
+                          }`}>
+                            {day}
+                            {isToday && <div className="text-[10px] font-bold text-orange-600">TODAY</div>}
+                          </div>
+                          <div className={`text-xs ${
+                            isToday ? 'text-orange-500 font-medium' : 'text-muted'
+                          }`}>{getDayDate(mealPlan.weekStartDate, index).split(' ')[1]}</div>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Meal Type Rows */}
@@ -305,11 +335,38 @@ export default function DashboardPage() {
                             >
                               <CardContent className="p-3">
                                 <div className={`text-2xl mb-1 text-center ${!isEnabled ? 'grayscale' : ''}`}>{meal.emoji || '🍽️'}</div>
-                                <div className={`text-xs font-medium text-center line-clamp-2 ${
+                                <div className={`text-xs font-medium text-center line-clamp-2 mb-1 ${
                                   isEnabled ? 'text-foreground' : 'text-muted-foreground'
                                 }`}>
                                   {meal.name}
                                 </div>
+                                
+                                {/* Prep Time */}
+                                {meal.prepTime && (
+                                  <div className="text-[10px] text-muted text-center mb-1">
+                                    ⏱️ {meal.prepTime}
+                                  </div>
+                                )}
+                                
+                                {/* Tags */}
+                                {meal.tags && meal.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 justify-center mb-1">
+                                    {meal.tags.slice(0, 2).map((tag, i) => (
+                                      <span key={i} className="text-[9px] px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded-full">
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {/* Voting Results */}
+                                {(meal.upVotes || meal.neutralVotes || meal.downVotes) ? (
+                                  <div className="flex gap-1 justify-center text-[10px] mt-1">
+                                    {meal.upVotes > 0 && <span>👍{meal.upVotes}</span>}
+                                    {meal.neutralVotes > 0 && <span>😐{meal.neutralVotes}</span>}
+                                    {meal.downVotes > 0 && <span>👎{meal.downVotes}</span>}
+                                  </div>
+                                ) : null}
                               </CardContent>
                             </Card>
                           ))
@@ -476,6 +533,14 @@ export default function DashboardPage() {
           familyName={preferences?.familyName}
           weekStartDate={mealPlan.weekStartDate}
           onClose={() => setShowVotingModal(false)}
+        />
+      )}
+
+      {/* Shopping List Modal */}
+      {showShoppingList && mealPlan && (
+        <ShoppingListModal
+          meals={mealPlan.meals}
+          onClose={() => setShowShoppingList(false)}
         />
       )}
     </div>
