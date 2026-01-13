@@ -292,21 +292,6 @@ export default function VotePage() {
             <p className="text-sm text-gray-600">Week of {new Date(session.weekStartDate).toLocaleDateString()}</p>
           </div>
 
-          {/* Meal Type Badge */}
-          <div className="flex justify-center mb-3">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-100 to-amber-100 rounded-full border-2 border-orange-200">
-              <span className="text-xl">
-                {currentMeal.mealType === "breakfast" ? "🌅" : currentMeal.mealType === "lunch" ? "☀️" : currentMeal.mealType === "dinner" ? "🌙" : "🍽️"}
-              </span>
-              <span className="text-lg font-bold text-orange-800 capitalize">
-                {currentMeal.mealType || "Meal"}
-              </span>
-              {currentMeal.dayFormatted && (
-                <span className="text-sm font-semibold text-orange-700">• {currentMeal.dayFormatted}</span>
-              )}
-            </div>
-          </div>
-
           {/* Progress */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-gray-600">
