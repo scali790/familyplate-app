@@ -887,7 +887,29 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         const db = await getDb();
         if (!db) throw new Error("Database not available");
 
-        // Generate UUID for session
+        // Check for existing open session for this meal plan
+        const existingResult = await db.execute(
+          sql`SELECT id, expires_at FROM vote_sessions 
+              WHERE user_id = ${ctx.user.id} 
+              AND meal_plan_id = ${input.mealPlanId} 
+              AND status = 'open' 
+              AND expires_at > NOW() 
+              ORDER BY created_at DESC 
+              LIMIT 1`
+        );
+
+        if (existingResult.length > 0) {
+          const existing = existingResult[0] as any;
+          const shareUrl = `${ctx.baseUrl}/vote/${existing.id}`;
+          console.log("[voteSessions.create] Reusing existing session", { sessionId: existing.id, shareUrl });
+          return {
+            sessionId: existing.id,
+            shareUrl,
+            expiresAt: existing.expires_at,
+          };
+        }
+
+        // Generate UUID for new session
         const sessionId = randomBytes(16).toString("hex");
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + input.expiresInDays);
@@ -900,7 +922,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         const shareUrl = `${ctx.baseUrl}/vote/${sessionId}`;
 
-        console.log("[voteSessions.create] Session created", { sessionId, shareUrl });
+        console.log("[voteSessions.create] New session created", { sessionId, shareUrl });
 
         return {
           sessionId,
@@ -943,11 +965,25 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         const currentVoterCount = parseInt((voterCountResult[0] as any).count || "0");
 
         // Parse meals and add formatted day names
-        let meals = typeof session.meals === "string" ? JSON.parse(session.meals) : session.meals;
+        let meals = session.meals;
+        
+        // Handle double-encoded JSON (string -> string -> array)
+        if (typeof meals === "string") {
+          try {
+            meals = JSON.parse(meals);
+            // Check if still a string (double-encoded)
+            if (typeof meals === "string") {
+              meals = JSON.parse(meals);
+            }
+          } catch (err) {
+            console.error('[voteSessions.getPublic] Failed to parse meals:', err);
+            meals = [];
+          }
+        }
         
         // Ensure meals is an array
         if (!Array.isArray(meals)) {
-          console.error('[voteSessions.getPublic] meals is not an array:', typeof meals, meals);
+          console.error('[voteSessions.getPublic] meals is not an array after parsing:', typeof meals);
           meals = [];
         }
         
