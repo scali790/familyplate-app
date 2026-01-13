@@ -26,26 +26,10 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
     setError(null);
     
     try {
-      const results: { meal: Meal; ingredients: string[] }[] = [];
-      
-      for (const meal of meals) {
-        // Skip if meal already has ingredients
-        if (meal.ingredients && meal.ingredients.length > 0) {
-          results.push({ meal, ingredients: meal.ingredients });
-          continue;
-        }
-        
-        // Load ingredients from API
-        if (meal.recipeId) {
-          try {
-            const details = await getRecipeDetailsMutation.mutateAsync({ recipeId: meal.recipeId });
-            results.push({ meal, ingredients: details.ingredients });
-          } catch (err) {
-            console.error(`Failed to load ingredients for ${meal.name}:`, err);
-            results.push({ meal, ingredients: ['Failed to load ingredients'] });
-          }
-        }
-      }
+      // Only include meals that already have ingredients
+      const results: { meal: Meal; ingredients: string[] }[] = meals
+        .filter(meal => meal.ingredients && meal.ingredients.length > 0)
+        .map(meal => ({ meal, ingredients: meal.ingredients! }));
       
       setIngredientsByMeal(results);
     } catch (err) {
@@ -103,6 +87,15 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
               <p className="text-destructive mb-4">{error}</p>
               <Button onClick={loadAllIngredients}>Retry</Button>
             </div>
+          ) : ingredientsByMeal.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="text-4xl mb-4">📝</div>
+              <p className="text-foreground font-semibold mb-2">No ingredients available yet</p>
+              <p className="text-muted text-sm max-w-md">
+                Ingredients are loaded when you view a recipe. Click on any meal card to view its recipe, 
+                then the ingredients will appear in your shopping list.
+              </p>
+            </div>
           ) : (
             <div className="space-y-6">
               {ingredientsByMeal.map(({ meal, ingredients }, index) => (
@@ -129,7 +122,7 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
         </div>
 
         {/* Footer */}
-        {!isLoading && !error && (
+        {!isLoading && !error && ingredientsByMeal.length > 0 && (
           <div className="px-6 py-4 border-t border-border flex gap-3">
             <Button
               variant="outline"
