@@ -1,7 +1,7 @@
 import { publicProcedure, protectedProcedure, router } from "./init";
 import { getDb } from "../db/client";
 import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, mealRegenerationQuota, mealHistory, type Meal } from "../db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
 import { sendMagicLinkEmail } from "../services/mailjet";
@@ -894,9 +894,8 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Create session
         await db.execute(
-          `INSERT INTO vote_sessions (id, user_id, meal_plan_id, status, max_voters, expires_at) 
-           VALUES ($1, $2, $3, $4, $5, $6)`,
-          [sessionId, ctx.user.id, input.mealPlanId, "open", input.maxVoters, expiresAt]
+          sql`INSERT INTO vote_sessions (id, user_id, meal_plan_id, status, max_voters, expires_at) 
+              VALUES (${sessionId}, ${ctx.user.id}, ${input.mealPlanId}, ${'open'}, ${input.maxVoters}, ${expiresAt})`
         );
 
         const shareUrl = `${ctx.baseUrl}/vote/${sessionId}`;
@@ -919,11 +918,10 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Get session
         const sessionResult = await db.execute(
-          `SELECT vs.*, mp.meals, mp.week_start_date 
+          sql`SELECT vs.*, mp.meals, mp.week_start_date 
            FROM vote_sessions vs 
            JOIN meal_plans mp ON vs.meal_plan_id = mp.id 
-           WHERE vs.id = $1`,
-          [input.sessionId]
+           WHERE vs.id = ${input.sessionId}`
         );
 
         if (sessionResult.rows.length === 0) {
@@ -938,8 +936,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Get current voter count
         const voterCountResult = await db.execute(
-          `SELECT COUNT(DISTINCT voter_name) as count FROM public_meal_votes WHERE vote_session_id = $1`,
-          [input.sessionId]
+          sql`SELECT COUNT(DISTINCT voter_name) as count FROM public_meal_votes WHERE vote_session_id = ${input.sessionId}`
         );
         const currentVoterCount = parseInt((voterCountResult.rows[0] as any).count || "0");
 
@@ -968,8 +965,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Verify session belongs to user
         const sessionResult = await db.execute(
-          `SELECT * FROM vote_sessions WHERE id = $1 AND user_id = $2`,
-          [input.sessionId, ctx.user.id]
+          sql`SELECT * FROM vote_sessions WHERE id = ${input.sessionId} AND user_id = ${ctx.user.id}`
         );
 
         if (sessionResult.rows.length === 0) {
@@ -978,11 +974,10 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Get all votes
         const votesResult = await db.execute(
-          `SELECT meal_id, voter_name, reaction, created_at 
+          sql`SELECT meal_id, voter_name, reaction, created_at 
            FROM public_meal_votes 
-           WHERE vote_session_id = $1 
-           ORDER BY created_at DESC`,
-          [input.sessionId]
+           WHERE vote_session_id = ${input.sessionId} 
+           ORDER BY created_at DESC`
         );
 
         const votes = votesResult.rows as any[];
@@ -1031,8 +1026,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         if (!db) throw new Error("Database not available");
 
         await db.execute(
-          `UPDATE vote_sessions SET status = 'closed' WHERE id = $1 AND user_id = $2`,
-          [input.sessionId, ctx.user.id]
+          sql`UPDATE vote_sessions SET status = 'closed' WHERE id = ${input.sessionId} AND user_id = ${ctx.user.id}`
         );
 
         return { success: true };
@@ -1047,8 +1041,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Verify ownership
         const sessionResult = await db.execute(
-          `SELECT * FROM vote_sessions WHERE id = $1 AND user_id = $2`,
-          [input.sessionId, ctx.user.id]
+          sql`SELECT * FROM vote_sessions WHERE id = ${input.sessionId} AND user_id = ${ctx.user.id}`
         );
 
         if (sessionResult.rows.length === 0) {
@@ -1057,8 +1050,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Delete all votes
         await db.execute(
-          `DELETE FROM public_meal_votes WHERE vote_session_id = $1`,
-          [input.sessionId]
+          sql`DELETE FROM public_meal_votes WHERE vote_session_id = ${input.sessionId}`
         );
 
         return { success: true };
@@ -1073,8 +1065,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Close old sessions for this meal plan
         await db.execute(
-          `UPDATE vote_sessions SET status = 'closed' WHERE meal_plan_id = $1 AND user_id = $2`,
-          [input.mealPlanId, ctx.user.id]
+          sql`UPDATE vote_sessions SET status = 'closed' WHERE meal_plan_id = ${input.mealPlanId} AND user_id = ${ctx.user.id}`
         );
 
         // Create new session
@@ -1083,9 +1074,8 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         expiresAt.setDate(expiresAt.getDate() + input.expiresInDays);
 
         await db.execute(
-          `INSERT INTO vote_sessions (id, user_id, meal_plan_id, status, max_voters, expires_at) 
-           VALUES ($1, $2, $3, 'open', 10, $4)`,
-          [sessionId, ctx.user.id, input.mealPlanId, expiresAt]
+          sql`INSERT INTO vote_sessions (id, user_id, meal_plan_id, status, max_voters, expires_at) 
+           VALUES (${sessionId}, ${ctx.user.id}, ${input.mealPlanId}, 'open', 10, ${expiresAt})`
         );
 
         const shareUrl = `${ctx.baseUrl}/vote/${sessionId}`;
@@ -1115,8 +1105,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Check session status
         const sessionResult = await db.execute(
-          `SELECT status, expires_at, max_voters FROM vote_sessions WHERE id = $1`,
-          [input.sessionId]
+          sql`SELECT status, expires_at, max_voters FROM vote_sessions WHERE id = ${input.sessionId}`
         );
 
         if (sessionResult.rows.length === 0) {
@@ -1132,15 +1121,13 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Check max voters limit
         const voterCountResult = await db.execute(
-          `SELECT COUNT(DISTINCT voter_name) as count FROM public_meal_votes WHERE vote_session_id = $1`,
-          [input.sessionId]
+          sql`SELECT COUNT(DISTINCT voter_name) as count FROM public_meal_votes WHERE vote_session_id = ${input.sessionId}`
         );
         const currentVoterCount = parseInt((voterCountResult.rows[0] as any).count || "0");
 
         // Check if this is a new voter
         const existingVoterResult = await db.execute(
-          `SELECT COUNT(*) as count FROM public_meal_votes WHERE vote_session_id = $1 AND voter_name = $2`,
-          [input.sessionId, sanitizedName]
+          sql`SELECT COUNT(*) as count FROM public_meal_votes WHERE vote_session_id = ${input.sessionId} AND voter_name = ${sanitizedName}`
         );
         const isExistingVoter = parseInt((existingVoterResult.rows[0] as any).count || "0") > 0;
 
@@ -1150,11 +1137,10 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Upsert vote (update if exists, insert if not)
         await db.execute(
-          `INSERT INTO public_meal_votes (vote_session_id, meal_id, voter_name, reaction, updated_at) 
-           VALUES ($1, $2, $3, $4, NOW()) 
+          sql`INSERT INTO public_meal_votes (vote_session_id, meal_id, voter_name, reaction, updated_at) 
+           VALUES (${input.sessionId}, ${input.mealId}, ${sanitizedName}, ${input.reaction}, NOW()) 
            ON CONFLICT (vote_session_id, meal_id, voter_name) 
-           DO UPDATE SET reaction = $4, updated_at = NOW()`,
-          [input.sessionId, input.mealId, sanitizedName, input.reaction]
+           DO UPDATE SET reaction = ${input.reaction}, updated_at = NOW()`
         );
 
         console.log("[publicVotes.upsert] Vote saved", {
@@ -1175,9 +1161,8 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         if (!db) throw new Error("Database not available");
 
         const votesResult = await db.execute(
-          `SELECT meal_id, reaction FROM public_meal_votes 
-           WHERE vote_session_id = $1 AND voter_name = $2`,
-          [input.sessionId, input.voterName.trim()]
+          sql`SELECT meal_id, reaction FROM public_meal_votes 
+           WHERE vote_session_id = ${input.sessionId} AND voter_name = ${input.voterName.trim()}`
         );
 
         const votes: Record<string, string> = {};
