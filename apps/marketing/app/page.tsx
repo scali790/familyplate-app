@@ -51,7 +51,7 @@ export default function HomePage() {
               AI-powered family meal planning app where <strong className="text-primary">everyone votes</strong>. Create weekly meal plans your whole family actually wants to eat.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row gap-4 mb-2">
           <Link 
             href={LINKS.getStarted}
             className="inline-block px-8 py-4 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-semibold text-lg"
@@ -65,6 +65,8 @@ export default function HomePage() {
                 How It Works
               </a>
             </div>
+            
+            <p className="text-sm text-muted mb-6">Get your first 7-day plan in 2 minutes.</p>
 
             <div className="flex gap-6 text-sm text-muted">
               <span>✓ Free BETA access</span>
