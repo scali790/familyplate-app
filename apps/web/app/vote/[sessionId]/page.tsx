@@ -12,6 +12,7 @@ type Meal = {
   tags?: string[];
   mealType?: string;
   day?: string;
+  dayFormatted?: string; // e.g., "Monday, Jan 13"
 };
 
 type Reaction = "up" | "neutral" | "down";
@@ -192,9 +193,9 @@ export default function VotePage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            {session.currentVoterCount} / {session.maxVoters} voters
-          </div>
+            <div className="mt-6 text-center text-base text-gray-700 font-medium">
+              {session.currentVoterCount} / {session.maxVoters} voters participating
+            </div>
         </div>
       </div>
     );
@@ -276,7 +277,7 @@ export default function VotePage() {
   // Current meal
   const currentMeal = meals[currentMealIndex];
   const votedCount = Object.keys(votes).length;
-  const progressPercent = (votedCount / meals.length) * 100;
+  const progressPercent = ((currentMealIndex + 1) / meals.length) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
@@ -288,14 +289,29 @@ export default function VotePage() {
               <span>👨‍👩‍👧‍👦</span>
               <span>{session.familyName || "Your Family"}</span>
             </h1>
-            <p className="text-sm text-gray-500">Week of {new Date(session.weekStartDate).toLocaleDateString()}</p>
+            <p className="text-sm text-gray-600">Week of {new Date(session.weekStartDate).toLocaleDateString()}</p>
+          </div>
+
+          {/* Meal Type Badge */}
+          <div className="flex justify-center mb-3">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-100 to-amber-100 rounded-full border-2 border-orange-200">
+              <span className="text-xl">
+                {currentMeal.mealType === "breakfast" ? "🌅" : currentMeal.mealType === "lunch" ? "☀️" : currentMeal.mealType === "dinner" ? "🌙" : "🍽️"}
+              </span>
+              <span className="text-lg font-bold text-orange-800 capitalize">
+                {currentMeal.mealType || "Meal"}
+              </span>
+              {currentMeal.dayFormatted && (
+                <span className="text-sm font-semibold text-orange-700">• {currentMeal.dayFormatted}</span>
+              )}
+            </div>
           </div>
 
           {/* Progress */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-gray-600">
-              <span className="font-medium">{currentMeal.mealType || "Meals"}</span>
-              <span>{votedCount} / {meals.length} voted</span>
+              <span className="font-medium">Progress</span>
+              <span>Meal {currentMealIndex + 1} of {meals.length}</span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
               <div

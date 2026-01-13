@@ -942,8 +942,28 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         );
         const currentVoterCount = parseInt((voterCountResult[0] as any).count || "0");
 
-        // Parse meals
+        // Parse meals and add formatted day names
         const meals = typeof session.meals === "string" ? JSON.parse(session.meals) : session.meals;
+        
+        // Add formatted day display (e.g., "Monday, Jan 13")
+        const weekStart = new Date(session.week_start_date);
+        const mealsWithDays = meals.map((meal: any) => {
+          if (meal.day) {
+            const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const dayIndex = dayOrder.indexOf(meal.day.toLowerCase());
+            if (dayIndex !== -1) {
+              const mealDate = new Date(weekStart);
+              mealDate.setDate(weekStart.getDate() + dayIndex);
+              const formattedDay = mealDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'short', 
+                day: 'numeric' 
+              });
+              return { ...meal, dayFormatted: formattedDay };
+            }
+          }
+          return meal;
+        });
 
         return {
           sessionId: session.id,
@@ -955,7 +975,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
           currentVoterCount,
           weekStartDate: session.week_start_date,
           familyName: session.family_name,
-          meals,
+          meals: mealsWithDays,
         };
       }),
 
