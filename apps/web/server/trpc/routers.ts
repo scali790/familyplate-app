@@ -23,6 +23,7 @@ export const appRouter = router({
         z.object({
           email: z.string().email(),
           name: z.string().min(1).optional(),
+          redirectTo: z.string().optional(), // Where to redirect after login
         })
       )
       .mutation(async ({ input, ctx }) => {
@@ -50,8 +51,14 @@ export const appRouter = router({
           console.log("[requestMagicLink] Token saved to database");
 
           // Use baseUrl from context (extracted from Request headers)
-          const magicLink = `${ctx.baseUrl}/auth/verify?token=${token}`;
-          console.log("[requestMagicLink] Magic link generated", { magicLink });
+          let magicLink = `${ctx.baseUrl}/auth/verify?token=${token}`;
+          
+          // Add redirectTo parameter if provided
+          if (input.redirectTo) {
+            magicLink += `&redirectTo=${encodeURIComponent(input.redirectTo)}`;
+          }
+          
+          console.log("[requestMagicLink] Magic link generated", { magicLink, hasRedirect: !!input.redirectTo });
 
           console.log("[requestMagicLink] Calling sendMagicLinkEmail...");
           const emailSent = await sendMagicLinkEmail(

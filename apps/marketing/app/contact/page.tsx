@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { LINKS } from '@/lib/links';
 
 export const metadata: Metadata = {
   title: 'Contact Us - FamilyPlate Support',
@@ -32,7 +33,7 @@ export default function ContactPage() {
               Have a question or suggestion? We&apos;re actively listening to our BETA users.
             </p>
             <a 
-              href="https://staging.familyplate.ai/feedback"
+              href={LINKS.feedback}
               className="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
             >
               Send Feedback
@@ -61,7 +62,7 @@ export default function ContactPage() {
             or send us a message through your dashboard.
           </p>
           <Link 
-            href="https://staging.familyplate.ai"
+            href={LINKS.dashboard}
             className="inline-block px-6 py-3 bg-white text-purple-700 rounded-lg hover:bg-purple-50 transition-colors font-medium"
           >
             Go to Dashboard

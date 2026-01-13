@@ -12,7 +12,8 @@ export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const token = searchParams.get("token");
-  const redirectTo = searchParams.get("redirectTo");
+  // Support both 'redirectTo' (legacy) and 'next' (new from marketing site)
+  const redirectTo = searchParams.get("redirectTo") || searchParams.get("next");
 
   if (!token) {
     return NextResponse.json({ error: "Missing token" }, { status: 400 });

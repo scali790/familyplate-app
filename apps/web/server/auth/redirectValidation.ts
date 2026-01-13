@@ -4,9 +4,10 @@
  * Allowed:
  * - Relative paths starting with "/" (e.g., "/dashboard", "/profile")
  * - Deep links starting with "familyplate://" (e.g., "familyplate://auth/success")
+ * - Absolute URLs to familyplate.ai domains (e.g., "https://familyplate.ai", "https://www.familyplate.ai")
  * 
  * Blocked:
- * - Absolute URLs (e.g., "https://evil.com")
+ * - External absolute URLs (e.g., "https://evil.com")
  * - Protocol-relative URLs (e.g., "//evil.com")
  * - JavaScript URLs (e.g., "javascript:alert(1)")
  * 
@@ -45,7 +46,30 @@ export function validateRedirectUrl(
     return trimmed;
   }
 
-  // Block everything else (absolute URLs, javascript:, data:, etc.)
+  // Allow absolute URLs to familyplate.ai domains
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    try {
+      const url = new URL(trimmed);
+      const allowedDomains = [
+        "familyplate.ai",
+        "www.familyplate.ai",
+        "staging.familyplate.ai",
+        "app.familyplate.ai",
+      ];
+      
+      if (allowedDomains.includes(url.hostname)) {
+        return trimmed;
+      }
+      
+      console.warn(`[redirect] Blocked external domain: ${url.hostname}`);
+      return fallback;
+    } catch (error) {
+      console.warn(`[redirect] Invalid URL: ${trimmed}`);
+      return fallback;
+    }
+  }
+
+  // Block everything else (javascript:, data:, etc.)
   console.warn(`[redirect] Blocked unsafe redirect: ${trimmed}`);
   return fallback;
 }

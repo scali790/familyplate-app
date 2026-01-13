@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { LINKS } from '@/lib/links';
 
 export const metadata: Metadata = {
   title: 'FamilyPlate: Family Meal Planning App with Voting | AI Weekly Meal Planner',
@@ -51,12 +52,12 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <Link 
-                href="https://staging.familyplate.ai/auth"
-                className="px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-semibold text-lg text-center"
-              >
-                Get Your First Meal Plan Free →
-              </Link>
+          <Link 
+            href={LINKS.getStarted}
+            className="inline-block px-8 py-4 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-semibold text-lg"
+          >
+            Get Your First Meal Plan Free →
+          </Link>
               <a 
                 href="#how-it-works"
                 className="px-6 py-3 border border-border text-muted rounded-lg hover:border-muted transition-colors font-medium text-lg text-center"
@@ -345,11 +346,11 @@ export default function HomePage() {
                   <span>2 meal swaps/week</span>
                 </li>
               </ul>
-              <Link 
-                href="https://staging.familyplate.ai/auth"
-                className="block w-full px-6 py-3 border border-border text-center text-muted rounded-lg hover:border-muted transition-colors font-medium"
+               <Link 
+                href={LINKS.dashboard}
+                className="inline-block px-8 py-4 border-2 border-border text-muted rounded-lg hover:border-muted transition-colors font-semibold text-lg"
               >
-                Get Started Free
+                View Demo
               </Link>
             </div>
 
@@ -408,12 +409,12 @@ export default function HomePage() {
             Click below to get started. We&apos;ll send you a magic link to create your account (no password needed).
           </p>
 
-          <Link 
-            href="https://staging.familyplate.ai/auth"
-            className="inline-block px-8 py-4 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-semibold text-lg"
-          >
-            Get Your First Meal Plan Free →
-          </Link>
+              <Link 
+                href={LINKS.getStarted}
+                className="inline-block px-8 py-4 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-semibold text-lg"
+              >
+                Get Your First Meal Plan Free →
+              </Link>
 
           <div className="flex justify-center gap-6 text-sm text-muted mt-6">
             <span>✓ Free BETA access</span>

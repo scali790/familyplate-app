@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { LINKS } from '@/lib/links';
 
 export const metadata: Metadata = {
   title: 'About FamilyPlate - Our Mission',
@@ -76,7 +77,7 @@ export default function AboutPage() {
               Join us and help build the future of family meal planning.
             </p>
             <Link 
-              href="https://staging.familyplate.ai/auth"
+              href={LINKS.getStarted}
               className="inline-block px-8 py-4 bg-white text-purple-700 rounded-lg hover:bg-purple-50 transition-colors font-semibold text-lg"
             >
               Get Started Free →
