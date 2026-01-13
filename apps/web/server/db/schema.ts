@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, timestamp, text, integer, jsonb, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, timestamp, text, integer, jsonb, boolean, index, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -105,6 +105,34 @@ export const mealHistory = pgTable("meal_history", {
   reason: varchar("reason", { length: 50 }).default("regenerated"), // regenerated, deleted, etc.
 });
 
+// Public Voting Sessions (Family Voting via Share Link)
+export const voteSessions = pgTable("vote_sessions", {
+  id: varchar("id", { length: 36 }).primaryKey(), // UUID
+  userId: integer("user_id").notNull().references(() => users.id), // Manager
+  mealPlanId: integer("meal_plan_id").notNull().references(() => mealPlans.id),
+  status: varchar("status", { length: 20 }).notNull().default("open"), // 'open' | 'closed'
+  maxVoters: integer("max_voters").notNull().default(10),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const publicMealVotes = pgTable(
+  "public_meal_votes",
+  {
+    id: serial("id").primaryKey(),
+    voteSessionId: varchar("vote_session_id", { length: 36 }).notNull().references(() => voteSessions.id, { onDelete: "cascade" }),
+    mealId: varchar("meal_id", { length: 100 }).notNull(), // recipeId from meal plan JSON
+    voterName: varchar("voter_name", { length: 32 }).notNull(),
+    reaction: varchar("reaction", { length: 10 }).notNull(), // 'up' | 'neutral' | 'down'
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    // Unique constraint: one vote per (session, meal, voter)
+    uniqueVote: uniqueIndex("public_meal_votes_unique_vote").on(table.voteSessionId, table.mealId, table.voterName),
+  })
+);
+
 export type User = typeof users.$inferSelect;
 export type UserPreferences = typeof userPreferences.$inferSelect;
 export type MealPlan = typeof mealPlans.$inferSelect;
@@ -114,6 +142,8 @@ export type Session = typeof sessions.$inferSelect;
 export type MagicLinkToken = typeof magicLinkTokens.$inferSelect;
 export type MealRegenerationQuota = typeof mealRegenerationQuota.$inferSelect;
 export type MealHistory = typeof mealHistory.$inferSelect;
+export type VoteSession = typeof voteSessions.$inferSelect;
+export type PublicMealVote = typeof publicMealVotes.$inferSelect;
 
 export interface Meal {
   name: string;

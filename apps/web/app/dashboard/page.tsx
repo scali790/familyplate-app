@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RecipeModal } from '@/components/recipe-modal';
+import { VotingResultsModal } from '@/components/voting-results-modal';
 import { trpc } from '@/lib/trpc';
 import type { Meal } from '@/server/db/schema';
 
@@ -61,6 +62,8 @@ export default function DashboardPage() {
   const [selectedMeal, setSelectedMeal] = useState<{ meal: Meal; index: number; day: string; mealType: string } | null>(null);
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
   const [selectedDayIndex, setSelectedDayIndex] = useState(0); // 0 = Monday
+  const [votingSession, setVotingSession] = useState<{ sessionId: string; shareUrl: string } | null>(null);
+  const [showVotingModal, setShowVotingModal] = useState(false);
 
   // Fetch current meal plan and preferences
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getCurrentPlan.useQuery();
@@ -69,6 +72,7 @@ export default function DashboardPage() {
   // Mutations
   const generateMutation = trpc.mealPlanning.generatePlan.useMutation();
   const generatePartialMutation = trpc.mealPlanning.generatePartialPlan.useMutation();
+  const createVotingSessionMutation = trpc.voteSessions.create.useMutation();
 
   const handleGeneratePartial = async (mealType: 'breakfast' | 'lunch' | 'dinner') => {
     try {
@@ -87,6 +91,24 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Failed to generate meal plan:', error);
       alert('Failed to generate meal plan');
+    }
+  };
+
+  const handleShareForVoting = async () => {
+    if (!mealPlan) return;
+
+    try {
+      const session = await createVotingSessionMutation.mutateAsync({
+        mealPlanId: mealPlan.id,
+        maxVoters: preferences?.familySize || 10,
+        expiresInDays: 7,
+      });
+
+      setVotingSession(session);
+      setShowVotingModal(true);
+    } catch (error) {
+      console.error('Failed to create voting session:', error);
+      alert('Failed to create voting session');
     }
   };
 
@@ -206,15 +228,23 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Generate New Plan Button */}
-              <div className="mb-6">
+              {/* Action Buttons */}
+              <div className="mb-6 flex gap-3">
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="flex-1"
                   onClick={handleGenerateNew}
                   disabled={generateMutation.isPending}
                 >
                   🪄 {generateMutation.isPending ? 'Generating...' : 'Generate New Plan'}
+                </Button>
+                <Button
+                  variant="default"
+                  className="flex-1"
+                  onClick={handleShareForVoting}
+                  disabled={createVotingSessionMutation.isPending}
+                >
+                  👥 {createVotingSessionMutation.isPending ? 'Creating...' : 'Share for Voting'}
                 </Button>
               </div>
 
@@ -395,6 +425,15 @@ export default function DashboardPage() {
             refetch(); // Refresh meal plan
             setSelectedMeal(null); // Close modal
           }}
+        />
+      )}
+
+      {/* Voting Results Modal */}
+      {showVotingModal && votingSession && (
+        <VotingResultsModal
+          sessionId={votingSession.sessionId}
+          shareUrl={votingSession.shareUrl}
+          onClose={() => setShowVotingModal(false)}
         />
       )}
     </div>

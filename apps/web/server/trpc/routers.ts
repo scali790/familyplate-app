@@ -871,6 +871,323 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         };
       }),
   }),
+
+  // Public Voting Sessions (Family Voting via Share Link)
+  voteSessions: router({
+    // Create new voting session (Manager only)
+    create: protectedProcedure
+      .input(
+        z.object({
+          mealPlanId: z.number(),
+          maxVoters: z.number().default(10),
+          expiresInDays: z.number().default(7),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Generate UUID for session
+        const sessionId = randomBytes(16).toString("hex");
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + input.expiresInDays);
+
+        // Create session
+        await db.execute(
+          `INSERT INTO vote_sessions (id, user_id, meal_plan_id, status, max_voters, expires_at) 
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [sessionId, ctx.user.id, input.mealPlanId, "open", input.maxVoters, expiresAt]
+        );
+
+        const shareUrl = `${ctx.baseUrl}/vote/${sessionId}`;
+
+        console.log("[voteSessions.create] Session created", { sessionId, shareUrl });
+
+        return {
+          sessionId,
+          shareUrl,
+          expiresAt: expiresAt.toISOString(),
+        };
+      }),
+
+    // Get public session info (no auth)
+    getPublic: publicProcedure
+      .input(z.object({ sessionId: z.string() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Get session
+        const sessionResult = await db.execute(
+          `SELECT vs.*, mp.meals, mp.week_start_date 
+           FROM vote_sessions vs 
+           JOIN meal_plans mp ON vs.meal_plan_id = mp.id 
+           WHERE vs.id = $1`,
+          [input.sessionId]
+        );
+
+        if (sessionResult.rows.length === 0) {
+          throw new Error("Session not found");
+        }
+
+        const session = sessionResult.rows[0] as any;
+
+        // Check if expired
+        const isExpired = new Date() > new Date(session.expires_at);
+        const isOpen = session.status === "open" && !isExpired;
+
+        // Get current voter count
+        const voterCountResult = await db.execute(
+          `SELECT COUNT(DISTINCT voter_name) as count FROM public_meal_votes WHERE vote_session_id = $1`,
+          [input.sessionId]
+        );
+        const currentVoterCount = parseInt((voterCountResult.rows[0] as any).count || "0");
+
+        // Parse meals
+        const meals = typeof session.meals === "string" ? JSON.parse(session.meals) : session.meals;
+
+        return {
+          sessionId: session.id,
+          status: session.status,
+          isOpen,
+          isExpired,
+          expiresAt: session.expires_at,
+          maxVoters: session.max_voters,
+          currentVoterCount,
+          weekStartDate: session.week_start_date,
+          meals,
+        };
+      }),
+
+    // Get voting results (Manager only)
+    getResults: protectedProcedure
+      .input(z.object({ sessionId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Verify session belongs to user
+        const sessionResult = await db.execute(
+          `SELECT * FROM vote_sessions WHERE id = $1 AND user_id = $2`,
+          [input.sessionId, ctx.user.id]
+        );
+
+        if (sessionResult.rows.length === 0) {
+          throw new Error("Session not found or unauthorized");
+        }
+
+        // Get all votes
+        const votesResult = await db.execute(
+          `SELECT meal_id, voter_name, reaction, created_at 
+           FROM public_meal_votes 
+           WHERE vote_session_id = $1 
+           ORDER BY created_at DESC`,
+          [input.sessionId]
+        );
+
+        const votes = votesResult.rows as any[];
+
+        // Aggregate by meal
+        const mealAggregates: Record<string, { up: number; neutral: number; down: number; score: number }> = {};
+        const voterBreakdown: Record<string, Array<{ mealId: string; reaction: string }>> = {};
+
+        votes.forEach((vote) => {
+          // Meal aggregates
+          if (!mealAggregates[vote.meal_id]) {
+            mealAggregates[vote.meal_id] = { up: 0, neutral: 0, down: 0, score: 0 };
+          }
+          if (vote.reaction === "up") {
+            mealAggregates[vote.meal_id].up++;
+            mealAggregates[vote.meal_id].score++;
+          } else if (vote.reaction === "down") {
+            mealAggregates[vote.meal_id].down++;
+            mealAggregates[vote.meal_id].score--;
+          } else if (vote.reaction === "neutral") {
+            mealAggregates[vote.meal_id].neutral++;
+          }
+
+          // Voter breakdown
+          if (!voterBreakdown[vote.voter_name]) {
+            voterBreakdown[vote.voter_name] = [];
+          }
+          voterBreakdown[vote.voter_name].push({
+            mealId: vote.meal_id,
+            reaction: vote.reaction,
+          });
+        });
+
+        return {
+          mealAggregates,
+          voterBreakdown,
+          totalVoters: Object.keys(voterBreakdown).length,
+        };
+      }),
+
+    // Close session (Manager only)
+    close: protectedProcedure
+      .input(z.object({ sessionId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        await db.execute(
+          `UPDATE vote_sessions SET status = 'closed' WHERE id = $1 AND user_id = $2`,
+          [input.sessionId, ctx.user.id]
+        );
+
+        return { success: true };
+      }),
+
+    // Reset votes (Manager only)
+    reset: protectedProcedure
+      .input(z.object({ sessionId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Verify ownership
+        const sessionResult = await db.execute(
+          `SELECT * FROM vote_sessions WHERE id = $1 AND user_id = $2`,
+          [input.sessionId, ctx.user.id]
+        );
+
+        if (sessionResult.rows.length === 0) {
+          throw new Error("Session not found or unauthorized");
+        }
+
+        // Delete all votes
+        await db.execute(
+          `DELETE FROM public_meal_votes WHERE vote_session_id = $1`,
+          [input.sessionId]
+        );
+
+        return { success: true };
+      }),
+
+    // Regenerate link (Manager only)
+    regenerate: protectedProcedure
+      .input(z.object({ mealPlanId: z.number(), expiresInDays: z.number().default(7) }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Close old sessions for this meal plan
+        await db.execute(
+          `UPDATE vote_sessions SET status = 'closed' WHERE meal_plan_id = $1 AND user_id = $2`,
+          [input.mealPlanId, ctx.user.id]
+        );
+
+        // Create new session
+        const sessionId = randomBytes(16).toString("hex");
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + input.expiresInDays);
+
+        await db.execute(
+          `INSERT INTO vote_sessions (id, user_id, meal_plan_id, status, max_voters, expires_at) 
+           VALUES ($1, $2, $3, 'open', 10, $4)`,
+          [sessionId, ctx.user.id, input.mealPlanId, expiresAt]
+        );
+
+        const shareUrl = `${ctx.baseUrl}/vote/${sessionId}`;
+
+        return { sessionId, shareUrl, expiresAt: expiresAt.toISOString() };
+      }),
+  }),
+
+  // Public Meal Votes (no auth required)
+  publicVotes: router({
+    // Upsert vote (no auth)
+    upsert: publicProcedure
+      .input(
+        z.object({
+          sessionId: z.string(),
+          voterName: z.string().min(2).max(32),
+          mealId: z.string(),
+          reaction: z.enum(["up", "neutral", "down"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Sanitize voter name
+        const sanitizedName = input.voterName.trim().substring(0, 32);
+
+        // Check session status
+        const sessionResult = await db.execute(
+          `SELECT status, expires_at, max_voters FROM vote_sessions WHERE id = $1`,
+          [input.sessionId]
+        );
+
+        if (sessionResult.rows.length === 0) {
+          throw new Error("Session not found");
+        }
+
+        const session = sessionResult.rows[0] as any;
+        const isExpired = new Date() > new Date(session.expires_at);
+
+        if (session.status !== "open" || isExpired) {
+          throw new Error("Voting session is closed");
+        }
+
+        // Check max voters limit
+        const voterCountResult = await db.execute(
+          `SELECT COUNT(DISTINCT voter_name) as count FROM public_meal_votes WHERE vote_session_id = $1`,
+          [input.sessionId]
+        );
+        const currentVoterCount = parseInt((voterCountResult.rows[0] as any).count || "0");
+
+        // Check if this is a new voter
+        const existingVoterResult = await db.execute(
+          `SELECT COUNT(*) as count FROM public_meal_votes WHERE vote_session_id = $1 AND voter_name = $2`,
+          [input.sessionId, sanitizedName]
+        );
+        const isExistingVoter = parseInt((existingVoterResult.rows[0] as any).count || "0") > 0;
+
+        if (!isExistingVoter && currentVoterCount >= session.max_voters) {
+          throw new Error("Maximum voters reached");
+        }
+
+        // Upsert vote (update if exists, insert if not)
+        await db.execute(
+          `INSERT INTO public_meal_votes (vote_session_id, meal_id, voter_name, reaction, updated_at) 
+           VALUES ($1, $2, $3, $4, NOW()) 
+           ON CONFLICT (vote_session_id, meal_id, voter_name) 
+           DO UPDATE SET reaction = $4, updated_at = NOW()`,
+          [input.sessionId, input.mealId, sanitizedName, input.reaction]
+        );
+
+        console.log("[publicVotes.upsert] Vote saved", {
+          sessionId: input.sessionId,
+          voter: sanitizedName,
+          mealId: input.mealId,
+          reaction: input.reaction,
+        });
+
+        return { success: true };
+      }),
+
+    // Get voter's current votes (no auth)
+    getForVoter: publicProcedure
+      .input(z.object({ sessionId: z.string(), voterName: z.string() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        const votesResult = await db.execute(
+          `SELECT meal_id, reaction FROM public_meal_votes 
+           WHERE vote_session_id = $1 AND voter_name = $2`,
+          [input.sessionId, input.voterName.trim()]
+        );
+
+        const votes: Record<string, string> = {};
+        votesResult.rows.forEach((row: any) => {
+          votes[row.meal_id] = row.reaction;
+        });
+
+        return { votes };
+      }),
+  }),
 });
 
 // Helper function to generate recipe details
