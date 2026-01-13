@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RecipeModal } from '@/components/recipe-modal';
-import { VotingResultsModal } from '@/components/voting-results-modal';
+import VotingResultsModal from '@/components/voting-results-modal';
 import { trpc } from '@/lib/trpc';
 import type { Meal } from '@/server/db/schema';
 
