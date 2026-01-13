@@ -1,63 +1,38 @@
 import { Metadata } from 'next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { CTAButton } from '../components/cta-button';
+import Link from 'next/link';
 
-// SEO Metadata
 export const metadata: Metadata = {
   title: 'FamilyPlate: Family Meal Planning App with Voting | AI Weekly Meal Planner',
   description: 'AI-powered family meal planning app where everyone votes. Create weekly meal plans your whole family loves. Stop dinner debates, start enjoying meals together.',
-  keywords: ['family meal planning', 'meal planner app', 'AI meal planning', 'weekly meal planner', 'family voting', 'dietary restrictions'],
-  authors: [{ name: 'FamilyPlate' }],
-  openGraph: {
-    title: 'FamilyPlate: End Dinner Debates with Family Voting',
-    description: 'AI-powered meal planning where everyone votes. Create weekly meal plans your whole family actually wants to eat.',
-    url: 'https://familyplate.ai',
-    siteName: 'FamilyPlate',
-    locale: 'en_US',
-    type: 'website',
-    images: [
-      {
-        url: 'https://familyplate.ai/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'FamilyPlate - Family Meal Planning App',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'FamilyPlate: Family Meal Planning with Voting',
-    description: 'AI-powered meal planning where everyone votes. Stop dinner debates.',
-    images: ['https://familyplate.ai/og-image.png'],
-  },
-  robots: {
-    index: process.env.NEXT_PUBLIC_ENVIRONMENT === 'production',
-    follow: process.env.NEXT_PUBLIC_ENVIRONMENT === 'production',
-  },
 };
 
-export default function LandingPage() {
+export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-7xl">
+          <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🍽️</span>
             <span className="text-xl font-bold text-foreground">FamilyPlate</span>
             <span className="px-2 py-1 text-xs bg-primary text-white rounded">BETA</span>
-          </div>
+          </Link>
           <nav className="hidden md:flex gap-6">
-            <a href="#features" className="text-foreground hover:text-primary">Features</a>
-            <a href="#how-it-works" className="text-foreground hover:text-primary">How It Works</a>
-            <a href="#pricing" className="text-foreground hover:text-primary">Pricing</a>
+            <a href="#features" className="text-foreground hover:text-primary transition-colors">Features</a>
+            <a href="#how-it-works" className="text-foreground hover:text-primary transition-colors">How It Works</a>
+            <a href="#pricing" className="text-foreground hover:text-primary transition-colors">Pricing</a>
           </nav>
-          <CTAButton size="sm">Get Started</CTAButton>
+          <Link 
+            href="https://staging.familyplate.ai/auth" 
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-medium text-sm"
+          >
+            Get Started
+          </Link>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section className="container mx-auto px-4 py-20 max-w-7xl">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface rounded-full text-sm text-muted mb-6">
@@ -65,23 +40,29 @@ export default function LandingPage() {
               <span>AI-Powered Meal Planning • 7-14 Day Plans</span>
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-4">
+            <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-4 leading-tight">
               End Dinner Debates.<br />
               Start Enjoying Meals<br />
               <span className="text-primary">Your Family Loves</span>
             </h1>
             
-            <p className="text-lg text-muted mb-8">
-              AI-powered family meal planning app where <strong>everyone votes</strong>. Create weekly meal plans your whole family actually wants to eat.
+            <p className="text-lg text-muted mb-8 leading-relaxed">
+              AI-powered family meal planning app where <strong className="text-primary">everyone votes</strong>. Create weekly meal plans your whole family actually wants to eat.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <CTAButton size="lg" className="text-lg">
+              <Link 
+                href="https://staging.familyplate.ai/auth"
+                className="px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-semibold text-lg text-center"
+              >
                 Get Your First Meal Plan Free →
-              </CTAButton>
-              <CTAButton size="lg" variant="outline" className="text-lg" href="#how-it-works">
+              </Link>
+              <a 
+                href="#how-it-works"
+                className="px-6 py-3 border border-border text-muted rounded-lg hover:border-muted transition-colors font-medium text-lg text-center"
+              >
                 How It Works
-              </CTAButton>
+              </a>
             </div>
 
             <div className="flex gap-6 text-sm text-muted">
@@ -131,30 +112,22 @@ export default function LandingPage() {
       </section>
 
       {/* Country Trust Badges */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 py-12 max-w-7xl">
         <div className="bg-surface rounded-2xl p-8 text-center">
           <h2 className="text-2xl font-bold text-foreground mb-6">Trusted by Families in 5+ Countries</h2>
           <div className="flex justify-center gap-8 flex-wrap mb-4">
-            <div className="text-center">
-              <div className="text-4xl mb-2">🇺🇸</div>
-              <div className="text-sm text-muted">USA</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">🇮🇳</div>
-              <div className="text-sm text-muted">India</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">🇩🇪</div>
-              <div className="text-sm text-muted">Germany</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">🇦🇪</div>
-              <div className="text-sm text-muted">UAE</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">🇸🇦</div>
-              <div className="text-sm text-muted">Saudi Arabia</div>
-            </div>
+            {[
+              { flag: '🇺🇸', name: 'USA' },
+              { flag: '🇮🇳', name: 'India' },
+              { flag: '🇩🇪', name: 'Germany' },
+              { flag: '🇦🇪', name: 'UAE' },
+              { flag: '🇸🇦', name: 'Saudi Arabia' },
+            ].map((country) => (
+              <div key={country.name} className="text-center">
+                <div className="text-4xl mb-2">{country.flag}</div>
+                <div className="text-sm text-muted">{country.name}</div>
+              </div>
+            ))}
           </div>
           <div className="flex justify-center gap-6 text-sm text-success flex-wrap">
             <span>✓ Localized grocery stores</span>
@@ -166,11 +139,11 @@ export default function LandingPage() {
 
       {/* Differentiator Section */}
       <section className="bg-gradient-to-br from-purple-600 to-purple-800 text-white py-20">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-4xl font-bold text-center mb-4">Why Busy Families Choose FamilyPlate</h2>
           <p className="text-center text-purple-100 mb-12 text-lg">Three features that make dinner planning actually work</p>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Family Voting - #1 Feature */}
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border-2 border-orange-400 relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-orange-500 text-white text-xs font-bold rounded-full">
@@ -202,9 +175,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section - SEO H2 */}
+      {/* Features Section */}
       <section id="features" className="bg-surface py-20">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">AI Meal Planning for Families</h2>
             <p className="text-lg text-muted">Everything you need for stress-free family dinners</p>
@@ -243,55 +216,59 @@ export default function LandingPage() {
                 description: 'Every meal includes detailed ingredients, step-by-step instructions, prep time, and difficulty level.',
               },
             ].map((feature) => (
-              <Card key={feature.title}>
-                <CardHeader>
-                  <div className="text-4xl mb-4">{feature.icon}</div>
-                  <CardTitle>{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardContent>
-              </Card>
+              <div key={feature.title} className="bg-background rounded-2xl p-6 border border-border hover:border-muted transition-colors">
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-bold text-foreground mb-3">{feature.title}</h3>
+                <p className="text-muted leading-relaxed">{feature.description}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section - SEO H2 */}
+      {/* How It Works */}
       <section id="how-it-works" className="py-20 bg-background">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">Weekly Meal Planner for Families: How It Works</h2>
             <p className="text-lg text-muted">From chaos to calm in 3 simple steps</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">1</div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Tell us what your family likes</h3>
-              <p className="text-muted">A quick 2-minute setup. Share your family size, dietary needs, and favorite cuisines. Vote on 6 sample dishes so our AI understands your taste.</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">2</div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">We plan the week for you</h3>
-              <p className="text-muted">Receive a complete 7-day meal plan tailored to your family. Share the link with everyone to vote. Swap anything you don't like—it's that easy.</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">3</div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Shop once. Cook stress-free.</h3>
-              <p className="text-muted">Get a smart shopping list with everything you need. Follow easy recipes. Enjoy peaceful dinners. The AI learns from your votes to make next week even better.</p>
-            </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                number: '1',
+                title: 'Tell us what your family likes',
+                description: 'A quick 2-minute setup. Share your family size, dietary needs, and favorite cuisines. Vote on 6 sample dishes so our AI understands your taste.',
+              },
+              {
+                number: '2',
+                title: 'We plan the week for you',
+                description: 'Receive a complete 7-day meal plan tailored to your family. Share the link with everyone to vote. Swap anything you don\'t like—it\'s that easy.',
+              },
+              {
+                number: '3',
+                title: 'Shop once. Cook stress-free.',
+                description: 'Get a smart shopping list with everything you need. Follow easy recipes. Enjoy peaceful dinners. The AI learns from your votes to make next week even better.',
+              },
+            ].map((step) => (
+              <div key={step.number} className="text-center">
+                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                  {step.number}
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
+                <p className="text-muted leading-relaxed">{step.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
       <section className="bg-surface py-20">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-4xl font-bold text-center text-foreground mb-12">What Families Say</h2>
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
             {[
               {
                 stars: '⭐⭐⭐⭐⭐',
@@ -331,9 +308,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Pricing */}
       <section id="pricing" className="py-20 bg-background">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">Simple, Transparent Pricing</h2>
             <p className="text-lg text-muted">Start free, upgrade when you're ready</p>
@@ -341,97 +318,102 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}
-            <Card className="border-2 border-border">
-              <CardHeader>
-                <CardTitle className="text-2xl">Free</CardTitle>
-                <CardDescription className="text-3xl font-bold text-foreground mt-2">
-                  $0<span className="text-lg font-normal text-muted">/month</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 text-muted mb-6">
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span>AI-generated weekly meal plans</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span><strong>Family voting system</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span>All dietary restrictions</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span>Shopping lists & recipes</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span>2 meal swaps/week</span>
-                  </li>
-                </ul>
-                <CTAButton className="w-full" variant="outline">Get Started Free</CTAButton>
-              </CardContent>
-            </Card>
+            <div className="bg-surface rounded-2xl p-8 border-2 border-border">
+              <h3 className="text-2xl font-bold text-foreground mb-2">Free</h3>
+              <div className="text-3xl font-bold text-primary mb-6">
+                $0<span className="text-lg font-normal text-muted">/month</span>
+              </div>
+              <ul className="space-y-3 text-muted mb-6">
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span>AI-generated weekly meal plans</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span><strong className="text-foreground">Family voting system</strong></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span>All dietary restrictions</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span>Shopping lists & recipes</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span>2 meal swaps/week</span>
+                </li>
+              </ul>
+              <Link 
+                href="https://staging.familyplate.ai/auth"
+                className="block w-full px-6 py-3 border border-border text-center text-muted rounded-lg hover:border-muted transition-colors font-medium"
+              >
+                Get Started Free
+              </Link>
+            </div>
 
             {/* Premium Plan */}
-            <Card className="border-2 border-primary relative">
+            <div className="bg-surface rounded-2xl p-8 border-2 border-primary relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-sm font-semibold rounded-full">
                 Coming Soon
               </div>
-              <CardHeader>
-                <CardTitle className="text-2xl">Premium</CardTitle>
-                <CardDescription className="text-3xl font-bold text-foreground mt-2">
-                  $9.99<span className="text-lg font-normal text-muted">/month</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted mb-4">For families who want more flexibility</p>
-                <ul className="space-y-3 text-muted mb-6">
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span>Everything in Free, plus:</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span><strong>Unlimited meal swaps</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span>Advanced substitutions</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span>Nutrition insights</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span>Multi-week planning</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success mt-1">✓</span>
-                    <span>Priority support</span>
-                  </li>
-                </ul>
-                <CTAButton className="w-full" disabled>Join Waitlist</CTAButton>
-              </CardContent>
-            </Card>
+              <h3 className="text-2xl font-bold text-foreground mb-2">Premium</h3>
+              <div className="text-3xl font-bold text-primary mb-6">
+                $9.99<span className="text-lg font-normal text-muted">/month</span>
+              </div>
+              <p className="text-sm text-muted mb-4">For families who want more flexibility</p>
+              <ul className="space-y-3 text-muted mb-6">
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span>Everything in Free, plus:</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span><strong className="text-foreground">Unlimited meal swaps</strong></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span>Advanced substitutions</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span>Nutrition insights</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span>Multi-week planning</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-success mt-1">✓</span>
+                  <span>Priority support</span>
+                </li>
+              </ul>
+              <button 
+                disabled
+                className="block w-full px-6 py-3 bg-muted/20 text-center text-muted rounded-lg cursor-not-allowed font-medium"
+              >
+                Join Waitlist
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Final CTA Section - Entkoppelt, führt zu /auth */}
+      {/* Final CTA */}
       <section className="py-20 bg-surface">
         <div className="container mx-auto px-4 max-w-2xl text-center">
           <h2 className="text-4xl font-bold text-foreground mb-4">Ready to End Dinner Debates?</h2>
-          <p className="text-lg text-muted mb-8">
+          <p className="text-lg text-muted mb-8 leading-relaxed">
             Click below to get started. We'll send you a magic link to create your account (no password needed).
           </p>
 
-          <CTAButton size="lg" className="text-lg">
+          <Link 
+            href="https://staging.familyplate.ai/auth"
+            className="inline-block px-8 py-4 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-semibold text-lg"
+          >
             Get Your First Meal Plan Free →
-          </CTAButton>
+          </Link>
 
           <div className="flex justify-center gap-6 text-sm text-muted mt-6">
             <span>✓ Free BETA access</span>
@@ -442,13 +424,13 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-border bg-background py-12">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
+              <Link href="/" className="flex items-center gap-2 mb-4">
                 <span className="text-2xl">🍽️</span>
                 <span className="text-xl font-bold text-foreground">FamilyPlate</span>
-              </div>
+              </Link>
               <p className="text-sm text-muted">Family Meal Planning Made Simple</p>
             </div>
             
@@ -458,23 +440,24 @@ export default function LandingPage() {
                 <a href="#features" className="hover:text-primary transition-colors">Features</a>
                 <a href="#how-it-works" className="hover:text-primary transition-colors">How It Works</a>
                 <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
+                <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
               </div>
             </div>
 
             <div>
               <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wide">Company</h3>
               <div className="flex flex-col gap-2 text-sm text-muted">
-                <a href="/about" className="hover:text-primary transition-colors">About</a>
-                <a href="/contact" className="hover:text-primary transition-colors">Contact</a>
-                <a href="/feedback" className="hover:text-primary transition-colors">💬 Give Feedback</a>
+                <Link href="/about" className="hover:text-primary transition-colors">About</Link>
+                <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
+                <a href="https://staging.familyplate.ai/feedback" className="hover:text-primary transition-colors">💬 Give Feedback</a>
               </div>
             </div>
 
             <div>
               <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wide">Legal</h3>
               <div className="flex flex-col gap-2 text-sm text-muted">
-                <a href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</a>
-                <a href="/terms" className="hover:text-primary transition-colors">Terms of Use</a>
+                <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-primary transition-colors">Terms of Use</Link>
               </div>
             </div>
           </div>

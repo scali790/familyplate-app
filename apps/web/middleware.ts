@@ -20,7 +20,14 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  
+  // Add noindex for staging environment (prevent Google from indexing staging.familyplate.ai)
+  if (process.env.NEXT_PUBLIC_ENVIRONMENT !== 'production') {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+  
+  return response;
 }
 
 export const config = {
