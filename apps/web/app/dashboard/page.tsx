@@ -143,6 +143,12 @@ export default function DashboardPage() {
   const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const dayShortNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+  // Check if meal type is enabled in user preferences
+  const isMealTypeEnabled = (mealType: string) => {
+    if (!preferences?.mealTypes) return true; // Default to enabled if no preferences
+    return preferences.mealTypes.includes(mealType as any);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -267,13 +273,17 @@ export default function DashboardPage() {
                     const groupedMeals = groupMealsByType(mealPlan.meals);
                     const mealsForType = groupedMeals[mealType];
                     const hasMeals = mealsForType && mealsForType.length > 0;
+                    const isEnabled = isMealTypeEnabled(mealType);
 
                     return (
                       <div key={mealType} className="grid grid-cols-8 gap-2">
                         {/* Meal Type Label */}
                         <div className="col-span-1 flex flex-col items-center justify-center">
-                          <div className="text-2xl mb-1">{mealTypeIcons[mealType]}</div>
-                          <div className="text-sm font-semibold text-foreground capitalize">{mealType}</div>
+                          <div className={`text-2xl mb-1 ${!isEnabled ? 'opacity-30' : ''}`}>{mealTypeIcons[mealType]}</div>
+                          <div className={`text-sm font-semibold capitalize ${!isEnabled ? 'text-muted-foreground opacity-40' : 'text-foreground'}`}>
+                            {mealType}
+                            {!isEnabled && <div className="text-[10px] text-muted-foreground">disabled</div>}
+                          </div>
                         </div>
 
                         {/* Meal Cards or Empty State */}
@@ -281,8 +291,12 @@ export default function DashboardPage() {
                           mealsForType.map((meal, dayIndex) => (
                             <Card
                               key={dayIndex}
-                              className="bg-surface border-border hover:border-primary cursor-pointer transition-colors"
-                              onClick={() => setSelectedMeal({
+                              className={`bg-surface border-border transition-colors ${
+                                isEnabled 
+                                  ? 'hover:border-primary cursor-pointer' 
+                                  : 'opacity-50 cursor-not-allowed border-dashed'
+                              }`}
+                              onClick={() => isEnabled && setSelectedMeal({
                                 meal,
                                 index: dayIndex,
                                 day: dayNames[dayIndex].toLowerCase(),
@@ -290,8 +304,10 @@ export default function DashboardPage() {
                               })}
                             >
                               <CardContent className="p-3">
-                                <div className="text-2xl mb-1 text-center">{meal.emoji || '🍽️'}</div>
-                                <div className="text-xs font-medium text-foreground text-center line-clamp-2">
+                                <div className={`text-2xl mb-1 text-center ${!isEnabled ? 'grayscale' : ''}`}>{meal.emoji || '🍽️'}</div>
+                                <div className={`text-xs font-medium text-center line-clamp-2 ${
+                                  isEnabled ? 'text-foreground' : 'text-muted-foreground'
+                                }`}>
                                   {meal.name}
                                 </div>
                               </CardContent>
@@ -299,14 +315,17 @@ export default function DashboardPage() {
                           ))
                         ) : (
                           <div className="col-span-7 flex items-center justify-center">
-                            <Card className="bg-surface border-dashed border-border w-full">
+                            <Card className={`bg-surface border-dashed border-border w-full ${!isEnabled ? 'opacity-50' : ''}`}>
                               <CardContent className="p-4 text-center">
-                                <p className="text-sm text-muted mb-2">No {mealType} plan yet</p>
+                                <p className={`text-sm mb-2 ${isEnabled ? 'text-muted' : 'text-muted-foreground'}`}>
+                                  {isEnabled ? `No ${mealType} plan yet` : `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} is disabled in preferences`}
+                                </p>
                                 <Button
                                   variant="outline"
                                   size="sm"
                               onClick={() => handleGeneratePartial(mealType)}
-                              disabled={generatePartialMutation.isPending}
+                              disabled={generatePartialMutation.isPending || !isEnabled}
+                              title={!isEnabled ? `Enable ${mealType} in preferences to generate` : ''}
                                 >
                                   + Generate {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
                                 </Button>
@@ -348,28 +367,40 @@ export default function DashboardPage() {
                   {(['breakfast', 'lunch', 'dinner'] as const).map(mealType => {
                     const groupedMeals = groupMealsByType(mealPlan.meals);
                     const meal = groupedMeals[mealType]?.[selectedDayIndex];
+                    const isEnabled = isMealTypeEnabled(mealType);
 
                     return (
                       <div key={mealType}>
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-2xl">{mealTypeIcons[mealType]}</span>
-                          <h3 className="text-lg font-semibold text-foreground capitalize">{mealType}</h3>
+                          <span className={`text-2xl ${!isEnabled ? 'opacity-30 grayscale' : ''}`}>{mealTypeIcons[mealType]}</span>
+                          <h3 className={`text-lg font-semibold capitalize ${
+                            isEnabled ? 'text-foreground' : 'text-muted-foreground opacity-40'
+                          }`}>
+                            {mealType}
+                            {!isEnabled && <span className="text-xs ml-2">(disabled)</span>}
+                          </h3>
                         </div>
 
                         {meal ? (
-                          <Card className="bg-surface border-border">
+                          <Card className={`bg-surface border-border ${!isEnabled ? 'opacity-50 border-dashed' : ''}`}>
                             <CardContent className="p-5">
                               <div className="flex items-center gap-2 mb-2">
-                                <span className="text-3xl">{meal.emoji || '🍽️'}</span>
-                                <h4 className="text-xl font-bold text-foreground">{meal.name}</h4>
+                                <span className={`text-3xl ${!isEnabled ? 'grayscale' : ''}`}>{meal.emoji || '🍽️'}</span>
+                                <h4 className={`text-xl font-bold ${
+                                  isEnabled ? 'text-foreground' : 'text-muted-foreground'
+                                }`}>{meal.name}</h4>
                               </div>
-                              <p className="text-muted mb-4">{meal.description}</p>
+                              <p className={`mb-4 ${isEnabled ? 'text-muted' : 'text-muted-foreground'}`}>{meal.description}</p>
                               <div className="flex gap-4 mb-4">
-                                <div className="flex items-center gap-1 text-muted text-sm">
+                                <div className={`flex items-center gap-1 text-sm ${
+                                  isEnabled ? 'text-muted' : 'text-muted-foreground'
+                                }`}>
                                   <span>⏱️ Prep: {meal.prepTime}</span>
                                 </div>
                                 {meal.cookTime && (
-                                  <div className="flex items-center gap-1 text-muted text-sm">
+                                  <div className={`flex items-center gap-1 text-sm ${
+                                    isEnabled ? 'text-muted' : 'text-muted-foreground'
+                                  }`}>
                                     <span>🍳 Cook: {meal.cookTime}</span>
                                   </div>
                                 )}
@@ -377,26 +408,35 @@ export default function DashboardPage() {
                               <Button
                                 variant="outline"
                                 className="w-full"
-                                onClick={() => setSelectedMeal({
+                                onClick={() => isEnabled && setSelectedMeal({
                                   meal,
                                   index: selectedDayIndex,
                                   day: dayNames[selectedDayIndex].toLowerCase(),
                                   mealType
                                 })}
+                                disabled={!isEnabled}
                               >
                                 View Full Recipe
                               </Button>
                             </CardContent>
                           </Card>
                         ) : (
-                          <Card className="bg-surface border-dashed border-border">
+                          <Card className={`bg-surface border-dashed border-border ${!isEnabled ? 'opacity-50' : ''}`}>
                             <CardContent className="p-5 text-center">
-                              <p className="text-sm text-muted mb-3">No {mealType} for this day yet</p>
+                              <p className={`text-sm mb-3 ${
+                                isEnabled ? 'text-muted' : 'text-muted-foreground'
+                              }`}>
+                                {isEnabled 
+                                  ? `No ${mealType} for this day yet` 
+                                  : `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} is disabled in preferences`
+                                }
+                              </p>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleGeneratePartial(mealType)}
-                                disabled={generatePartialMutation.isPending}
+                                disabled={generatePartialMutation.isPending || !isEnabled}
+                                title={!isEnabled ? `Enable ${mealType} in preferences to generate` : ''}
                               >
                                 + Generate {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
                               </Button>
