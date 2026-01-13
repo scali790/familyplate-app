@@ -49,7 +49,7 @@ export function DayFocusPanel({
 
   // Group meals by type
   const mealsByType = MEAL_TYPE_ORDER.reduce((acc, type) => {
-    const typeMeals = meals.filter(m => m.mealType.toLowerCase() === type);
+    const typeMeals = meals.filter(m => m.mealType?.toLowerCase() === type);
     if (typeMeals.length > 0) {
       acc[type] = typeMeals[0]; // Should only be one meal per type per day
     }

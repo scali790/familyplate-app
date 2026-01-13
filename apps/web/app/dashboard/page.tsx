@@ -562,7 +562,8 @@ export default function DashboardPage() {
           dayName={dayNames[focusedDayIndex]}
           meals={mealPlan.meals.filter((m) => {
             // Filter meals for the selected day
-            const mealDayIndex = dayNames.findIndex(d => d.toLowerCase() === m.day.toLowerCase());
+            if (!m.day) return false;
+            const mealDayIndex = dayNames.findIndex(d => d.toLowerCase() === m.day!.toLowerCase());
             return mealDayIndex === focusedDayIndex;
           })}
           onClose={() => {
@@ -570,12 +571,13 @@ export default function DashboardPage() {
             setFocusedDayIndex(null);
           }}
           onOpenRecipe={(meal) => {
-            const mealDayIndex = dayNames.findIndex(d => d.toLowerCase() === meal.day.toLowerCase());
+            if (!meal.day || !meal.mealType) return;
+            const mealDayIndex = dayNames.findIndex(d => d.toLowerCase() === meal.day!.toLowerCase());
             setSelectedMeal({
               meal,
               index: mealDayIndex,
-              day: meal.day,
-              mealType: meal.mealType,
+              day: meal.day!,
+              mealType: meal.mealType!,
             });
             setIsDayFocusOpen(false);
           }}
