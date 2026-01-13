@@ -214,7 +214,11 @@ export default function PublicVotePage() {
   }
 
   // Voting Screen
-  const meals = session.meals as Meal[];
+  const meals: Meal[] = Array.isArray(session.meals)
+    ? session.meals
+    : typeof session.meals === "string"
+    ? JSON.parse(session.meals)
+    : [];
   const votedCount = Object.keys(votes).length;
   const totalMeals = meals.length;
   const progressPercent = totalMeals > 0 ? (votedCount / totalMeals) * 100 : 0;
