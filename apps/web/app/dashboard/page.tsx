@@ -429,10 +429,12 @@ export default function DashboardPage() {
       )}
 
       {/* Voting Results Modal */}
-      {showVotingModal && votingSession && (
+      {showVotingModal && votingSession && mealPlan && (
         <VotingResultsModal
           sessionId={votingSession.sessionId}
           shareUrl={votingSession.shareUrl}
+          familyName={preferences?.familyName}
+          weekStartDate={mealPlan.weekStartDate}
           onClose={() => setShowVotingModal(false)}
         />
       )}
