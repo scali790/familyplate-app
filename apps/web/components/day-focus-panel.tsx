@@ -9,6 +9,7 @@ type DayFocusPanelProps = {
   open: boolean;
   dayIndex: number;
   dayName: string;
+  weekStartDate: string; // Added for date formatting
   meals: Meal[];
   onClose: () => void;
   onOpenRecipe: (meal: Meal) => void;
@@ -26,11 +27,20 @@ export function DayFocusPanel({
   open,
   dayIndex,
   dayName,
+  weekStartDate,
   meals,
   onClose,
   onOpenRecipe,
   onRegenerateMeal,
 }: DayFocusPanelProps) {
+  // Format date for display
+  const dayDate = new Date(weekStartDate);
+  dayDate.setDate(dayDate.getDate() + dayIndex);
+  const formattedDate = dayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  
+  // Check if today
+  const today = new Date();
+  const isToday = dayDate.toDateString() === today.toDateString();
   // Handle ESC key
   useEffect(() => {
     if (!open) return;
@@ -65,12 +75,25 @@ export function DayFocusPanel({
         className="bg-background rounded-3xl max-h-[90vh] w-full max-w-2xl flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center px-6 pt-6 pb-4 border-b border-border">
+        {/* Header - Sticky */}
+        <div className="sticky top-0 z-10 bg-background flex justify-between items-center px-6 pt-6 pb-4 border-b border-border">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">{dayName}</h2>
+            <h2 className="text-2xl font-bold text-foreground">
+              {isToday ? (
+                <>
+                  <span className="inline-flex items-center gap-2">
+                    Today
+                    <span className="text-sm font-normal text-muted">· {formattedDate}</span>
+                  </span>
+                </>
+              ) : (
+                <>
+                  {dayName} <span className="text-sm font-normal text-muted">· {formattedDate}</span>
+                </>
+              )}
+            </h2>
             <p className="text-sm text-muted mt-1">
-              {Object.keys(mealsByType).length} meal{Object.keys(mealsByType).length !== 1 ? 's' : ''} planned
+              {Object.keys(mealsByType).length} meal{Object.keys(mealsByType).length !== 1 ? 's' : ''}
             </p>
           </div>
           <button
@@ -188,7 +211,7 @@ export function DayFocusPanel({
             className="w-full"
             onClick={onClose}
           >
-            ← Back to Week View
+            ← Back to Week
           </Button>
         </div>
       </div>

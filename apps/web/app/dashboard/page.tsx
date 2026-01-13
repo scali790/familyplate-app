@@ -62,7 +62,7 @@ const groupMealsByType = (meals: Meal[]) => {
 
 export default function DashboardPage() {
   const [selectedMeal, setSelectedMeal] = useState<{ meal: Meal; index: number; day: string; mealType: string } | null>(null);
-  const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
+  // viewMode removed - Week View is the only view, Day Focus handles day details
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0); // 0 = Monday
   const [votingSession, setVotingSession] = useState<{ sessionId: string; shareUrl: string } | null>(null);
@@ -230,22 +230,7 @@ export default function DashboardPage() {
                 <h1 className="text-2xl font-bold text-foreground">
                   Week of {formatWeekRange(mealPlan.weekStartDate)}
                 </h1>
-                <div className="flex gap-2">
-                  <Button
-                    variant={viewMode === 'week' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('week')}
-                  >
-                    Week View
-                  </Button>
-                  <Button
-                    variant={viewMode === 'day' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('day')}
-                  >
-                    Day View
-                  </Button>
-                </div>
+                {/* View toggle removed - Day Focus is the only day view */}
               </div>
 
               {/* Action Buttons */}
@@ -275,7 +260,8 @@ export default function DashboardPage() {
                 </Button>
               </div>
 
-              {viewMode === 'week' ? (
+              {/* Week View is the only view - Day Focus handles day details */}
+              {
                 /* Week View - Grid Layout */
                 <div className="space-y-6">
                   {/* Day Headers */}
@@ -346,7 +332,7 @@ export default function DashboardPage() {
                             >
                               <CardContent className="p-3">
                                 <div className={`text-2xl mb-1 text-center ${!isEnabled ? 'grayscale' : ''}`}>{meal.emoji || '🍽️'}</div>
-                                <div className={`text-xs font-medium text-center line-clamp-2 mb-1 ${
+                                <div className={`text-xs font-medium text-center line-clamp-1 mb-1 ${
                                   isEnabled ? 'text-foreground' : 'text-muted-foreground'
                                 }`}>
                                   {meal.name}
@@ -405,117 +391,7 @@ export default function DashboardPage() {
                     );
                   })}
                 </div>
-              ) : (
-                /* Day View - Vertical Stack */
-                <div className="space-y-6">
-                  {/* Day Navigation */}
-                  <div className="flex items-center justify-between mb-6">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setSelectedDayIndex(Math.max(0, selectedDayIndex - 1))}
-                      disabled={selectedDayIndex === 0}
-                    >
-                      ← Previous Day
-                    </Button>
-                    <h2 className="text-xl font-semibold text-foreground">
-                      {dayNames[selectedDayIndex]} • {getDayDate(mealPlan.weekStartDate, selectedDayIndex)}
-                    </h2>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setSelectedDayIndex(Math.min(6, selectedDayIndex + 1))}
-                      disabled={selectedDayIndex === 6}
-                    >
-                      Next Day →
-                    </Button>
-                  </div>
-
-                  {/* Meals for Selected Day */}
-                  {(['breakfast', 'lunch', 'dinner'] as const).map(mealType => {
-                    const groupedMeals = groupMealsByType(mealPlan.meals);
-                    const meal = groupedMeals[mealType]?.[selectedDayIndex];
-                    const isEnabled = isMealTypeEnabled(mealType);
-
-                    return (
-                      <div key={mealType}>
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className={`text-2xl ${!isEnabled ? 'opacity-30 grayscale' : ''}`}>{mealTypeIcons[mealType]}</span>
-                          <h3 className={`text-lg font-semibold capitalize ${
-                            isEnabled ? 'text-foreground' : 'text-muted-foreground opacity-40'
-                          }`}>
-                            {mealType}
-                            {!isEnabled && <span className="text-xs ml-2">(disabled)</span>}
-                          </h3>
-                        </div>
-
-                        {meal ? (
-                          <Card className={`bg-surface border-border ${!isEnabled ? 'opacity-50 border-dashed' : ''}`}>
-                            <CardContent className="p-5">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className={`text-3xl ${!isEnabled ? 'grayscale' : ''}`}>{meal.emoji || '🍽️'}</span>
-                                <h4 className={`text-xl font-bold ${
-                                  isEnabled ? 'text-foreground' : 'text-muted-foreground'
-                                }`}>{meal.name}</h4>
-                              </div>
-                              <p className={`mb-4 ${isEnabled ? 'text-muted' : 'text-muted-foreground'}`}>{meal.description}</p>
-                              <div className="flex gap-4 mb-4">
-                                <div className={`flex items-center gap-1 text-sm ${
-                                  isEnabled ? 'text-muted' : 'text-muted-foreground'
-                                }`}>
-                                  <span>⏱️ Prep: {meal.prepTime}</span>
-                                </div>
-                                {meal.cookTime && (
-                                  <div className={`flex items-center gap-1 text-sm ${
-                                    isEnabled ? 'text-muted' : 'text-muted-foreground'
-                                  }`}>
-                                    <span>🍳 Cook: {meal.cookTime}</span>
-                                  </div>
-                                )}
-                              </div>
-                              <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => isEnabled && setSelectedMeal({
-                                  meal,
-                                  index: selectedDayIndex,
-                                  day: dayNames[selectedDayIndex].toLowerCase(),
-                                  mealType
-                                })}
-                                disabled={!isEnabled}
-                              >
-                                View Full Recipe
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        ) : (
-                          <Card className={`bg-surface border-dashed border-border ${!isEnabled ? 'opacity-50' : ''}`}>
-                            <CardContent className="p-5 text-center">
-                              <p className={`text-sm mb-3 ${
-                                isEnabled ? 'text-muted' : 'text-muted-foreground'
-                              }`}>
-                                {isEnabled 
-                                  ? `No ${mealType} for this day yet` 
-                                  : `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} is disabled in preferences`
-                                }
-                              </p>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleGeneratePartial(mealType)}
-                                disabled={generatePartialMutation.isPending || !isEnabled}
-                                title={!isEnabled ? `Enable ${mealType} in preferences to generate` : ''}
-                              >
-                                + Generate {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              }
             </>
           )}
         </div>
@@ -560,6 +436,7 @@ export default function DashboardPage() {
           open={isDayFocusOpen}
           dayIndex={focusedDayIndex}
           dayName={dayNames[focusedDayIndex]}
+          weekStartDate={mealPlan.weekStartDate}
           meals={mealPlan.meals.filter((m) => {
             // Filter meals for the selected day
             if (!m.day) return false;
