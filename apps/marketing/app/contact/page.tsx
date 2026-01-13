@@ -22,7 +22,7 @@ export default function ContactPage() {
       <main className="container mx-auto px-4 py-16 max-w-4xl">
         <h1 className="text-5xl font-bold text-foreground mb-4 text-center">Get in Touch</h1>
         <p className="text-xl text-muted mb-16 text-center">
-          We&apos;d love to hear from you. Choose the best way to reach us.
+          We'd love to hear from you. Choose the best way to reach us.
         </p>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -30,7 +30,7 @@ export default function ContactPage() {
             <div className="text-4xl mb-4">💬</div>
             <h2 className="text-2xl font-bold text-foreground mb-3">Feedback & Support</h2>
             <p className="text-muted mb-6 leading-relaxed">
-              Have a question or suggestion? We&apos;re actively listening to our BETA users.
+              Have a question or suggestion? We're actively listening to our BETA users.
             </p>
             <a 
               href={LINKS.feedback}
@@ -58,7 +58,7 @@ export default function ContactPage() {
         <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-12 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Looking for Support?</h2>
           <p className="text-purple-100 text-lg mb-6 max-w-2xl mx-auto">
-            If you&apos;re already using FamilyPlate and need help, please use the in-app feedback feature 
+            If you're already using FamilyPlate and need help, please use the in-app feedback feature 
             or send us a message through your dashboard.
           </p>
           <Link 

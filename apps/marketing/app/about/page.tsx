@@ -27,7 +27,7 @@ export default function AboutPage() {
             <h2 className="text-3xl font-bold text-foreground mb-4">Our Mission</h2>
             <p className="text-muted text-lg leading-relaxed mb-4">
               FamilyPlate was born from a simple observation: every family struggles with the same question every day—
-              &ldquo;What&apos;s for dinner?&rdquo; We believe meal planning shouldn&apos;t be a source of stress, but an opportunity to bring 
+              "What's for dinner?" We believe meal planning shouldn't be a source of stress, but an opportunity to bring 
               families together.
             </p>
             <p className="text-muted text-lg leading-relaxed">
@@ -44,7 +44,7 @@ export default function AboutPage() {
             </p>
             <p className="text-muted text-lg leading-relaxed">
               We combined AI technology with family collaboration to create something unique: a meal planner that learns from 
-              everyone&apos;s preferences and gets better every week.
+              everyone's preferences and gets better every week.
             </p>
           </section>
 
@@ -65,7 +65,7 @@ export default function AboutPage() {
               </div>
               <div className="bg-surface rounded-xl p-6 border border-border">
                 <h3 className="text-xl font-bold text-foreground mb-2">🔒 Privacy</h3>
-                <p className="text-muted">Your family&apos;s data is yours. We protect it like it&apos;s our own.</p>
+                <p className="text-muted">Your family's data is yours. We protect it like it's our own.</p>
               </div>
             </div>
           </section>
@@ -73,7 +73,7 @@ export default function AboutPage() {
           <section className="text-center bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-12">
             <h2 className="text-3xl font-bold text-white mb-4">Join Our BETA</h2>
             <p className="text-purple-100 text-lg mb-6 max-w-2xl mx-auto">
-              We&apos;re still in BETA and actively shaping the product based on feedback from families like yours. 
+              We're still in BETA and actively shaping the product based on feedback from families like yours. 
               Join us and help build the future of family meal planning.
             </p>
             <Link 

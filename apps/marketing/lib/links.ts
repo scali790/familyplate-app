@@ -15,9 +15,9 @@ export function getAuthUrl(returnPath?: string): string {
   const authUrl = new URL('/auth', APP_BASE_URL);
   
   if (returnPath) {
-    // Encode the full return URL (base + path)
-    const returnUrl = new URL(returnPath, APP_BASE_URL).toString();
-    authUrl.searchParams.set('next', returnUrl);
+    // Use relative path for 'next' parameter (not absolute URL)
+    // This ensures the redirect stays on staging.familyplate.ai
+    authUrl.searchParams.set('next', returnPath);
   }
   
   return authUrl.toString();
