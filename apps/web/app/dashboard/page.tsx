@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { RecipeModal } from '@/components/recipe-modal';
 import VotingResultsModal from '@/components/voting-results-modal';
 import { ShoppingListModal } from '@/components/shopping-list-modal';
+import { DayFocusPanel } from '@/components/day-focus-panel';
 import { trpc } from '@/lib/trpc';
 import type { Meal } from '@/server/db/schema';
 
@@ -66,6 +67,8 @@ export default function DashboardPage() {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0); // 0 = Monday
   const [votingSession, setVotingSession] = useState<{ sessionId: string; shareUrl: string } | null>(null);
   const [showVotingModal, setShowVotingModal] = useState(false);
+  const [isDayFocusOpen, setIsDayFocusOpen] = useState(false);
+  const [focusedDayIndex, setFocusedDayIndex] = useState<number | null>(null);
 
   // Fetch current meal plan and preferences
   const { data: mealPlan, isLoading, refetch } = trpc.mealPlanning.getCurrentPlan.useQuery();
@@ -281,19 +284,27 @@ export default function DashboardPage() {
                     {dayShortNames.map((day, index) => {
                       const isToday = getTodayIndex(mealPlan.weekStartDate) === index;
                       return (
-                        <div key={day} className={`text-center rounded-lg p-2 transition-colors ${
-                          isToday ? 'bg-gradient-to-br from-orange-100 to-amber-100 border-2 border-orange-400' : ''
-                        }`}>
-                          <div className={`font-semibold ${
+                        <button
+                          key={day}
+                          onClick={() => {
+                            setFocusedDayIndex(index);
+                            setIsDayFocusOpen(true);
+                          }}
+                          className={`text-center rounded-lg p-2 transition-all hover:scale-105 hover:shadow-md cursor-pointer group ${
+                            isToday ? 'bg-gradient-to-br from-orange-100 to-amber-100 border-2 border-orange-400' : 'hover:bg-surface'
+                          }`}
+                        >
+                          <div className={`font-semibold flex items-center justify-center gap-1 ${
                             isToday ? 'text-orange-600' : 'text-foreground'
                           }`}>
                             {day}
-                            {isToday && <div className="text-[10px] font-bold text-orange-600">TODAY</div>}
+                            <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">›</span>
+                            {isToday && <div className="text-[10px] font-bold text-orange-600 w-full">TODAY</div>}
                           </div>
                           <div className={`text-xs ${
                             isToday ? 'text-orange-500 font-medium' : 'text-muted'
                           }`}>{getDayDate(mealPlan.weekStartDate, index).split(' ')[1]}</div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -541,6 +552,37 @@ export default function DashboardPage() {
         <ShoppingListModal
           meals={mealPlan.meals}
           onClose={() => setShowShoppingList(false)}
+        />
+      )}
+      {/* Day Focus Panel */}
+      {isDayFocusOpen && focusedDayIndex !== null && mealPlan && (
+        <DayFocusPanel
+          open={isDayFocusOpen}
+          dayIndex={focusedDayIndex}
+          dayName={dayNames[focusedDayIndex]}
+          meals={mealPlan.meals.filter((m) => {
+            // Filter meals for the selected day
+            const mealDayIndex = dayNames.findIndex(d => d.toLowerCase() === m.day.toLowerCase());
+            return mealDayIndex === focusedDayIndex;
+          })}
+          onClose={() => {
+            setIsDayFocusOpen(false);
+            setFocusedDayIndex(null);
+          }}
+          onOpenRecipe={(meal) => {
+            const mealDayIndex = dayNames.findIndex(d => d.toLowerCase() === meal.day.toLowerCase());
+            setSelectedMeal({
+              meal,
+              index: mealDayIndex,
+              day: meal.day,
+              mealType: meal.mealType,
+            });
+            setIsDayFocusOpen(false);
+          }}
+          onRegenerateMeal={(meal) => {
+            // TODO: Implement meal regeneration
+            alert(`Regenerate meal: ${meal.name}`);
+          }}
         />
       )}
     </div>
