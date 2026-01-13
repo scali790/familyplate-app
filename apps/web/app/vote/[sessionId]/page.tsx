@@ -326,10 +326,33 @@ export default function VotePage() {
       {/* Meal Card */}
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div
-          className={`bg-white rounded-3xl shadow-2xl p-8 transition-all duration-300 ${
+          className={`bg-white rounded-3xl shadow-2xl p-8 transition-all duration-300 border-4 ${
             swipeDirection === "left" ? "-translate-x-full opacity-0" : ""
-          } ${swipeDirection === "right" ? "translate-x-full opacity-0" : ""}`}
+          } ${swipeDirection === "right" ? "translate-x-full opacity-0" : ""} ${
+            currentMeal.mealType === "breakfast" ? "border-orange-400" :
+            currentMeal.mealType === "lunch" ? "border-blue-400" :
+            currentMeal.mealType === "dinner" ? "border-purple-400" :
+            "border-gray-300"
+          }`}
         >
+          {/* Meal Type Badge - Prominent */}
+          <div className="flex justify-center mb-4">
+            <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-lg shadow-lg ${
+              currentMeal.mealType === "breakfast" ? "bg-gradient-to-r from-orange-400 to-yellow-400 text-white" :
+              currentMeal.mealType === "lunch" ? "bg-gradient-to-r from-blue-400 to-cyan-400 text-white" :
+              currentMeal.mealType === "dinner" ? "bg-gradient-to-r from-purple-500 to-indigo-500 text-white" :
+              "bg-gray-200 text-gray-700"
+            }`}>
+              <span className="text-2xl">
+                {currentMeal.mealType === "breakfast" ? "🌅" : currentMeal.mealType === "lunch" ? "☀️" : currentMeal.mealType === "dinner" ? "🌙" : "🍽️"}
+              </span>
+              <span className="uppercase tracking-wide">{currentMeal.mealType || "Meal"}</span>
+              {currentMeal.dayFormatted && (
+                <span className="text-sm opacity-90">• {currentMeal.dayFormatted}</span>
+              )}
+            </div>
+          </div>
+
           <div className="text-center mb-6">
             <div className="text-8xl mb-4">{currentMeal.emoji}</div>
             <h2 className="text-3xl font-bold text-gray-800 mb-2">{currentMeal.name}</h2>
