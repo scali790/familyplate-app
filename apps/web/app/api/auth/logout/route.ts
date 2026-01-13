@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
     // Clear session cookie
     cookieStore.delete('fp_session');
 
-    // Redirect to landing page
-    return NextResponse.redirect(new URL('/', request.url));
+    // Redirect to logged-out success page
+    return NextResponse.redirect(new URL('/auth/logged-out', request.url));
   } catch (error) {
     console.error('[auth/logout] Error:', error);
     return NextResponse.json({ error: 'Logout failed' }, { status: 500 });
