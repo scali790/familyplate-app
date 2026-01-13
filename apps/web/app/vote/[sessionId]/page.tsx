@@ -211,22 +211,64 @@ export default function VotePage() {
   if (currentMealIndex >= meals.length) {
     const votedCount = Object.keys(votes).length;
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
-          <div className="text-7xl mb-6 animate-bounce">🎉</div>
-          <h1 className="text-3xl font-bold mb-3 text-gray-800">All Done!</h1>
-          <p className="text-xl text-gray-600 mb-2">Thanks for voting, {voterName}!</p>
-          <p className="text-gray-500">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Animated Background Emojis */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="text-6xl absolute top-10 left-10 animate-bounce" style={{ animationDelay: "0s" }}>🎉</div>
+          <div className="text-6xl absolute top-20 right-20 animate-bounce" style={{ animationDelay: "0.2s" }}>🎊</div>
+          <div className="text-6xl absolute bottom-20 left-20 animate-bounce" style={{ animationDelay: "0.4s" }}>✨</div>
+          <div className="text-6xl absolute bottom-10 right-10 animate-bounce" style={{ animationDelay: "0.6s" }}>🌟</div>
+          <div className="text-5xl absolute top-1/3 left-1/4 animate-pulse" style={{ animationDelay: "0.3s" }}>💚</div>
+          <div className="text-5xl absolute top-2/3 right-1/4 animate-pulse" style={{ animationDelay: "0.5s" }}>🎈</div>
+        </div>
+
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center relative z-10 animate-[scale-in_0.5s_ease-out]">
+          <div className="text-8xl mb-6 animate-[bounce_1s_ease-in-out_3]" style={{ animationDelay: "0.2s" }}>🎉</div>
+          <h1 className="text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 animate-[fade-in_0.6s_ease-out]">
+            All Done!
+          </h1>
+          <p className="text-2xl text-gray-700 mb-2 font-semibold animate-[fade-in_0.8s_ease-out]">
+            Thanks for voting, {voterName}! 🙌
+          </p>
+          <p className="text-lg text-gray-600 mb-6 animate-[fade-in_1s_ease-out]">
             You voted on {votedCount} meal{votedCount !== 1 ? "s" : ""}.
           </p>
           
-          <button
-            onClick={() => setCurrentMealIndex(0)}
-            className="mt-6 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg"
-          >
-            Review & Change Votes
-          </button>
+          <div className="space-y-3 animate-[fade-in_1.2s_ease-out]">
+            <button
+              onClick={() => setCurrentMealIndex(0)}
+              className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+            >
+              Review & Change Votes
+            </button>
+            <p className="text-sm text-gray-500">
+              The meal planner will see your votes! 👨‍🍳
+            </p>
+          </div>
         </div>
+
+        <style jsx>{`
+          @keyframes scale-in {
+            from {
+              transform: scale(0.8);
+              opacity: 0;
+            }
+            to {
+              transform: scale(1);
+              opacity: 1;
+            }
+          }
+          @keyframes fade-in {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}</style>
       </div>
     );
   }
