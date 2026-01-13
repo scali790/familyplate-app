@@ -1055,11 +1055,14 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         // Create meal lookup map (recipeId -> name)
         const mealNames: Record<string, string> = {};
+        console.log('[getResults] Parsed meals count:', meals.length);
         meals.forEach((meal: any) => {
+          console.log('[getResults] Meal:', { recipeId: meal.recipeId, name: meal.name });
           if (meal.recipeId && meal.name) {
             mealNames[meal.recipeId] = meal.name;
           }
         });
+        console.log('[getResults] mealNames lookup:', mealNames);
 
         // Get all votes
         const votesResult = await db.execute(
@@ -1078,6 +1081,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         votes.forEach((vote) => {
           // Meal aggregates
           if (!mealAggregates[vote.meal_id]) {
+            console.log('[getResults] Creating aggregate for meal_id:', vote.meal_id, 'name:', mealNames[vote.meal_id]);
             mealAggregates[vote.meal_id] = { 
               up: 0, 
               neutral: 0, 
