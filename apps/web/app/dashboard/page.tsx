@@ -256,7 +256,7 @@ export default function DashboardPage() {
                   🪄 {generateMutation.isPending ? 'Generating...' : 'Generate New Plan'}
                 </Button>
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   className="flex-1"
                   onClick={() => setShowShoppingList(true)}
                 >
