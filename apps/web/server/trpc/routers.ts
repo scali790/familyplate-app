@@ -909,15 +909,41 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
           };
         }
 
+        // Load meal plan to get meals
+        const mealPlanResult = await db.execute(
+          sql`SELECT meals FROM meal_plans WHERE id = ${input.mealPlanId} AND user_id = ${ctx.user.id}`
+        );
+        
+        if (mealPlanResult.length === 0) {
+          throw new Error("Meal plan not found");
+        }
+        
+        const mealPlan = mealPlanResult[0] as any;
+        let meals: any[] = [];
+        
+        // Parse meals from meal plan
+        if (mealPlan.meals) {
+          try {
+            meals = typeof mealPlan.meals === "string" ? JSON.parse(mealPlan.meals) : mealPlan.meals;
+            if (typeof meals === "string") meals = JSON.parse(meals);
+            if (!Array.isArray(meals)) meals = [];
+          } catch (err) {
+            console.error('[voteSessions.create] Failed to parse meals:', err);
+            meals = [];
+          }
+        }
+        
+        console.log('[voteSessions.create] Loaded meals count:', meals.length);
+
         // Generate UUID for new session
         const sessionId = randomBytes(16).toString("hex");
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + input.expiresInDays);
 
-        // Create session
+        // Create session with meals snapshot
         await db.execute(
-          sql`INSERT INTO vote_sessions (id, user_id, meal_plan_id, status, max_voters, expires_at) 
-              VALUES (${sessionId}, ${ctx.user.id}, ${input.mealPlanId}, ${'open'}, ${input.maxVoters}, ${expiresAt.toISOString()})`
+          sql`INSERT INTO vote_sessions (id, user_id, meal_plan_id, meals, status, max_voters, expires_at) 
+              VALUES (${sessionId}, ${ctx.user.id}, ${input.mealPlanId}, ${JSON.stringify(meals)}, ${'open'}, ${input.maxVoters}, ${expiresAt.toISOString()})`
         );
 
         const shareUrl = `${ctx.baseUrl}/vote/${sessionId}`;
