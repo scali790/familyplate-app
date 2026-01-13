@@ -360,11 +360,11 @@ export default function DashboardPage() {
                                 )}
                                 
                                 {/* Voting Results */}
-                                {(meal.upVotes || meal.neutralVotes || meal.downVotes) ? (
+                                {((meal.upVotes ?? 0) > 0 || (meal.neutralVotes ?? 0) > 0 || (meal.downVotes ?? 0) > 0) ? (
                                   <div className="flex gap-1 justify-center text-[10px] mt-1">
-                                    {meal.upVotes > 0 && <span>👍{meal.upVotes}</span>}
-                                    {meal.neutralVotes > 0 && <span>😐{meal.neutralVotes}</span>}
-                                    {meal.downVotes > 0 && <span>👎{meal.downVotes}</span>}
+                                    {(meal.upVotes ?? 0) > 0 && <span>👍{meal.upVotes}</span>}
+                                    {(meal.neutralVotes ?? 0) > 0 && <span>😐{meal.neutralVotes}</span>}
+                                    {(meal.downVotes ?? 0) > 0 && <span>👎{meal.downVotes}</span>}
                                   </div>
                                 ) : null}
                               </CardContent>
