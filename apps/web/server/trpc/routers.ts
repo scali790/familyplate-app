@@ -895,7 +895,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         // Create session
         await db.execute(
           sql`INSERT INTO vote_sessions (id, user_id, meal_plan_id, status, max_voters, expires_at) 
-              VALUES (${sessionId}, ${ctx.user.id}, ${input.mealPlanId}, ${'open'}, ${input.maxVoters}, ${expiresAt})`
+              VALUES (${sessionId}, ${ctx.user.id}, ${input.mealPlanId}, ${'open'}, ${input.maxVoters}, ${expiresAt.toISOString()})`
         );
 
         const shareUrl = `${ctx.baseUrl}/vote/${sessionId}`;
@@ -1075,7 +1075,7 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
 
         await db.execute(
           sql`INSERT INTO vote_sessions (id, user_id, meal_plan_id, status, max_voters, expires_at) 
-           VALUES (${sessionId}, ${ctx.user.id}, ${input.mealPlanId}, 'open', 10, ${expiresAt})`
+           VALUES (${sessionId}, ${ctx.user.id}, ${input.mealPlanId}, 'open', 10, ${expiresAt.toISOString()})`
         );
 
         const shareUrl = `${ctx.baseUrl}/vote/${sessionId}`;
