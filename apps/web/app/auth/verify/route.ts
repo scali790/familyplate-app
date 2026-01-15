@@ -107,21 +107,43 @@ export async function GET(request: NextRequest) {
     
     console.log('[auth/verify] Final redirect URL:', safeRedirectUrl);
     
-    // Create NextResponse with redirect
-    let response: NextResponse;
+    // Use HTML script redirect to ensure cookie is set before redirect
+    // This avoids the browser limitation where cookies set in redirect responses
+    // are not available in the redirect follow-up request
     
     // Handle deep links
     if (safeRedirectUrl.startsWith("familyplate://")) {
-      response = NextResponse.redirect(safeRedirectUrl);
-    } else {
-      // Handle web redirects (relative paths)
-      response = NextResponse.redirect(new URL(safeRedirectUrl, request.url));
+      const response = NextResponse.redirect(safeRedirectUrl);
+      response.cookies.set("fp_session", sessionId, cookieOptions);
+      return response;
     }
     
-    // Set cookie on response (required for Next.js 15)
-    response.cookies.set("fp_session", sessionId, cookieOptions);
+    // For web redirects, use HTML script redirect to ensure cookie availability
+    const cookieString = `fp_session=${sessionId}; HttpOnly; Secure; SameSite=none; Path=/; Max-Age=${cookieOptions.maxAge}`;
     
-    return response;
+    return new Response(
+      `<!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Redirecting...</title>
+        </head>
+        <body>
+          <script>window.location.href = '${safeRedirectUrl}';</script>
+          <noscript>
+            <meta http-equiv="refresh" content="0;url=${safeRedirectUrl}">
+            <p>Redirecting to <a href="${safeRedirectUrl}">${safeRedirectUrl}</a></p>
+          </noscript>
+        </body>
+      </html>`,
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Set-Cookie": cookieString,
+        },
+      }
+    );
   } catch (error) {
     console.error("[auth/verify] Error:", error);
     return NextResponse.redirect(
