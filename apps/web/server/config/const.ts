@@ -1,6 +1,6 @@
 // Shared constants
 
-export const COOKIE_NAME = "manus_session";
+export const COOKIE_NAME = "fp_session
 
 export const SESSION_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000; // 1 year
 
