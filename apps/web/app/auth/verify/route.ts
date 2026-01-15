@@ -81,11 +81,8 @@ export async function GET(request: NextRequest) {
     // Create DB-backed session
     const sessionId = await createSession(user.id);
 
-    // Set session cookie
-    const cookieStore = await cookies();
+    // Set session cookie on NextResponse (required for Next.js 15 with redirects)
     const cookieOptions = getSessionCookieOptions();
-    
-    cookieStore.set("fp_session", sessionId, cookieOptions);
 
     // Check if user has preferences
     const prefsResult = await db
@@ -110,13 +107,21 @@ export async function GET(request: NextRequest) {
     
     console.log('[auth/verify] Final redirect URL:', safeRedirectUrl);
     
+    // Create NextResponse with redirect
+    let response: NextResponse;
+    
     // Handle deep links
     if (safeRedirectUrl.startsWith("familyplate://")) {
-      return NextResponse.redirect(safeRedirectUrl);
+      response = NextResponse.redirect(safeRedirectUrl);
+    } else {
+      // Handle web redirects (relative paths)
+      response = NextResponse.redirect(new URL(safeRedirectUrl, request.url));
     }
     
-    // Handle web redirects (relative paths)
-    return NextResponse.redirect(new URL(safeRedirectUrl, request.url));
+    // Set cookie on response (required for Next.js 15)
+    response.cookies.set("fp_session", sessionId, cookieOptions);
+    
+    return response;
   } catch (error) {
     console.error("[auth/verify] Error:", error);
     return NextResponse.redirect(
