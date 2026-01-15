@@ -15,7 +15,7 @@ export interface CookieOptions {
 export function getSessionCookieOptions(): CookieOptions {
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true, // Required for SameSite=none
     sameSite: "none",
     path: "/",
     maxAge: COOKIE_MAX_AGE,
