@@ -112,32 +112,8 @@ export async function GET(request: NextRequest) {
     // This avoids the browser limitation where cookies set in redirect responses
     // are not available in the redirect follow-up request
     
-    // Handle deep links
-    if (safeRedirectUrl.startsWith("familyplate://")) {
-      const response = NextResponse.redirect(safeRedirectUrl);
-      response.cookies.set("fp_session", sessionId, cookieOptions);
-      return response;
-    }
-    
-    // For web redirects, use HTML script redirect to ensure cookie availability
-    const html = `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Redirecting...</title>
-  </head>
-  <body>
-    <script>window.location.href = '${safeRedirectUrl}';</script>
-    <noscript>
-      <meta http-equiv="refresh" content="0;url=${safeRedirectUrl}">
-      <p>Redirecting to <a href="${safeRedirectUrl}">${safeRedirectUrl}</a></p>
-    </noscript>
-  </body>
-</html>`;
-
-    // Response erzeugen mit manuellem Set-Cookie Header
-    // Grund: response.cookies.set() funktioniert nicht mit HTML Body in Next.js
-    // Siehe: https://github.com/vercel/next.js/discussions/48434
+    // Use server-side redirect with manual Set-Cookie header
+    // This ensures cookie is set BEFORE redirect happens (fixes race condition)
     const cookieString = [
       `fp_session=${sessionId}`,
       `HttpOnly`,
@@ -147,13 +123,17 @@ export async function GET(request: NextRequest) {
       `Max-Age=${cookieOptions.maxAge}`,
     ].join("; ");
 
-    const response = new NextResponse(html, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Set-Cookie": cookieString,
-      },
-    });
+    // Handle deep links
+    if (safeRedirectUrl.startsWith("familyplate://")) {
+      const response = NextResponse.redirect(safeRedirectUrl);
+      response.headers.set("Set-Cookie", cookieString);
+      return response;
+    }
+    
+    // For web redirects, use NextResponse.redirect() with manual Set-Cookie
+    // This ensures browser processes cookie BEFORE following redirect
+    const response = NextResponse.redirect(new URL(safeRedirectUrl, request.url));
+    response.headers.set("Set-Cookie", cookieString);
     return response;
    
   } catch (error) {
