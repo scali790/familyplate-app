@@ -129,7 +129,7 @@ export function getSessionCookieOptions(
   const hostname = req.hostname;
   const domain = getParentDomain(hostname);
   const secure = isSecureRequest(req);
-    const sameSite = secure ? "none" : "laxt
+    const sameSite = secure ? "none" : "lax";
 
   console.log("[Cookie] Setting cookie with options:", {
     hostname,
