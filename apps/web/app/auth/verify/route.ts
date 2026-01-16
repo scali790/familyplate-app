@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getDb } from "@/server/db/client";
@@ -119,11 +120,10 @@ export async function GET(request: NextRequest) {
     }
     
     // For web redirects, use HTML script redirect to ensure cookie availability
-    const cookieString = `fp_session=${sessionId}; HttpOnly; Secure; SameSite=none; Path=/; Max-Age=${cookieOptions.maxAge}`;
+//    const cookieString = `fp_session=${sessionId}; HttpOnly; Secure; SameSite=none; Path=/; Max-Age=${cookieOptions.maxAge}`;
     
-    return new Response(
-      `<!DOCTYPE html>
-      <html>
+ const response = new NextResponse   (
+      `<!DOCTYPE html>//    <html>
         <head>
           <meta charset="utf-8">
           <title>Redirecting...</title>
@@ -140,10 +140,15 @@ export async function GET(request: NextRequest) {
         status: 200,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
-          "Set-Cookie": cookieString,
+
+     
         },
       }
-    );
+  
+ );
+    response.cookies.set("fp_session", sessionId, cookieOptions);
+        return response;
+   
   } catch (error) {
     console.error("[auth/verify] Error:", error);
     return NextResponse.redirect(
