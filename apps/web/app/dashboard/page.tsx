@@ -196,7 +196,7 @@ export default function DashboardPage() {
                   Edit Preferences
                 </Button>
               </Link>
-              <Link href="/api/auth/logout">
+              <Link href="/api/auth/logout" prefetch={false}>
                 <Button variant="ghost" size="sm">
                   Logout
                 </Button>
