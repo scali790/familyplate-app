@@ -7,8 +7,12 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+    openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+
   // Mailjet email service configuration
   mailjetApiKey: process.env.MAILJET_API_KEY ?? "",
+    
+
   mailjetSecretKey: process.env.MAILJET_SECRET_KEY ?? "",
   mailjetFromEmail: process.env.MAILJET_FROM_EMAIL ?? "noreply@familyplate.ai",
   mailjetFromName: process.env.MAILJET_FROM_NAME ?? "FamilyPlate",

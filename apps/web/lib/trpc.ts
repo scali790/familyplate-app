@@ -11,6 +11,13 @@ export function getTRPCClient() {
       httpBatchLink({
         url: '/api/trpc',
         transformer: superjson,
+                fetch(url, options) {
+          return fetch(url, {
+            ...options,
+            credentials: 'include',
+          });
+        },
+
         headers() {
           return {
             'Content-Type': 'application/json',

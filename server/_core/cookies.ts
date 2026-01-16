@@ -28,6 +28,71 @@ function getParentDomain(hostname: string): string | undefined {
   // Don't set domain for localhost or IP addresses
   if (LOCAL_HOSTS.has(hostname) || isIpAddress(hostname)) {
     return undefined;
+    
+32  // Don't set domain for vercel.app domains
+  if (hostname.endsWith("vercel.app")) {
+    return undefined;
+  }
+
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+
+  }
   }
 
   // Split hostname into parts
@@ -64,12 +129,13 @@ export function getSessionCookieOptions(
   const hostname = req.hostname;
   const domain = getParentDomain(hostname);
   const secure = isSecureRequest(req);
+    const sameSite = secure ? "none" : "laxt
 
   console.log("[Cookie] Setting cookie with options:", {
     hostname,
     domain,
     secure,
-    sameSite: "none",
+      sameSite,
     httpOnly: true,
     path: "/",
   });
@@ -78,7 +144,7 @@ export function getSessionCookieOptions(
     domain,
     httpOnly: true,
     path: "/",
-    sameSite: "none",
+      sameSite: sameSite,
     secure,
   };
 }
