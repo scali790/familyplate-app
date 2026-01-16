@@ -4,7 +4,7 @@
  */
 
 // Base URL for the web app (staging or production)
-const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://staging.familyplate.ai';
+const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.familyplate.ai';
 
 /**
  * Get the auth URL with optional return path
