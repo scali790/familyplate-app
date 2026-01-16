@@ -126,14 +126,14 @@ export async function GET(request: NextRequest) {
     // Handle deep links
     if (safeRedirectUrl.startsWith("familyplate://")) {
       const response = NextResponse.redirect(safeRedirectUrl);
-      response.headers.set("Set-Cookie", cookieString);
+      response.headers.append("Set-Cookie", cookieString);
       return response;
     }
     
     // For web redirects, use NextResponse.redirect() with manual Set-Cookie
     // This ensures browser processes cookie BEFORE following redirect
     const response = NextResponse.redirect(new URL(safeRedirectUrl, request.url));
-    response.headers.set("Set-Cookie", cookieString);
+    response.headers.append("Set-Cookie", cookieString);
     return response;
    
   } catch (error) {
