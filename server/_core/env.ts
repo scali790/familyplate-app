@@ -11,7 +11,7 @@ export const ENV = {
 
   // Mailjet email service configuration
   mailjetApiKey: process.env.MAILJET_API_KEY ?? "",
-    o
+    
 
   mailjetSecretKey: process.env.MAILJET_SECRET_KEY ?? "",
   mailjetFromEmail: process.env.MAILJET_FROM_EMAIL ?? "noreply@familyplate.ai",
