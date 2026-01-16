@@ -35,7 +35,7 @@ export default function LoggedOutPage() {
             </Button>
           </Link>
           
-          <Link href="/" className="block">
+          <Link href="https://www.familyplate.ai" className="block">
             <Button variant="outline" className="w-full" size="lg">
               Go to home page
             </Button>
