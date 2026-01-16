@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
       `fp_session=${sessionId}`,
       `HttpOnly`,
       `Secure`,
-      `SameSite=None`,
+      `SameSite=Lax`,
       `Path=/`,
       `Max-Age=${cookieOptions.maxAge}`,
     ].join("; ");
