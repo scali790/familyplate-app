@@ -24,7 +24,7 @@ export default function HomePage() {
             <a href="#pricing" className="text-foreground hover:text-primary transition-colors">Pricing</a>
           </nav>
           <Link 
-            href="https://staging.familyplate.ai/auth" 
+            href={LINKS.getStarted}
             className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-medium text-sm"
           >
             Get Started
