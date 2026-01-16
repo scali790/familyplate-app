@@ -135,12 +135,25 @@ export async function GET(request: NextRequest) {
   </body>
 </html>`;
 
-    // Response erzeugen und Cookie setzen
+    // Response erzeugen mit manuellem Set-Cookie Header
+    // Grund: response.cookies.set() funktioniert nicht mit HTML Body in Next.js
+    // Siehe: https://github.com/vercel/next.js/discussions/48434
+    const cookieString = [
+      `fp_session=${sessionId}`,
+      `HttpOnly`,
+      `Secure`,
+      `SameSite=None`,
+      `Path=/`,
+      `Max-Age=${cookieOptions.maxAge}`,
+    ].join("; ");
+
     const response = new NextResponse(html, {
       status: 200,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Set-Cookie": cookieString,
+      },
     });
-    response.cookies.set("fp_session", sessionId, cookieOptions);
     return response;
    
   } catch (error) {
