@@ -326,18 +326,26 @@ export function DayFocusPanel({
 
                 return (
                   <div key={mealType} className="space-y-3">
-                    {/* Meal Type Header */}
-                    <div className="flex items-center gap-2">
+                    {/* Meal Type Badge - Gradient style like Voting Page */}
+                    <div className="flex justify-center mb-3">
                       {(() => {
                         const config = getMealTypeConfig(mealType);
+                        
+                        // Get gradient class based on meal type
+                        const getGradientClass = () => {
+                          if (mealType === 'breakfast') return 'bg-gradient-to-r from-orange-400 to-yellow-400';
+                          if (mealType === 'lunch') return 'bg-gradient-to-r from-blue-400 to-cyan-400';
+                          if (mealType === 'dinner') return 'bg-gradient-to-r from-purple-500 to-indigo-500';
+                          return 'bg-gray-200';
+                        };
+                        
                         return (
-                          <span className={`text-lg font-semibold flex items-center gap-2 ${config?.textColor || 'text-foreground'}`}>
-                            <span className="text-xl">{config?.emoji}</span>
-                            {config?.label || mealType}
-                          </span>
+                          <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-2xl font-bold text-base shadow-lg text-white ${getGradientClass()}`}>
+                            <span className="text-2xl">{config?.emoji}</span>
+                            <span className="uppercase tracking-wide">{config?.label || mealType}</span>
+                          </div>
                         );
                       })()}
-                      <div className="flex-1 h-px bg-border" />
                     </div>
 
                     {/* Meal Card - Strong Primary emphasis + Secondary de-emphasis */}
