@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CookModeModal } from './cook-mode/cook-mode-modal';
 import { generateCookingSteps } from '@/lib/generate-cooking-steps';
 import type { CookModeState } from '@/types/cook-mode';
+import { trpc } from '@/lib/trpc';
 
 type DayFocusPanelProps = {
   open: boolean;
@@ -54,6 +55,11 @@ export function DayFocusPanel({
   const [showHint, setShowHint] = useState(false);
   const [cookModeState, setCookModeState] = useState<CookModeState | null>(null);
   const [isCookModeOpen, setIsCookModeOpen] = useState(false);
+  const [loadingRecipeId, setLoadingRecipeId] = useState<string | null>(null);
+  const [recipeDetailsError, setRecipeDetailsError] = useState<string | null>(null);
+
+  // tRPC mutation for loading recipe details
+  const getRecipeDetailsMutation = trpc.mealPlanning.getRecipeDetails.useMutation();
 
   // Format date for display
   const dayDate = new Date(weekStartDate);
@@ -384,28 +390,75 @@ export function DayFocusPanel({
                             <Button
                               variant="default"
                               size={isPrimary ? 'lg' : 'default'}
-                              onClick={() => {
-                                // Generate cooking steps and open Cook Mode
-                                const { steps, ingredients } = generateCookingSteps(meal);
-                                const initialState: CookModeState = {
-                                  mealId: meal.recipeId || meal.name,
-                                  mealName: meal.name,
-                                  emoji: meal.emoji || '🍽️',
-                                  steps,
-                                  ingredients,
-                                  currentStep: 0,
-                                  currentView: 'intro',
-                                  ingredientsChecked: new Set(),
-                                  timerState: null,
-                                  startedAt: Date.now(),
-                                  lastUpdatedAt: Date.now(),
-                                };
-                                setCookModeState(initialState);
-                                setIsCookModeOpen(true);
+                              disabled={loadingRecipeId === meal.recipeId}
+                              onClick={async () => {
+                                // Pre-load recipe details if needed
+                                setLoadingRecipeId(meal.recipeId || null);
+                                setRecipeDetailsError(null);
+
+                                try {
+                                  let mealWithDetails = meal;
+
+                                  // Check if details are already loaded
+                                  const hasDetails = meal.ingredients && meal.ingredients.length > 0 && 
+                                                    meal.instructions && meal.instructions.length > 0;
+
+                                  if (!hasDetails && meal.recipeId) {
+                                    // Load details from API
+                                    const details = await getRecipeDetailsMutation.mutateAsync({ 
+                                      recipeId: meal.recipeId 
+                                    });
+                                    
+                                    // Merge details into meal
+                                    mealWithDetails = {
+                                      ...meal,
+                                      ingredients: details.ingredients,
+                                      instructions: details.instructions,
+                                    };
+                                  }
+
+                                  // Generate cooking steps with loaded details
+                                  const { steps, ingredients } = generateCookingSteps(mealWithDetails);
+                                  
+                                  const initialState: CookModeState = {
+                                    mealId: mealWithDetails.recipeId || mealWithDetails.name,
+                                    mealName: mealWithDetails.name,
+                                    emoji: mealWithDetails.emoji || '🍽️',
+                                    steps,
+                                    ingredients,
+                                    currentStep: 0,
+                                    currentView: 'intro',
+                                    ingredientsChecked: new Set(),
+                                    timerState: null,
+                                    startedAt: Date.now(),
+                                    lastUpdatedAt: Date.now(),
+                                  };
+                                  
+                                  setCookModeState(initialState);
+                                  setIsCookModeOpen(true);
+                                } catch (error) {
+                                  console.error('[DayFocusPanel] Failed to load recipe details:', error);
+                                  setRecipeDetailsError('Failed to load recipe details. Please try again.');
+                                } finally {
+                                  setLoadingRecipeId(null);
+                                }
                               }}
                               className={`w-full mb-3 ${isPrimary ? 'shadow-lg' : ''}`}
                             >
-                              🍳 Start cooking
+                              {loadingRecipeId === meal.recipeId ? (
+                                <>
+                                  <span className="inline-block animate-spin mr-2">⏳</span>
+                                  Loading recipe...
+                                </>
+                              ) : recipeDetailsError && loadingRecipeId === null ? (
+                                <>
+                                  ⚠️ Retry
+                                </>
+                              ) : (
+                                <>
+                                  🍳 Start cooking
+                                </>
+                              )}
                             </Button>
 
                             {/* Secondary Actions */}
