@@ -191,9 +191,15 @@ export default function DashboardPage() {
                     mealDate.getMonth() === today.getMonth() && 
                     mealDate.getFullYear() === today.getFullYear();
     
+    // Get actual weekday name from date
+    const dayName = mealDate.toLocaleDateString('en-US', { weekday: 'long' });
+    const dayShortName = mealDate.toLocaleDateString('en-US', { weekday: 'short' });
+    
     return {
       date: mealDate.getDate(),
       month: mealDate.toLocaleDateString('en-US', { month: 'short' }),
+      dayName,
+      dayShortName,
       isToday
     };
   };
@@ -359,10 +365,14 @@ export default function DashboardPage() {
                           <div className="mb-3 pb-3 border-b border-border">
                             <div className="flex items-center justify-between">
                               <div>
-                                <div className="font-bold text-lg text-foreground">
-                                  {dayShortNames[dayIndex]}
+                                <div className={`font-bold text-lg ${
+                                  dayInfo.isToday ? 'text-orange-700' : 'text-foreground'
+                                }`}>
+                                  {dayInfo.dayShortName}
                                 </div>
-                                <div className="text-xs text-muted">
+                                <div className={`text-xs ${
+                                  dayInfo.isToday ? 'text-orange-600' : 'text-muted'
+                                }`}>
                                   {dayInfo.date}
                                 </div>
                               </div>
@@ -407,25 +417,35 @@ export default function DashboardPage() {
                                     }
                                   }}
                                 >
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-lg">{config.emoji}</span>
-                                    <div className="flex-1 min-w-0">
-                                      <div className={`text-xs font-semibold ${config.textColor}`}>
-                                        {config.label}
+                                  <div className="space-y-1.5">
+                                    {/* Gradient Badge like Day View */}
+                                    <div className="flex justify-center">
+                                      <div className={`
+                                        inline-flex items-center gap-1.5 px-3 py-1
+                                        bg-gradient-to-r ${config.badgeGradient}
+                                        text-white text-[10px] font-bold uppercase tracking-wide
+                                        rounded-3xl shadow-md
+                                      `}>
+                                        <span className="text-sm">{config.emoji}</span>
+                                        <span>{config.label}</span>
                                       </div>
+                                    </div>
+                                    
+                                    {/* Meal Content */}
+                                    <div className="flex-1 min-w-0">
                                       {meal ? (
                                         <>
-                                          <div className="text-xs text-foreground truncate">
+                                          <div className="text-xs text-foreground truncate text-center">
                                             {meal.name}
                                           </div>
                                           {meal.prepTime && (
-                                            <div className="text-[10px] text-muted">
+                                            <div className="text-[10px] text-muted text-center">
                                               {meal.prepTime}
                                             </div>
                                           )}
                                         </>
                                       ) : (
-                                        <div className="text-xs text-muted">
+                                        <div className="text-xs text-muted text-center">
                                           No meal
                                         </div>
                                       )}
