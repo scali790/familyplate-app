@@ -9,6 +9,7 @@ import VotingResultsModal from '@/components/voting-results-modal';
 import { ShoppingListModal } from '@/components/shopping-list-modal';
 import { DayFocusPanel } from '@/components/day-focus-panel';
 import { WeeklyStatusHeader } from '@/components/weekly-status-header';
+import { getMealTypeConfig } from '@/lib/meal-type-config';
 import { trpc } from '@/lib/trpc';
 import type { Meal } from '@/server/db/schema';
 
@@ -85,27 +86,21 @@ const mealTypeIcons: Record<string, string> = {
   dinner: '🌙',
 };
 
-// Group meals by mealType and day
-const groupMealsByType = (meals: Meal[]) => {
-  const grouped: Record<string, Meal[]> = {
-    breakfast: [],
-    lunch: [],
-    dinner: [],
-  };
-
-  meals.forEach(meal => {
-    const mealType = meal.mealType?.toLowerCase() || 'dinner';
-    if (grouped[mealType]) {
-      grouped[mealType].push(meal);
-    }
+// Group meals by day
+const groupMealsByDay = (meals: Meal[], mealTypes: string[], dayNames: string[]) => {
+  const grouped: Record<string, Record<string, Meal | undefined>> = {};
+  
+  dayNames.forEach(day => {
+    grouped[day.toLowerCase()] = {};
+    mealTypes.forEach(type => {
+      grouped[day.toLowerCase()][type] = undefined;
+    });
   });
 
-  // Sort by day
-  Object.keys(grouped).forEach(type => {
-    grouped[type].sort((a, b) => {
-      const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-      return dayOrder.indexOf(a.day?.toLowerCase() || '') - dayOrder.indexOf(b.day?.toLowerCase() || '');
-    });
+  meals.forEach(meal => {
+    if (meal.day && meal.mealType && grouped[meal.day]) {
+      grouped[meal.day][meal.mealType] = meal;
+    }
   });
 
   return grouped;
@@ -185,15 +180,22 @@ export default function DashboardPage() {
     return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
   };
 
-  // Get day date
-  const getDayDate = (weekStartDate: string, dayIndex: number) => {
+  // Get day date and today status
+  const getDayInfo = (weekStartDate: string, dayIndex: number) => {
     const startDate = new Date(weekStartDate);
     const mealDate = new Date(startDate);
     mealDate.setDate(startDate.getDate() + dayIndex);
-
-    const month = mealDate.toLocaleDateString('en-US', { month: 'short' });
-    const day = mealDate.getDate();
-    return `${month} ${day}`;
+    
+    const today = new Date();
+    const isToday = mealDate.getDate() === today.getDate() && 
+                    mealDate.getMonth() === today.getMonth() && 
+                    mealDate.getFullYear() === today.getFullYear();
+    
+    return {
+      date: mealDate.getDate(),
+      month: mealDate.toLocaleDateString('en-US', { month: 'short' }),
+      isToday
+    };
   };
 
   const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -205,14 +207,8 @@ export default function DashboardPage() {
     return (preferences.mealTypes as string[]).includes(mealType);
   };
 
-  // Get today's day index (0 = Monday, 6 = Sunday)
-  const getTodayIndex = (weekStartDate: string) => {
-    const today = new Date();
-    const startDate = new Date(weekStartDate);
-    const diffTime = today.getTime() - startDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= 0 && diffDays < 7 ? diffDays : -1; // Return -1 if not in current week
-  };
+  // Get meal types from preferences
+  const mealTypes = (preferences?.mealTypes as string[]) || ['breakfast', 'lunch', 'dinner'];
 
   if (isLoading) {
     return (
@@ -337,128 +333,110 @@ export default function DashboardPage() {
 
               {/* Week View is the only view - Day Focus handles day details */}
               {
-                /* Week View - Grid Layout */
-                <div className="space-y-6">
-                  {/* Day Headers - 7 columns */}
-                  <div className="grid grid-cols-7 gap-2">
-                    {dayShortNames.map((day, index) => {
-                      const isToday = getTodayIndex(mealPlan.weekStartDate) === index;
-                      return (
-                        <button
-                          key={day}
-                          onClick={() => {
-                            setFocusedDayIndex(index);
-                            setIsDayFocusOpen(true);
-                          }}
-                          className={`text-center rounded-lg p-3 transition-all hover:scale-105 hover:shadow-lg cursor-pointer group ${
-                            isToday 
-                              ? 'bg-gradient-to-br from-orange-100 to-amber-100 border-2 border-orange-400 shadow-md' 
-                              : 'bg-surface/50 border border-border hover:border-primary/50'
-                          }`}
-                        >
-                          <div className={`font-bold text-sm flex flex-col items-center gap-0.5 ${
-                            isToday ? 'text-orange-600' : 'text-foreground'
-                          }`}>
-                            {day}
-                            {isToday && <div className="text-[9px] font-bold text-orange-600 uppercase tracking-wide">Today</div>}
-                          </div>
-                          <div className={`text-xs mt-1 ${
-                            isToday ? 'text-orange-500 font-semibold' : 'text-muted'
-                          }`}>{getDayDate(mealPlan.weekStartDate, index).split(' ')[1]}</div>
-                          <div className="text-[9px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
-                            View day ›
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Meal Type Sections */}
-                  {(['breakfast', 'lunch', 'dinner'] as const).map(mealType => {
-                    const groupedMeals = groupMealsByType(mealPlan.meals);
-                    const mealsForType = groupedMeals[mealType];
-                    const hasMeals = mealsForType && mealsForType.length > 0;
-                    const isEnabled = isMealTypeEnabled(mealType);
-
+                /* Day-based Grid */
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {dayNames.map((day, dayIndex) => {
+                    const dayInfo = getDayInfo(mealPlan.weekStartDate, dayIndex);
+                    const dayMeals = groupMealsByDay(mealPlan.meals, mealTypes, dayNames)[day.toLowerCase()];
+                    
                     return (
-                      <div key={mealType} className="space-y-2">
-                        {/* Meal Type Label - Above cards */}
-                        <div className="flex items-center gap-2 px-1">
-                          <h3 className={`text-sm font-bold capitalize ${
-                            !isEnabled ? 'text-muted-foreground opacity-40' : 'text-foreground'
-                          }`}>
-                            {mealType}
-                          </h3>
-                          {!isEnabled && (
-                            <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-surface rounded-full">
-                              disabled
-                            </span>
-                          )}
-                          <div className="flex-1 h-px bg-border" />
-                        </div>
-
-                        {/* Meal Cards Grid - 7 columns */}
-                        <div className="grid grid-cols-7 gap-2">
-                          {hasMeals ? (
-                          mealsForType.map((meal, dayIndex) => (
-                            <Card
-                              key={dayIndex}
-                              className={`bg-surface border-border transition-colors ${
-                                isEnabled 
-                                  ? 'hover:border-primary cursor-pointer' 
-                                  : 'opacity-50 cursor-not-allowed border-dashed'
-                              }`}
-                              onClick={() => isEnabled && setSelectedMeal({
-                                meal,
-                                index: dayIndex,
-                                day: dayNames[dayIndex].toLowerCase(),
-                                mealType
-                              })}
-                            >
-                              <CardContent className="p-2 min-h-24 flex flex-col items-center justify-center">
-                                {/* Emoji - Smaller for more text space */}
-                                <div className={`text-xl mb-1.5 text-center ${!isEnabled ? 'grayscale' : ''}`}>
-                                  {meal.emoji || '🍽️'}
+                      <Card
+                        key={day}
+                        className={`
+                          border-2 transition-all cursor-pointer
+                          hover:shadow-lg hover:scale-[1.02]
+                          ${dayInfo.isToday 
+                            ? 'bg-gradient-to-br from-orange-50 to-amber-50 border-orange-400 ring-2 ring-orange-400/20' 
+                            : 'bg-surface border-border hover:border-primary/50'
+                          }
+                        `}
+                        onClick={() => {
+                          setFocusedDayIndex(dayIndex);
+                          setIsDayFocusOpen(true);
+                        }}
+                      >
+                        <CardContent className="p-4">
+                          <div className="mb-3 pb-3 border-b border-border">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-bold text-lg text-foreground">
+                                  {dayShortNames[dayIndex]}
                                 </div>
-                                
-                                {/* Meal Name - Smaller font, fully readable */}
-                                <div className={`text-[10px] leading-tight font-medium text-center line-clamp-3 mb-1 ${
-                                  isEnabled ? 'text-foreground' : 'text-muted-foreground'
-                                }`}>
-                                  {meal.name}
+                                <div className="text-xs text-muted">
+                                  {dayInfo.date}
                                 </div>
-                                
-                                {/* Prep Time - Tiny */}
-                                {meal.prepTime && (
-                                  <div className="text-[9px] text-muted text-center">
-                                    {meal.prepTime}
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          ))
-                          ) : (
-                            <div className="col-span-7 flex items-center justify-center">
-                            <Card className={`bg-surface border-dashed border-border w-full ${!isEnabled ? 'opacity-50' : ''}`}>
-                              <CardContent className="p-4 text-center">
-                                <p className={`text-sm mb-2 ${isEnabled ? 'text-muted' : 'text-muted-foreground'}`}>
-                                  {isEnabled ? `No ${mealType} plan yet` : `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} is disabled in preferences`}
-                                </p>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                              onClick={() => handleGeneratePartial(mealType)}
-                              disabled={generatePartialMutation.isPending || !isEnabled}
-                              title={!isEnabled ? `Enable ${mealType} in preferences to generate` : ''}
-                                >
-                                  + Generate {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
-                                </Button>
-                              </CardContent>
-                            </Card>
+                              </div>
+                              {dayInfo.isToday && (
+                                <div className="bg-gradient-to-r from-orange-400 to-amber-400 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                  TODAY
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            {mealTypes.map(mealType => {
+                              const meal = dayMeals[mealType];
+                              const config = getMealTypeConfig(mealType);
+                              if (!config) return null;
+
+                              const getBorderClass = () => {
+                                if (mealType === 'breakfast') return 'border-l-orange-400';
+                                if (mealType === 'lunch') return 'border-l-blue-400';
+                                if (mealType === 'dinner') return 'border-l-purple-400';
+                                return 'border-l-border';
+                              };
+
+                              return (
+                                <div
+                                  key={mealType}
+                                  className={`
+                                    border-l-4 bg-background/50 rounded-r-lg p-2
+                                    ${getBorderClass()}
+                                    ${meal ? 'opacity-100' : 'opacity-40'}
+                                  `}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (meal) {
+                                      setSelectedMeal({
+                                        meal,
+                                        index: dayIndex,
+                                        day: day.toLowerCase(),
+                                        mealType
+                                      });
+                                    }
+                                  }}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-lg">{config.emoji}</span>
+                                    <div className="flex-1 min-w-0">
+                                      <div className={`text-xs font-semibold ${config.textColor}`}>
+                                        {config.label}
+                                      </div>
+                                      {meal ? (
+                                        <>
+                                          <div className="text-xs text-foreground truncate">
+                                            {meal.name}
+                                          </div>
+                                          {meal.prepTime && (
+                                            <div className="text-[10px] text-muted">
+                                              {meal.prepTime}
+                                            </div>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <div className="text-xs text-muted">
+                                          No meal
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </CardContent>
+                      </Card>
                     );
                   })}
                 </div>
