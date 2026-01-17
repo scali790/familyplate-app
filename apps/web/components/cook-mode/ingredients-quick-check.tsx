@@ -60,7 +60,7 @@ export function IngredientsQuickCheck({
                     <div className="flex items-center justify-center w-12 h-12">
                       <Checkbox
                         checked={isChecked}
-                        onCheckedChange={() => onToggleIngredient(ingredient.id)}
+                        onChange={() => onToggleIngredient(ingredient.id)}
                         className="w-6 h-6"
                         aria-label={`Check off ${ingredient.displayText}`}
                       />

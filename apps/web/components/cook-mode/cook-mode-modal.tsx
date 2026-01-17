@@ -261,8 +261,7 @@ export function CookModeModal({
               <Button
                 onClick={handleExit}
                 variant="ghost"
-                size="icon"
-                className="h-10 w-10 rounded-full"
+                className="h-10 w-10 rounded-full p-0"
                 aria-label="Exit Cook Mode"
               >
                 ✕
