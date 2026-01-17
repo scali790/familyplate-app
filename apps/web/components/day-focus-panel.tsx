@@ -315,7 +315,7 @@ export function DayFocusPanel({
                 const meal = mealsByType[mealType];
                 if (!meal) return null;
 
-                const isPrimary = primaryMeal?.id === meal.id;
+                const isPrimary = primaryMeal?.mealType === meal.mealType;
 
                 return (
                   <div key={mealType} className="space-y-3">
