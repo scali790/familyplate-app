@@ -179,27 +179,35 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-surface">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-2">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
+            {/* Left: Logo + Title */}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <Link href="/" className="flex items-center gap-2 flex-shrink-0">
                 <span className="text-2xl">🍽️</span>
-                <span className="text-xl font-bold text-foreground">FamilyPlate</span>
+                <span className="text-lg md:text-xl font-bold text-foreground hidden sm:inline">FamilyPlate</span>
               </Link>
-              <span className="text-muted">|</span>
-              <span className="text-lg text-foreground">
-                {preferences?.familyName ? `This week at the ${preferences.familyName} table 🍽️` : 'Meal Plan'}
+              <span className="text-muted hidden sm:inline">|</span>
+              <span className="text-sm md:text-base text-foreground truncate">
+                {preferences?.familyName ? `${preferences.familyName} family` : 'Meal Plan'}
               </span>
             </div>
-            <div className="flex items-center gap-3">
+            {/* Right: Actions */}
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Link href="/preferences">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="hidden sm:inline-flex">
                   ⚙️ Preferences
+                </Button>
+                <Button variant="outline" size="sm" className="sm:hidden">
+                  ⚙️
                 </Button>
               </Link>
               <Link href="/api/auth/logout" prefetch={false}>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
                   👋 Sign out
+                </Button>
+                <Button variant="ghost" size="sm" className="sm:hidden">
+                  👋
                 </Button>
               </Link>
             </div>
