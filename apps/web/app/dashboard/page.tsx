@@ -213,8 +213,12 @@ export default function DashboardPage() {
     return (preferences.mealTypes as string[]).includes(mealType);
   };
 
-  // Get meal types from preferences
-  const mealTypes = (preferences?.mealTypes as string[]) || ['breakfast', 'lunch', 'dinner'];
+  // Get meal types from preferences and ensure chronological order
+  const MEAL_TYPE_ORDER = ['breakfast', 'lunch', 'dinner'];
+  const rawMealTypes = (preferences?.mealTypes as string[]) || ['breakfast', 'lunch', 'dinner'];
+  const mealTypes = rawMealTypes.sort((a, b) => {
+    return MEAL_TYPE_ORDER.indexOf(a) - MEAL_TYPE_ORDER.indexOf(b);
+  });
 
   if (isLoading) {
     return (

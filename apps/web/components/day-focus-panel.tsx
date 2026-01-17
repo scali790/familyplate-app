@@ -101,8 +101,8 @@ export function DayFocusPanel({
       return mealsByTypeMap.dinner;
     }
     
-    // Fallback: Lunch > Dinner > Breakfast
-    return mealsByTypeMap.lunch || mealsByTypeMap.dinner || mealsByTypeMap.breakfast || meals[0];
+    // Fallback: Breakfast > Lunch > Dinner (chronological)
+    return mealsByTypeMap.breakfast || mealsByTypeMap.lunch || mealsByTypeMap.dinner || meals[0];
   };
 
   const primaryMeal = getPrimaryMeal(mealsArray);
