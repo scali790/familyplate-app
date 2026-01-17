@@ -94,6 +94,11 @@ const UNIT_CONVERSIONS: Record<string, { base: string; factor: number }> = {
 export function parseIngredient(raw: string): ParsedIngredient {
   const trimmed = raw.trim();
   
+  // Debug logging
+  if (trimmed.toLowerCase().includes('spaghetti')) {
+    console.log('[PARSER DEBUG] Input:', raw);
+  }
+  
   // Regex to match: [quantity] [unit] [name] [(notes)]
   // Examples:
   // "2 cups flour"
@@ -119,6 +124,11 @@ export function parseIngredient(raw: string): ParsedIngredient {
     const name = nameStr.trim();
     const normalizedName = normalizeName(name);
     const notes = notesStr?.trim() || null;
+    
+    // Debug logging
+    if (trimmed.toLowerCase().includes('spaghetti')) {
+      console.log('[PARSER DEBUG] Parsed:', { quantity, unit, name, normalizedName });
+    }
     
     return {
       raw,
@@ -238,6 +248,17 @@ export function aggregateIngredients(
     if (parsed.quantity !== null && parsed.unit !== null) {
       // Convert to base unit if possible
       const { quantity, unit } = convertToBaseUnit(parsed.quantity, parsed.unit);
+      
+      // Debug logging
+      if (parsed.normalizedName.includes('spaghetti')) {
+        console.log('[AGGREGATION DEBUG]', {
+          meal: mealName,
+          original: { quantity: parsed.quantity, unit: parsed.unit },
+          converted: { quantity, unit },
+          currentTotal: item.totalQuantity,
+          currentUnit: item.unit
+        });
+      }
       
       // If units match, add quantities
       if (item.unit === unit) {
