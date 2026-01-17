@@ -339,9 +339,8 @@ export default function DashboardPage() {
               {
                 /* Week View - Grid Layout */
                 <div className="space-y-6">
-                  {/* Day Headers */}
-                  <div className="grid grid-cols-8 gap-2">
-                    <div className="col-span-1"></div>
+                  {/* Day Headers - 7 columns */}
+                  <div className="grid grid-cols-7 gap-2">
                     {dayShortNames.map((day, index) => {
                       const isToday = getTodayIndex(mealPlan.weekStartDate) === index;
                       return (
@@ -374,7 +373,7 @@ export default function DashboardPage() {
                     })}
                   </div>
 
-                  {/* Meal Type Rows */}
+                  {/* Meal Type Sections */}
                   {(['breakfast', 'lunch', 'dinner'] as const).map(mealType => {
                     const groupedMeals = groupMealsByType(mealPlan.meals);
                     const mealsForType = groupedMeals[mealType];
@@ -382,17 +381,25 @@ export default function DashboardPage() {
                     const isEnabled = isMealTypeEnabled(mealType);
 
                     return (
-                      <div key={mealType} className="grid grid-cols-8 gap-2">
-                        {/* Meal Type Label - Text only, no icon */}
-                        <div className="col-span-1 flex items-center justify-center">
-                          <div className={`text-xs font-semibold capitalize ${!isEnabled ? 'text-muted-foreground opacity-40' : 'text-foreground'}`}>
+                      <div key={mealType} className="space-y-2">
+                        {/* Meal Type Label - Above cards */}
+                        <div className="flex items-center gap-2 px-1">
+                          <h3 className={`text-sm font-bold capitalize ${
+                            !isEnabled ? 'text-muted-foreground opacity-40' : 'text-foreground'
+                          }`}>
                             {mealType}
-                            {!isEnabled && <div className="text-[10px] text-muted-foreground">disabled</div>}
-                          </div>
+                          </h3>
+                          {!isEnabled && (
+                            <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-surface rounded-full">
+                              disabled
+                            </span>
+                          )}
+                          <div className="flex-1 h-px bg-border" />
                         </div>
 
-                        {/* Meal Cards or Empty State */}
-                        {hasMeals ? (
+                        {/* Meal Cards Grid - 7 columns */}
+                        <div className="grid grid-cols-7 gap-2">
+                          {hasMeals ? (
                           mealsForType.map((meal, dayIndex) => (
                             <Card
                               key={dayIndex}
@@ -430,8 +437,8 @@ export default function DashboardPage() {
                               </CardContent>
                             </Card>
                           ))
-                        ) : (
-                          <div className="col-span-7 flex items-center justify-center">
+                          ) : (
+                            <div className="col-span-7 flex items-center justify-center">
                             <Card className={`bg-surface border-dashed border-border w-full ${!isEnabled ? 'opacity-50' : ''}`}>
                               <CardContent className="p-4 text-center">
                                 <p className={`text-sm mb-2 ${isEnabled ? 'text-muted' : 'text-muted-foreground'}`}>
@@ -448,8 +455,9 @@ export default function DashboardPage() {
                                 </Button>
                               </CardContent>
                             </Card>
-                          </div>
-                        )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
