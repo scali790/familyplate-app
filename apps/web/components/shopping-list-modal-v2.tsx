@@ -406,7 +406,7 @@ export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) 
                 return (
                   <div key={category}>
                     {/* Category Header (Sticky) */}
-                    <div className="sticky top-0 bg-background/95 backdrop-blur-sm py-2 mb-3 border-b border-border">
+                    <div className="sticky top-0 z-10 bg-background backdrop-blur-sm py-3 mb-3 border-b border-border -mx-6 px-6">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">{config.emoji}</span>
                         <h3 className="font-bold text-foreground">{config.name}</h3>
