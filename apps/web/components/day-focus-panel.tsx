@@ -326,31 +326,9 @@ export function DayFocusPanel({
 
                 return (
                   <div key={mealType} className="space-y-3">
-                    {/* Meal Type Badge - Gradient style like Voting Page */}
-                    <div className="flex justify-center mb-3">
-                      {(() => {
-                        const config = getMealTypeConfig(mealType);
-                        
-                        // Get gradient class based on meal type
-                        const getGradientClass = () => {
-                          if (mealType === 'breakfast') return 'bg-gradient-to-r from-orange-400 to-yellow-400';
-                          if (mealType === 'lunch') return 'bg-gradient-to-r from-blue-400 to-cyan-400';
-                          if (mealType === 'dinner') return 'bg-gradient-to-r from-purple-500 to-indigo-500';
-                          return 'bg-gray-200';
-                        };
-                        
-                        return (
-                          <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-2xl font-bold text-base shadow-lg text-white ${getGradientClass()}`}>
-                            <span className="text-2xl">{config?.emoji}</span>
-                            <span className="uppercase tracking-wide">{config?.label || mealType}</span>
-                          </div>
-                        );
-                      })()}
-                    </div>
-
                     {/* Meal Card - Strong Primary emphasis + Secondary de-emphasis */}
                     <Card className={`
-                      border-4
+                      border-4 rounded-3xl
                       transition-all duration-300
                       ${isPrimary ? 'shadow-2xl scale-[1.05] ring-2 ring-primary/20' : 'shadow-sm opacity-75 scale-95'}
                       ${(() => {
@@ -368,6 +346,28 @@ export function DayFocusPanel({
                       })()}
                     `}>
                       <CardContent className="p-6">
+                        {/* Meal Type Badge - Inside card like Voting Page */}
+                        <div className="flex justify-center mb-4">
+                          {(() => {
+                            const config = getMealTypeConfig(mealType);
+                            
+                            // Get gradient class based on meal type
+                            const getGradientClass = () => {
+                              if (mealType === 'breakfast') return 'bg-gradient-to-r from-orange-400 to-yellow-400';
+                              if (mealType === 'lunch') return 'bg-gradient-to-r from-blue-400 to-cyan-400';
+                              if (mealType === 'dinner') return 'bg-gradient-to-r from-purple-500 to-indigo-500';
+                              return 'bg-gray-200';
+                            };
+                            
+                            return (
+                              <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-3xl font-bold text-base shadow-lg text-white ${getGradientClass()}`}>
+                                <span className="text-2xl">{config?.emoji}</span>
+                                <span className="uppercase tracking-wide">{config?.label || mealType}</span>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
                         <div className="flex items-start gap-4">
                           {/* Emoji */}
                           <div className="text-5xl flex-shrink-0">
