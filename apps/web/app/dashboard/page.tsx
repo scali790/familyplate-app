@@ -197,9 +197,11 @@ export default function DashboardPage() {
                   ⚙️ Preferences
                 </Button>
               </Link>
-              <Link href="/api/auth/logout" pref              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                👋 Sign out
-              </Button>            </Link>
+              <Link href="/api/auth/logout" prefetch={false}>
+                <Button variant="ghost" size="sm">
+                  👋 Sign out
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -211,10 +213,10 @@ export default function DashboardPage() {
           {!mealPlan ? (
             /* Empty State */
             <div className="text-center py-16">
-              <div className="text-6              <h1 className="text-4xl font-bold text-foreground mb-4">Let’s plan your week!</h1>
-              <p className="text-lg text-muted mb-8">
-                Tell us what your family loves, and we’ll create a week of delicious meals
-              </p>
+              <div className="text-6xl mb-4">🍽️</div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Let’s plan your week!</h2>
+              <p className="text-muted mb-6">Tell us what your family loves, and we’ll create a week of delicious meals</p>
+              <Button
                 onClick={handleGenerateNew}
                 disabled={generateMutation.isPending}
                 size="lg"
@@ -224,28 +226,20 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
+              {/* View Toggle */}
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-foreground">
+                  Week of {formatWeekRange(mealPlan.weekStartDate)}
+                </h1>
+                {/* View toggle removed - Day Focus is the only day view */}
+              </div>
+
               {/* Weekly Status Header */}
               <WeeklyStatusHeader
                 mealPlan={mealPlan}
-                familySize={preferences?.familySize}
-                votingStatus={votingSession ? {
-                  isOpen: true,
-                  votesCount: 0, // TODO: Get from voting session
-                  maxVoters: preferences?.familySize || 4,
-                } : undefined}
-                shoppingListReady={false} // TODO: Derive from shopping list state
-                onRemindVoters={() => {
-                  // TODO: Implement remind voters
-                  alert('Remind voters feature coming soon!');
-                }}
+                votingSession={votingSession}
                 onOpenShoppingList={() => setShowShoppingList(true)}
-                onStartCooking={() => {
-                  const todayIndex = getTodayIndex(mealPlan.weekStartDate);
-                  if (todayIndex >= 0) {
-                    setFocusedDayIndex(todayIndex);
-                    setIsDayFocusOpen(true);
-                  }
-                }}
+                onOpenVotingResults={() => setShowVotingModal(true)}
               />
 
               {/* Action Buttons */}

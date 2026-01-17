@@ -5,27 +5,24 @@ import { Card } from '@/components/ui/card';
 import type { MealPlan } from '@/server/db/schema';
 
 interface WeeklyStatusHeaderProps {
-  mealPlan: MealPlan;
-  familySize?: number;
-  votingStatus?: {
-    isOpen: boolean;
-    votesCount: number;
-    maxVoters: number;
+  mealPlan: {
+    id: number;
+    weekStartDate: string;
+    meals: any[];
   };
-  shoppingListReady?: boolean;
-  onRemindVoters?: () => void;
+  votingSession?: {
+    sessionId: string;
+    shareUrl: string;
+  } | null;
   onOpenShoppingList?: () => void;
-  onStartCooking?: () => void;
+  onOpenVotingResults?: () => void;
 }
 
 export function WeeklyStatusHeader({
   mealPlan,
-  familySize = 4,
-  votingStatus,
-  shoppingListReady = false,
-  onRemindVoters,
+  votingSession,
   onOpenShoppingList,
-  onStartCooking,
+  onOpenVotingResults,
 }: WeeklyStatusHeaderProps) {
   // Calculate meal plan status
   const totalMeals = mealPlan.meals?.length || 0;
@@ -34,34 +31,23 @@ export function WeeklyStatusHeader({
 
   // Determine primary CTA
   const getPrimaryCTA = () => {
-    // Priority 1: Voting is open
-    if (votingStatus?.isOpen) {
-      const pendingVotes = votingStatus.maxVoters - votingStatus.votesCount;
+    // Priority 1: Voting session exists
+    if (votingSession) {
       return {
-        label: '📢 Remind family to vote',
-        action: onRemindVoters,
+        label: '📢 View voting results',
+        action: onOpenVotingResults,
         variant: 'default' as const,
-        description: `${pendingVotes} ${pendingVotes === 1 ? 'person hasn\'t' : 'people haven\'t'} voted yet`,
+        description: 'Check how your family voted',
       };
     }
 
-    // Priority 2: Voting closed and shopping list ready
-    if (!votingStatus?.isOpen && shoppingListReady) {
+    // Priority 2: Shopping list ready
+    if (totalMeals > 0) {
       return {
         label: '🛒 Open shopping list',
         action: onOpenShoppingList,
         variant: 'default' as const,
         description: 'You\'re set for a smooth week',
-      };
-    }
-
-    // Priority 3: Everything ready, time to cook
-    if (totalMeals > 0) {
-      return {
-        label: '👨‍🍳 Start cooking today',
-        action: onStartCooking,
-        variant: 'default' as const,
-        description: 'Let\'s make something delicious',
       };
     }
 
@@ -96,19 +82,11 @@ export function WeeklyStatusHeader({
               </div>
 
               {/* Voting Status */}
-              {votingStatus && (
+              {votingSession && (
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">🗳️</span>
                   <span className="text-muted">
-                    {votingStatus.isOpen ? (
-                      <>
-                        <span className="text-primary font-medium">Voting Open</span>
-                        {' • '}
-                        {votingStatus.votesCount}/{votingStatus.maxVoters} voted
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">Voting Closed</span>
-                    )}
+                    <span className="text-primary font-medium">Voting Active</span>
                   </span>
                 </div>
               )}
@@ -117,7 +95,7 @@ export function WeeklyStatusHeader({
               <div className="flex items-center gap-2">
                 <span className="text-2xl">📝</span>
                 <span className="text-muted">
-                  {shoppingListReady ? (
+                  {totalMeals > 0 ? (
                     <span className="text-green-600 dark:text-green-400 font-medium">Ready</span>
                   ) : (
                     <span className="text-muted-foreground">Not generated</span>
