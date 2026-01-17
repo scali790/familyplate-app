@@ -237,7 +237,7 @@ export function DayFocusPanel({
             {canSwipeRight && onSwipeRight && (
               <button
                 onClick={() => handleDaySwitch('right')}
-                className="p-2 text-muted hover:text-foreground transition-colors flex-shrink-0"
+                className="p-3 text-muted hover:text-foreground transition-colors flex-shrink-0"
                 aria-label="Previous day"
               >
                 <span className="text-2xl">←</span>
@@ -271,7 +271,7 @@ export function DayFocusPanel({
               {canSwipeLeft && onSwipeLeft && (
                 <button
                   onClick={() => handleDaySwitch('left')}
-                  className="p-2 text-muted hover:text-foreground transition-colors"
+                  className="p-3 text-muted hover:text-foreground transition-colors"
                   aria-label="Next day"
                 >
                   <span className="text-2xl">→</span>
@@ -327,7 +327,7 @@ export function DayFocusPanel({
                       <div className="flex-1 h-px bg-border" />
                     </div>
 
-                    {/* Meal Card - Primary emphasis */}
+                    {/* Meal Card - Primary emphasis + Breakfast de-emphasis */}
                     <Card className={`
                       border-2 
                       transition-all
@@ -335,6 +335,7 @@ export function DayFocusPanel({
                         ? 'border-primary/30 shadow-lg scale-[1.02]' 
                         : 'border-border hover:border-primary/50 shadow'
                       }
+                      ${mealType === 'breakfast' && !isPrimary ? 'scale-95 shadow-sm' : ''}
                     `}>
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
@@ -350,13 +351,8 @@ export function DayFocusPanel({
                               {meal.name}
                             </h3>
 
-                            {/* Quick Info */}
+                            {/* Quick Info - Removed redundant meal type label */}
                             <div className="flex items-center gap-4 mb-4 text-sm text-muted">
-                              {/* Meal Type */}
-                              <div className="flex items-center gap-1">
-                                <span className="font-medium text-foreground">{MEAL_TYPE_LABELS[mealType]}</span>
-                              </div>
-                              
                               {/* Cook Time */}
                               {meal.prepTime && (
                                 <div className="flex items-center gap-1">
@@ -380,14 +376,14 @@ export function DayFocusPanel({
                               </div>
                             )}
 
-                            {/* Primary CTA */}
+                            {/* Primary CTA - Warmer copy + compact for breakfast */}
                             <Button
                               variant="default"
-                              size="lg"
+                              size={mealType === 'breakfast' ? 'default' : 'lg'}
                               onClick={() => onOpenRecipe(meal)}
                               className="w-full mb-3"
                             >
-                              👨‍🍳 Cook now
+                              🍳 Start cooking
                             </Button>
 
                             {/* Secondary Actions */}
@@ -422,11 +418,11 @@ export function DayFocusPanel({
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer - Less prominent Back button */}
         <div className="px-6 py-4 border-t border-border">
           <Button
-            variant="outline"
-            className="w-full"
+            variant="ghost"
+            className="w-full text-muted-foreground hover:text-foreground"
             onClick={onClose}
           >
             ← Back to Week
