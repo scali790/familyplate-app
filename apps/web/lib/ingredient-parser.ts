@@ -94,11 +94,6 @@ const UNIT_CONVERSIONS: Record<string, { base: string; factor: number }> = {
 export function parseIngredient(raw: string): ParsedIngredient {
   const trimmed = raw.trim();
   
-  // Debug logging
-  if (trimmed.toLowerCase().includes('spaghetti')) {
-    console.log('[PARSER DEBUG] Input:', raw);
-  }
-  
   // Regex to match: [quantity] [unit] [name] [(notes)]
   // Examples:
   // "2 cups flour"
@@ -124,11 +119,6 @@ export function parseIngredient(raw: string): ParsedIngredient {
     const name = nameStr.trim();
     const normalizedName = normalizeName(name);
     const notes = notesStr?.trim() || null;
-    
-    // Debug logging
-    if (trimmed.toLowerCase().includes('spaghetti')) {
-      console.log('[PARSER DEBUG] Parsed:', { quantity, unit, name, normalizedName });
-    }
     
     return {
       raw,
@@ -249,17 +239,6 @@ export function aggregateIngredients(
       // Convert to base unit if possible
       const { quantity, unit } = convertToBaseUnit(parsed.quantity, parsed.unit);
       
-      // Debug logging
-      if (parsed.normalizedName.includes('spaghetti')) {
-        console.log('[AGGREGATION DEBUG]', {
-          meal: mealName,
-          original: { quantity: parsed.quantity, unit: parsed.unit },
-          converted: { quantity, unit },
-          currentTotal: item.totalQuantity,
-          currentUnit: item.unit
-        });
-      }
-      
       // If units match, add quantities
       if (item.unit === unit) {
         item.totalQuantity += quantity;
@@ -291,8 +270,9 @@ export function formatQuantity(quantity: number, unit: string): string {
   // Round to 2 decimal places
   const rounded = Math.round(quantity * 100) / 100;
   
-  // Remove trailing zeros
-  const formatted = rounded.toString().replace(/\.?0+$/, '');
+  // Remove trailing decimal zeros only (e.g., 800.00 → 800, 800.50 → 800.5)
+  // But preserve integer zeros (e.g., 800 stays 800, not 8)
+  const formatted = rounded.toString().replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
   
   return `${formatted} ${unit}`;
 }
