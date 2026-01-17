@@ -146,20 +146,29 @@ export function DayFocusPanel({
                               {meal.name}
                             </h3>
 
-                            {/* Description */}
-                            {meal.description && (
-                              <p className="text-sm text-muted mb-4 line-clamp-2">
-                                {meal.description}
-                              </p>
-                            )}
+                            {/* Quick Info - Decision First */}
+                            <div className="flex items-center gap-4 mb-4 text-sm text-muted">
+                              {/* Meal Type */}
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium text-foreground">{MEAL_TYPE_LABELS[mealType]}</span>
+                              </div>
+                              
+                              {/* Cook Time */}
+                              {meal.prepTime && (
+                                <div className="flex items-center gap-1">
+                                  <span>⏱️</span>
+                                  <span>{meal.prepTime}</span>
+                                </div>
+                              )}
+                            </div>
 
-                            {/* Tags */}
+                            {/* Compact Tags - Only 2-3 most relevant */}
                             {meal.tags && meal.tags.length > 0 && (
                               <div className="flex flex-wrap gap-2 mb-4">
                                 {meal.tags.slice(0, 3).map((tag, i) => (
                                   <span
                                     key={i}
-                                    className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
+                                    className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary font-medium"
                                   >
                                     {tag}
                                   </span>
@@ -167,30 +176,35 @@ export function DayFocusPanel({
                               </div>
                             )}
 
-                            {/* Prep Time */}
-                            {meal.prepTime && (
-                              <div className="text-xs text-muted mb-4">
-                                ⏱️ {meal.prepTime}
-                              </div>
-                            )}
+                            {/* Primary CTA */}
+                            <Button
+                              variant="default"
+                              size="lg"
+                              onClick={() => onOpenRecipe(meal)}
+                              className="w-full mb-3"
+                            >
+                              👨‍🍳 Cook now
+                            </Button>
 
-                            {/* Actions */}
+                            {/* Secondary Actions - Icon Buttons */}
                             <div className="flex gap-2">
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => onOpenRecipe(meal)}
-                                className="flex-1"
-                              >
-                                📖 View Full Recipe
-                              </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => onRegenerateMeal(meal)}
                                 className="flex-1"
+                                title="Swap this meal"
                               >
-                                🔄 Swap Meal
+                                🔄 Swap
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => onOpenRecipe(meal)}
+                                className="flex-1"
+                                title="View ingredients"
+                              >
+                                📝 Ingredients
                               </Button>
                             </div>
                           </div>

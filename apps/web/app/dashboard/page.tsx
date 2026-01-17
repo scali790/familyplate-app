@@ -8,6 +8,7 @@ import { RecipeModal } from '@/components/recipe-modal';
 import VotingResultsModal from '@/components/voting-results-modal';
 import { ShoppingListModal } from '@/components/shopping-list-modal';
 import { DayFocusPanel } from '@/components/day-focus-panel';
+import { WeeklyStatusHeader } from '@/components/weekly-status-header';
 import { trpc } from '@/lib/trpc';
 import type { Meal } from '@/server/db/schema';
 
@@ -187,20 +188,18 @@ export default function DashboardPage() {
               </Link>
               <span className="text-muted">|</span>
               <span className="text-lg text-foreground">
-                {preferences?.familyName ? `${preferences.familyName}'s Meal Plan` : 'Meal Plan'}
+                {preferences?.familyName ? `This week at the ${preferences.familyName} table 🍽️` : 'Meal Plan'}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <Link href="/preferences">
                 <Button variant="outline" size="sm">
-                  Edit Preferences
+                  ⚙️ Preferences
                 </Button>
               </Link>
-              <Link href="/api/auth/logout" prefetch={false}>
-                <Button variant="ghost" size="sm">
-                  Logout
-                </Button>
-              </Link>
+              <Link href="/api/auth/logout" pref              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                👋 Sign out
+              </Button>            </Link>
             </div>
           </div>
         </div>
@@ -212,26 +211,42 @@ export default function DashboardPage() {
           {!mealPlan ? (
             /* Empty State */
             <div className="text-center py-16">
-              <div className="text-6xl mb-4">🍽️</div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">No Meal Plan Yet</h2>
-              <p className="text-muted mb-6">Generate your first personalized meal plan!</p>
-              <Button
+              <div className="text-6              <h1 className="text-4xl font-bold text-foreground mb-4">Let’s plan your week!</h1>
+              <p className="text-lg text-muted mb-8">
+                Tell us what your family loves, and we’ll create a week of delicious meals
+              </p>
                 onClick={handleGenerateNew}
                 disabled={generateMutation.isPending}
                 size="lg"
               >
-                {generateMutation.isPending ? 'Generating...' : '🪄 Generate Meal Plan'}
+                {generateMutation.isPending ? 'Generating...' : '🪤 Generate meal plan'}
               </Button>
             </div>
           ) : (
             <>
-              {/* View Toggle */}
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-foreground">
-                  Week of {formatWeekRange(mealPlan.weekStartDate)}
-                </h1>
-                {/* View toggle removed - Day Focus is the only day view */}
-              </div>
+              {/* Weekly Status Header */}
+              <WeeklyStatusHeader
+                mealPlan={mealPlan}
+                familySize={preferences?.familySize}
+                votingStatus={votingSession ? {
+                  isOpen: true,
+                  votesCount: 0, // TODO: Get from voting session
+                  maxVoters: preferences?.familySize || 4,
+                } : undefined}
+                shoppingListReady={false} // TODO: Derive from shopping list state
+                onRemindVoters={() => {
+                  // TODO: Implement remind voters
+                  alert('Remind voters feature coming soon!');
+                }}
+                onOpenShoppingList={() => setShowShoppingList(true)}
+                onStartCooking={() => {
+                  const todayIndex = getTodayIndex(mealPlan.weekStartDate);
+                  if (todayIndex >= 0) {
+                    setFocusedDayIndex(todayIndex);
+                    setIsDayFocusOpen(true);
+                  }
+                }}
+              />
 
               {/* Action Buttons */}
               <div className="mb-6 flex gap-3">
@@ -241,14 +256,14 @@ export default function DashboardPage() {
                   onClick={handleGenerateNew}
                   disabled={generateMutation.isPending}
                 >
-                  🪄 {generateMutation.isPending ? 'Generating...' : 'Generate New Plan'}
+                  🪤 {generateMutation.isPending ? 'Generating...' : 'Generate new plan'}
                 </Button>
                 <Button
                   variant="outline"
                   className="flex-1"
                   onClick={() => setShowShoppingList(true)}
                 >
-                  📝 Shopping List
+                  🛒 Shopping list
                 </Button>
                 <Button
                   variant="default"
@@ -256,7 +271,7 @@ export default function DashboardPage() {
                   onClick={handleShareForVoting}
                   disabled={createVotingSessionMutation.isPending}
                 >
-                  👥 {createVotingSessionMutation.isPending ? 'Creating...' : 'Share for Voting'}
+                  👥 {createVotingSessionMutation.isPending ? 'Creating...' : 'Share for voting'}
                 </Button>
               </div>
 
@@ -420,6 +435,10 @@ export default function DashboardPage() {
           familyName={preferences?.familyName}
           weekStartDate={mealPlan.weekStartDate}
           onClose={() => setShowVotingModal(false)}
+          onGenerateShoppingList={() => {
+            setShowVotingModal(false);
+            setShowShoppingList(true);
+          }}
         />
       )}
 
@@ -427,6 +446,7 @@ export default function DashboardPage() {
       {showShoppingList && mealPlan && (
         <ShoppingListModal
           meals={mealPlan.meals}
+          weekStartDate={mealPlan.weekStartDate}
           onClose={() => setShowShoppingList(false)}
         />
       )}

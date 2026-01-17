@@ -1,6 +1,7 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
+import { Button } from "./ui/button";
 import { trpc } from "@/lib/trpc";
 
 type VotingResultsModalProps = {
@@ -9,6 +10,7 @@ type VotingResultsModalProps = {
   familyName?: string | null;
   weekStartDate: string;
   onClose: () => void;
+  onGenerateShoppingList?: () => void;
 };
 
 export default function VotingResultsModal({
@@ -17,6 +19,7 @@ export default function VotingResultsModal({
   familyName,
   weekStartDate,
   onClose,
+  onGenerateShoppingList,
 }: VotingResultsModalProps) {
   const [activeTab, setActiveTab] = useState<"summary" | "voters">("summary");
   const [copied, setCopied] = useState(false);
@@ -59,10 +62,10 @@ export default function VotingResultsModal({
 
   if (!results) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
+      <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
+        <div className="bg-background rounded-2xl shadow-2xl p-8 text-center">
           <div className="text-4xl mb-4 animate-spin">⏳</div>
-          <p className="text-gray-600">Loading results...</p>
+          <p className="text-muted">Loading results...</p>
         </div>
       </div>
     );
@@ -72,18 +75,55 @@ export default function VotingResultsModal({
   const mealCount = Object.keys(mealAggregates).length;
   const isOpen = status === 'open';
 
+  // Find winner (highest score)
+  const winner = Object.entries(mealAggregates).reduce((max, [id, stats]) => {
+    return stats.score > (max?.stats.score || -Infinity) ? { id, stats } : max;
+  }, null as { id: string; stats: typeof mealAggregates[string] } | null);
+
+  // Sort meals by score (highest first)
+  const sortedMeals = Object.entries(mealAggregates).sort(([, a], [, b]) => b.score - a.score);
+
+  // Determine if voting is incomplete
+  const expectedVoters = 4; // TODO: Get from preferences
+  const isIncomplete = totalVoters < expectedVoters;
+
+  // Smart CTA
+  const getSmartCTA = () => {
+    if (isOpen && isIncomplete) {
+      return {
+        label: '📢 Remind family to vote',
+        description: `${expectedVoters - totalVoters} ${expectedVoters - totalVoters === 1 ? 'person hasn\'t' : 'people haven\'t'} voted yet`,
+        action: handleCopyLink,
+        variant: 'default' as const,
+      };
+    }
+
+    if (!isOpen && onGenerateShoppingList) {
+      return {
+        label: '🛒 Generate shopping list',
+        description: 'You\'re ready to shop for the week',
+        action: onGenerateShoppingList,
+        variant: 'default' as const,
+      };
+    }
+
+    return null;
+  };
+
+  const smartCTA = getSmartCTA();
+
   const getStatusBadge = () => {
     if (isOpen) {
       return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+        <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
           Open
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
-        <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
+      <span className="inline-flex items-center gap-1 px-3 py-1 bg-surface text-muted rounded-full text-sm font-medium">
+        <span className="w-2 h-2 bg-muted rounded-full"></span>
         Closed
       </span>
     );
@@ -97,20 +137,20 @@ export default function VotingResultsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col my-8">
+    <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-background rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col my-8">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-orange-50 to-amber-50">
+        <div className="flex items-center justify-between p-6 border-b border-border bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950 dark:to-amber-950">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-gray-800">Voting Results</h2>
+              <h2 className="text-2xl font-bold text-foreground">🗳️ Voting Results</h2>
               {getStatusBadge()}
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted">
               {totalVoters} voter{totalVoters !== 1 ? "s" : ""} • {mealCount} meal{mealCount !== 1 ? "s" : ""}
             </p>
             {!isOpen && getClosedReasonText() && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted mt-1">
                 {getClosedReasonText()}
                 {closedAt && ` on ${new Date(closedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`}
               </p>
@@ -118,67 +158,82 @@ export default function VotingResultsModal({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 text-muted hover:text-foreground transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <span className="text-3xl leading-none">×</span>
           </button>
         </div>
 
-        {/* Family Info */}
-        <div className="px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 border-b">
-          <div className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-1">
-            <span>👨‍👩‍👧‍👦</span>
-            <span>{familyName || "Your Family"}</span>
+        {/* Smart CTA Banner */}
+        {smartCTA && (
+          <div className="px-6 py-4 bg-primary/10 border-b border-border">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <p className="font-medium text-foreground">{smartCTA.description}</p>
+              </div>
+              <Button
+                onClick={smartCTA.action}
+                variant={smartCTA.variant}
+                size="lg"
+              >
+                {smartCTA.label}
+              </Button>
+            </div>
           </div>
-          <p className="text-sm text-gray-600">
+        )}
+
+        {/* Family Info */}
+        <div className="px-6 py-4 bg-surface border-b border-border">
+          <div className="flex items-center gap-2 text-lg font-semibold text-foreground mb-1">
+            <span>👨‍👩‍👧‍👦</span>
+            <span>{familyName ? `This week at the ${familyName} table` : "Your Family"}</span>
+          </div>
+          <p className="text-sm text-muted">
             Week of {new Date(weekStartDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </p>
         </div>
 
         {/* Share Link */}
-        <div className="px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 border-b">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-1">
-                📋 Share voting link with your family
-              </p>
-              <p className="text-xs text-gray-600">
-                Click the button to copy the link to clipboard
-              </p>
+        {isOpen && (
+          <div className="px-6 py-4 bg-surface border-b border-border">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground mb-1">
+                  📋 Share voting link with your family
+                </p>
+                <p className="text-xs text-muted">
+                  Click to copy the link to clipboard
+                </p>
+              </div>
+              <Button
+                onClick={handleCopyLink}
+                variant="default"
+                size="lg"
+              >
+                {copied ? (
+                  <>
+                    <span className="mr-2">✓</span>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-2">🔗</span>
+                    Share Link
+                  </>
+                )}
+              </Button>
             </div>
-            <button
-              onClick={handleCopyLink}
-              className="flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-            >
-              {copied ? (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Copied!</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                  <span>Share Link</span>
-                </>
-              )}
-            </button>
           </div>
-        </div>
+        )}
 
         {/* Tabs */}
-        <div className="flex border-b bg-gray-50">
+        <div className="flex border-b border-border bg-surface">
           <button
             onClick={() => setActiveTab("summary")}
             className={`flex-1 px-6 py-3 font-medium transition-colors ${
               activeTab === "summary"
-                ? "bg-white text-orange-600 border-b-2 border-orange-500"
-                : "text-gray-600 hover:text-gray-800"
+                ? "bg-background text-primary border-b-2 border-primary"
+                : "text-muted hover:text-foreground"
             }`}
           >
             📊 Meal Summary
@@ -187,8 +242,8 @@ export default function VotingResultsModal({
             onClick={() => setActiveTab("voters")}
             className={`flex-1 px-6 py-3 font-medium transition-colors ${
               activeTab === "voters"
-                ? "bg-white text-orange-600 border-b-2 border-orange-500"
-                : "text-gray-600 hover:text-gray-800"
+                ? "bg-background text-primary border-b-2 border-primary"
+                : "text-muted hover:text-foreground"
             }`}
           >
             👥 Voter Breakdown
@@ -200,24 +255,48 @@ export default function VotingResultsModal({
           {totalVoters === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📭</div>
-              <p className="text-xl font-semibold text-gray-700 mb-2">No votes yet</p>
-              <p className="text-gray-500">Share the link above to start collecting votes!</p>
+              <p className="text-xl font-semibold text-foreground mb-2">No votes yet</p>
+              <p className="text-muted">Share the link above to start collecting votes!</p>
             </div>
           ) : activeTab === "summary" ? (
             <div className="space-y-4">
-              {Object.entries(mealAggregates).map(([mealId, stats]) => {
+              {sortedMeals.map(([mealId, stats], index) => {
+                const isWinner = winner?.id === mealId && stats.score > 0;
                 const scoreColor =
-                  stats.score > 0 ? "text-green-600" : stats.score < 0 ? "text-red-600" : "text-gray-600";
+                  stats.score > 0 ? "text-green-600 dark:text-green-400" : 
+                  stats.score < 0 ? "text-red-600 dark:text-red-400" : 
+                  "text-muted";
                 const barColor =
-                  stats.score > 0 ? "bg-green-500" : stats.score < 0 ? "bg-red-500" : "bg-gray-400";
+                  stats.score > 0 ? "bg-green-500" : 
+                  stats.score < 0 ? "bg-red-500" : 
+                  "bg-muted";
 
                 return (
-                  <div key={mealId} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <div 
+                    key={mealId} 
+                    className={`rounded-2xl p-5 border-2 transition-all ${
+                      isWinner 
+                        ? 'bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950 dark:to-amber-950 border-yellow-400 dark:border-yellow-600 shadow-lg' 
+                        : 'bg-surface border-border'
+                    }`}
+                  >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800 text-lg">{stats.name}</h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold text-foreground text-lg">{stats.name}</h3>
+                          {isWinner && (
+                            <span className="px-2 py-0.5 bg-yellow-400 dark:bg-yellow-600 text-yellow-900 dark:text-yellow-100 text-xs font-bold rounded-full">
+                              🏆 WINNER
+                            </span>
+                          )}
+                          {index === 0 && !isWinner && stats.score > 0 && (
+                            <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-medium rounded-full">
+                              Top Pick
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className={`text-2xl font-bold ${scoreColor}`}>
+                      <div className={`text-3xl font-bold ${scoreColor}`}>
                         {stats.score > 0 ? "+" : ""}
                         {stats.score}
                       </div>
@@ -226,19 +305,19 @@ export default function VotingResultsModal({
                     <div className="flex items-center gap-6 text-sm mb-3">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">👍</span>
-                        <span className="font-semibold text-gray-700">{stats.up}</span>
+                        <span className="font-semibold text-foreground">{stats.up}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">😐</span>
-                        <span className="font-semibold text-gray-700">{stats.neutral}</span>
+                        <span className="font-semibold text-foreground">{stats.neutral}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">👎</span>
-                        <span className="font-semibold text-gray-700">{stats.down}</span>
+                        <span className="font-semibold text-foreground">{stats.down}</span>
                       </div>
                     </div>
 
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-2 bg-surface rounded-full overflow-hidden">
                       <div
                         className={`h-full ${barColor} transition-all`}
                         style={{ width: `${Math.min(100, Math.abs(stats.score) * 20)}%` }}
@@ -252,13 +331,13 @@ export default function VotingResultsModal({
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="bg-gray-100">
-                    <th className="sticky left-0 z-10 bg-gray-100 px-4 py-3 text-left font-semibold text-gray-700 border-b-2 border-gray-300">
+                  <tr className="bg-surface">
+                    <th className="sticky left-0 z-10 bg-surface px-4 py-3 text-left font-semibold text-foreground border-b-2 border-border">
                       Voter
                     </th>
-                    {Object.keys(mealAggregates).map((mealId) => (
-                      <th key={mealId} className="px-3 py-3 text-center font-medium text-gray-700 border-b-2 border-gray-300 min-w-[120px]">
-                        <div className="text-sm">{mealAggregates[mealId].name}</div>
+                    {sortedMeals.map(([mealId, stats]) => (
+                      <th key={mealId} className="px-3 py-3 text-center font-medium text-foreground border-b-2 border-border min-w-[120px]">
+                        <div className="text-sm">{stats.name}</div>
                       </th>
                     ))}
                   </tr>
@@ -272,20 +351,20 @@ export default function VotingResultsModal({
                     });
 
                     return (
-                      <tr key={voterName} className="hover:bg-gray-50 transition-colors">
-                        <td className="sticky left-0 z-10 bg-white hover:bg-gray-50 px-4 py-3 font-medium text-gray-800 border-b border-gray-200">
+                      <tr key={voterName} className="hover:bg-surface/50 transition-colors">
+                        <td className="sticky left-0 z-10 bg-background hover:bg-surface/50 px-4 py-3 font-medium text-foreground border-b border-border">
                           <div className="flex items-center gap-2">
                             <span>👤</span>
                             <span>{voterName}</span>
                           </div>
                         </td>
-                        {Object.keys(mealAggregates).map((mealId) => (
-                          <td key={mealId} className="px-3 py-3 text-center border-b border-gray-200">
+                        {sortedMeals.map(([mealId]) => (
+                          <td key={mealId} className="px-3 py-3 text-center border-b border-border">
                             <span className="text-3xl">
                               {voterVotes[mealId] === "up" ? "👍" : 
                                voterVotes[mealId] === "down" ? "👎" : 
                                voterVotes[mealId] === "neutral" ? "😐" : 
-                               <span className="text-gray-300 text-xl">—</span>}
+                               <span className="text-muted text-xl">—</span>}
                             </span>
                           </td>
                         ))}
@@ -299,28 +378,32 @@ export default function VotingResultsModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex gap-3 p-6 border-t bg-gray-50">
-          <button
+        <div className="flex gap-3 p-6 border-t border-border bg-surface">
+          <Button
             onClick={handleResetVotes}
             disabled={resetVotesMutation.isPending}
-            className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors disabled:opacity-50"
+            variant="outline"
+            size="sm"
           >
             Reset Votes
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleCloseSession}
             disabled={closeSessionMutation.isPending || !isOpen}
-            className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="destructive"
+            size="sm"
             title={!isOpen ? "Session is already closed" : ""}
           >
             Close Session
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onClose}
-            className="ml-auto px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+            variant="default"
+            size="lg"
+            className="ml-auto"
           >
             Done
-          </button>
+          </Button>
         </div>
       </div>
     </div>

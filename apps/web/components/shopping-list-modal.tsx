@@ -8,6 +8,7 @@ import type { Meal } from '@/server/db/schema';
 type ShoppingListModalProps = {
   meals: Meal[];
   onClose: () => void;
+  weekStartDate?: string; // To determine today's meals
 };
 
 type MealWithIngredients = {
@@ -19,7 +20,7 @@ type MealWithIngredients = {
 
 const CONCURRENCY_LIMIT = 3;
 
-export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
+export function ShoppingListModal({ meals, onClose, weekStartDate }: ShoppingListModalProps) {
   const [mealsList, setMealsList] = useState<MealWithIngredients[]>([]);
   const [loadedCount, setLoadedCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
@@ -210,7 +211,7 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
               <div className="text-sm text-muted mt-1">
                 {isStillLoading ? (
                   <div className="flex items-center gap-2">
-                    <span className="animate-pulse">Loading {loadedCount} of {totalToLoad} meals...</span>
+                    <span className="animate-pulse">Loading ingredients...</span>
                     {failedCount > 0 && (
                       <span className="text-destructive">({failedCount} failed)</span>
                     )}
@@ -220,7 +221,13 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
                     {failedCount} meal{failedCount !== 1 ? 's' : ''} failed to load
                   </span>
                 ) : (
-                  `Ingredients for ${mealsWithIngredients.length} meal${mealsWithIngredients.length !== 1 ? 's' : ''}`
+                  <>
+                    <span className="font-medium text-foreground">
+                      {mealsWithIngredients.reduce((total, m) => total + (m.ingredients?.length || 0), 0)} items
+                    </span>
+                    {' • '}
+                    {mealsWithIngredients.length} meal{mealsWithIngredients.length !== 1 ? 's' : ''}
+                  </>
                 )}
               </div>
             </div>
@@ -290,7 +297,24 @@ export function ShoppingListModal({ meals, onClose }: ShoppingListModalProps) {
                     <div className="flex items-center gap-3 mb-3">
                       <span className="text-3xl">{item.meal.emoji || '🍽️'}</span>
                       <div className="flex-1">
-                        <h3 className="font-bold text-foreground">{item.meal.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-foreground">{item.meal.name}</h3>
+                          {(() => {
+                            // Check if this meal is today
+                            if (!weekStartDate) return null;
+                            const today = new Date();
+                            const dayIndex = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].indexOf(item.meal.day?.toLowerCase() || '');
+                            if (dayIndex === -1) return null;
+                            const mealDate = new Date(weekStartDate);
+                            mealDate.setDate(mealDate.getDate() + dayIndex);
+                            const isToday = mealDate.toDateString() === today.toDateString();
+                            return isToday ? (
+                              <span className="px-2 py-0.5 text-xs rounded-full bg-primary text-primary-foreground font-medium">
+                                Today
+                              </span>
+                            ) : null;
+                          })()}
+                        </div>
                         <p className="text-xs text-muted capitalize">{item.meal.mealType} • {item.meal.day}</p>
                       </div>
                       {item.isLoading && (
