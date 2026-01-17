@@ -9,6 +9,7 @@ import { assignCategory, getCategoryConfig, sortByCategory, type IngredientCateg
 
 type ShoppingListModalProps = {
   meals: Meal[];
+  mealPlanId: number;
   onClose: () => void;
 };
 
@@ -33,7 +34,7 @@ interface ShoppingItem {
 const CONCURRENCY_LIMIT = 3;
 const STORAGE_KEY = 'familyplate_shopping_list_checked';
 
-export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) {
+export function ShoppingListModalV2({ meals, mealPlanId, onClose }: ShoppingListModalProps) {
   const [mealsList, setMealsList] = useState<MealWithIngredients[]>([]);
   const [loadedCount, setLoadedCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
@@ -43,9 +44,13 @@ export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) 
     new Set(['breakfast', 'lunch', 'dinner'])
   );
   const [viewMode, setViewMode] = useState<'consolidated' | 'by-meal'>('consolidated');
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [shareMode, setShareMode] = useState<'read' | 'check'>('check');
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const getRecipeDetailsMutation = trpc.mealPlanning.getRecipeDetails.useMutation();
+  const createShareLinkMutation = trpc.shoppingList.createShareLink.useMutation();
 
   // Load checked state from localStorage
   useEffect(() => {
@@ -273,6 +278,32 @@ export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) 
     alert('Shopping list copied to clipboard!');
   };
 
+  const handleCreateShareLink = async () => {
+    try {
+      const result = await createShareLinkMutation.mutateAsync({
+        mealPlanId,
+        mode: shareMode,
+      });
+      setShareUrl(result.url);
+    } catch (err) {
+      console.error('Failed to create share link:', err);
+      alert('Failed to create share link. Please try again.');
+    }
+  };
+
+  const copyShareLink = () => {
+    if (!shareUrl) return;
+    navigator.clipboard.writeText(shareUrl);
+    alert('Link copied to clipboard!');
+  };
+
+  const copyShareText = () => {
+    if (!shareUrl) return;
+    const text = `Here's our shopping list for this week: ${shareUrl}`;
+    navigator.clipboard.writeText(text);
+    alert('Message copied to clipboard!');
+  };
+
   const retryFailed = () => {
     const failedMeals = mealsList
       .map((m, index) => ({ ...m, originalIndex: index }))
@@ -496,13 +527,22 @@ export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) 
         {mealsWithIngredients.length > 0 && !isStillLoading && (
           <div className="px-6 py-4 border-t border-border flex gap-3">
             {viewMode === 'consolidated' && (
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={copyConsolidatedList}
-              >
-                📋 Copy Shopping List
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={copyConsolidatedList}
+                >
+                  📋 Copy List
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowShareDialog(true)}
+                >
+                  🔗 Share Link
+                </Button>
+              </>
             )}
             <Button
               variant="default"
@@ -511,6 +551,99 @@ export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) 
             >
               Done
             </Button>
+          </div>
+        )}
+
+        {/* Share Dialog */}
+        {showShareDialog && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20" onClick={() => {
+            setShowShareDialog(false);
+            setShareUrl(null);
+          }}>
+            <div className="bg-background rounded-2xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-xl font-bold text-foreground mb-4">Share Shopping List</h3>
+              
+              {!shareUrl ? (
+                <>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-foreground mb-2">Mode</label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShareMode('read')}
+                        className={`flex-1 px-4 py-2 rounded-lg border transition-all ${
+                          shareMode === 'read'
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-surface text-foreground border-border hover:bg-surface/80'
+                        }`}
+                      >
+                        👁 Read-only
+                      </button>
+                      <button
+                        onClick={() => setShareMode('check')}
+                        className={`flex-1 px-4 py-2 rounded-lg border transition-all ${
+                          shareMode === 'check'
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-surface text-foreground border-border hover:bg-surface/80'
+                        }`}
+                      >
+                        ✓ Checkable
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted mt-2">
+                      {shareMode === 'read'
+                        ? 'Recipients can view the list only'
+                        : 'Recipients can check off items (saved locally)'}
+                    </p>
+                  </div>
+                  <Button
+                    variant="default"
+                    className="w-full"
+                    onClick={handleCreateShareLink}
+                    disabled={createShareLinkMutation.isPending}
+                  >
+                    {createShareLinkMutation.isPending ? 'Creating...' : 'Create Link'}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-foreground mb-2">Share URL</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={shareUrl}
+                        readOnly
+                        className="flex-1 px-3 py-2 rounded-lg bg-surface border border-border text-sm text-foreground"
+                      />
+                      <Button variant="outline" onClick={copyShareLink}>
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full mb-2"
+                    onClick={copyShareText}
+                  >
+                    📋 Copy Message
+                  </Button>
+                  <p className="text-xs text-muted text-center">
+                    Link expires in 7 days
+                  </p>
+                </>
+              )}
+              
+              <Button
+                variant="ghost"
+                className="w-full mt-4"
+                onClick={() => {
+                  setShowShareDialog(false);
+                  setShareUrl(null);
+                }}
+              >
+                Close
+              </Button>
+            </div>
           </div>
         )}
       </div>

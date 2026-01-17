@@ -4,11 +4,15 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Public routes that don't require authentication
+  const publicRoutes = ['/share'];
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+
   // Protected routes that require authentication
   const protectedRoutes = ['/dashboard', '/onboarding', '/settings'];
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
-  if (isProtectedRoute) {
+  if (isProtectedRoute && !isPublicRoute) {
     const sessionCookie = request.cookies.get('fp_session');
 
     if (!sessionCookie) {

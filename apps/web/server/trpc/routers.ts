@@ -1332,6 +1332,111 @@ Return ONLY a JSON object (no markdown, no extra text) with this structure:
         return { votes };
       }),
   }),
+
+  // Shopping List Share (MVP)
+  shoppingList: router({
+    // Create share link (authenticated)
+    createShareLink: protectedProcedure
+      .input(
+        z.object({
+          mealPlanId: z.number(),
+          mode: z.enum(["read", "check"]),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Verify meal plan belongs to user
+        const [mealPlan] = await db
+          .select()
+          .from(mealPlans)
+          .where(and(eq(mealPlans.id, input.mealPlanId), eq(mealPlans.userId, ctx.user.id)));
+
+        if (!mealPlan) {
+          throw new Error("Meal plan not found or access denied");
+        }
+
+        // Generate unguessable token
+        const token = randomBytes(32).toString("base64url");
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+        // Create share
+        const { shoppingListShares } = await import("../db/schema");
+        await db.insert(shoppingListShares).values({
+          mealPlanId: input.mealPlanId,
+          token,
+          mode: input.mode,
+          expiresAt,
+        });
+
+        const url = `${ctx.baseUrl}/share/shopping-list/${token}`;
+
+        return {
+          url,
+          token,
+          expiresAt: expiresAt.toISOString(),
+          mode: input.mode,
+        };
+      }),
+
+    // Get shared shopping list (public)
+    getShared: publicProcedure
+      .input(
+        z.object({
+          token: z.string(),
+        })
+      )
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Get share
+        const { shoppingListShares } = await import("../db/schema");
+        const [share] = await db
+          .select()
+          .from(shoppingListShares)
+          .where(eq(shoppingListShares.token, input.token));
+
+        if (!share) {
+          throw new Error("Share not found");
+        }
+
+        // Check expiry and revocation
+        if (share.revokedAt) {
+          throw new Error("This link has been revoked");
+        }
+
+        if (new Date() > new Date(share.expiresAt)) {
+          throw new Error("This link has expired");
+        }
+
+        // Get meal plan
+        const [mealPlan] = await db
+          .select()
+          .from(mealPlans)
+          .where(eq(mealPlans.id, share.mealPlanId));
+
+        if (!mealPlan) {
+          throw new Error("Meal plan not found");
+        }
+
+        // Get user preferences for family name
+        const [prefs] = await db
+          .select()
+          .from(userPreferences)
+          .where(eq(userPreferences.userId, mealPlan.userId));
+
+        const meals = mealPlan.meals as Meal[];
+
+        return {
+          mode: share.mode as "read" | "check",
+          familyName: prefs?.familyName || undefined,
+          weekLabel: mealPlan.weekStartDate,
+          meals,
+        };
+      }),
+  }),
 });
 
 // Helper function to generate recipe details

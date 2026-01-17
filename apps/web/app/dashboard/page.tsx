@@ -504,6 +504,7 @@ export default function DashboardPage() {
       {showShoppingList && mealPlan && (
         <ShoppingListModal
           meals={mealPlan.meals}
+          mealPlanId={mealPlan.id}
           onClose={() => setShowShoppingList(false)}
         />
       )}

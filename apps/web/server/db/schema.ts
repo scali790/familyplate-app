@@ -148,6 +148,26 @@ export type MealHistory = typeof mealHistory.$inferSelect;
 export type VoteSession = typeof voteSessions.$inferSelect;
 export type PublicMealVote = typeof publicMealVotes.$inferSelect;
 
+// Shopping List Shares (MVP: shareable links for shopping lists)
+export const shoppingListShares = pgTable(
+  "shopping_list_shares",
+  {
+    id: serial("id").primaryKey(),
+    mealPlanId: integer("meal_plan_id").notNull().references(() => mealPlans.id, { onDelete: "cascade" }),
+    token: varchar("token", { length: 255 }).notNull().unique(),
+    mode: varchar("mode", { length: 10 }).notNull(), // 'read' | 'check'
+    createdAt: timestamp("created_at").defaultNow(),
+    expiresAt: timestamp("expires_at").notNull(),
+    revokedAt: timestamp("revoked_at"),
+  },
+  (table) => ({
+    tokenIdx: index("shopping_list_shares_token_idx").on(table.token),
+    expiresAtIdx: index("shopping_list_shares_expiresAt_idx").on(table.expiresAt),
+  })
+);
+
+export type ShoppingListShare = typeof shoppingListShares.$inferSelect;
+
 export interface Meal {
   name: string;
   description: string;
