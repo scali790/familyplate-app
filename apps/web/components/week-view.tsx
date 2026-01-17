@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { Meal } from '@/server/db/schema';
+import { MEAL_TYPE_CONFIG, getMealTypeConfig } from '@/lib/meal-type-config';
 
 interface WeekViewProps {
   meals: Meal[];
@@ -15,12 +16,6 @@ interface WeekViewProps {
 
 const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const dayShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-const mealTypeConfig = {
-  breakfast: { emoji: '🌅', label: 'Breakfast', color: 'text-orange-500' },
-  lunch: { emoji: '🌞', label: 'Lunch', color: 'text-yellow-500' },
-  dinner: { emoji: '🌙', label: 'Dinner', color: 'text-blue-500' },
-};
 
 export function WeekView({ meals, mealTypes, weekStartDate, onMealClick, onGeneratePartial }: WeekViewProps) {
   const [generatingMealType, setGeneratingMealType] = useState<string | null>(null);
@@ -105,7 +100,7 @@ export function WeekView({ meals, mealTypes, weekStartDate, onMealClick, onGener
 
         {/* Meal Type Rows */}
         {mealTypes.map(mealType => {
-          const config = mealTypeConfig[mealType as keyof typeof mealTypeConfig];
+          const config = getMealTypeConfig(mealType);
           if (!config) return null;
 
           const isMissing = missingMealTypes.includes(mealType);
@@ -118,7 +113,7 @@ export function WeekView({ meals, mealTypes, weekStartDate, onMealClick, onGener
                 <div className={`text-2xl mb-1 ${isMissing ? 'opacity-40' : ''}`}>
                   {config.emoji}
                 </div>
-                <div className={`text-xs font-semibold ${config.color} ${isMissing ? 'opacity-40' : ''}`}>
+                <div className={`text-xs font-semibold ${config.textColor} ${isMissing ? 'opacity-40' : ''}`}>
                   {config.label}
                 </div>
               </div>
@@ -166,9 +161,12 @@ export function WeekView({ meals, mealTypes, weekStartDate, onMealClick, onGener
                   return (
                     <Card
                       key={`${day}-${mealType}`}
-                      className={`bg-surface border-border hover:border-primary transition-colors ${
-                        meal ? 'cursor-pointer' : 'opacity-50'
-                      }`}
+                      className={`
+                        bg-surface border-l-4 transition-colors
+                        ${meal ? 'cursor-pointer' : 'opacity-50'}
+                        ${config.borderColor}
+                        ${meal ? `hover:${config.lightBg}` : ''}
+                      `}
                       onClick={() => meal && onMealClick(meal)}
                     >
                       <CardContent className="p-3">

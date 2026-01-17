@@ -8,6 +8,7 @@ import { CookModeModal } from './cook-mode/cook-mode-modal';
 import { generateCookingSteps } from '@/lib/generate-cooking-steps';
 import type { CookModeState } from '@/types/cook-mode';
 import { trpc } from '@/lib/trpc';
+import { getMealTypeConfig } from '@/lib/meal-type-config';
 
 type DayFocusPanelProps = {
   open: boolean;
@@ -25,11 +26,6 @@ type DayFocusPanelProps = {
 };
 
 const MEAL_TYPE_ORDER = ['breakfast', 'lunch', 'dinner'];
-const MEAL_TYPE_LABELS: Record<string, string> = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  dinner: 'Dinner',
-};
 
 const SWIPE_HINT_KEY = 'dayViewSwipeHintSeen';
 
@@ -332,20 +328,33 @@ export function DayFocusPanel({
                   <div key={mealType} className="space-y-3">
                     {/* Meal Type Header */}
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-semibold text-foreground">
-                        {MEAL_TYPE_LABELS[mealType]}
-                      </span>
+                      {(() => {
+                        const config = getMealTypeConfig(mealType);
+                        return (
+                          <span className={`text-lg font-semibold flex items-center gap-2 ${config?.textColor || 'text-foreground'}`}>
+                            <span className="text-xl">{config?.emoji}</span>
+                            {config?.label || mealType}
+                          </span>
+                        );
+                      })()}
                       <div className="flex-1 h-px bg-border" />
                     </div>
 
                     {/* Meal Card - Strong Primary emphasis + Secondary de-emphasis */}
                     <Card className={`
-                      border-2 
+                      border-l-4 border-t border-r border-b
                       transition-all duration-300
-                      ${isPrimary 
-                        ? 'border-primary shadow-2xl scale-[1.05] ring-2 ring-primary/20' 
-                        : 'border-border shadow-sm opacity-75 scale-95'
-                      }
+                      ${(() => {
+                        const config = getMealTypeConfig(mealType);
+                        const borderColor = config?.borderColor || 'border-border';
+                        const lightBorder = config?.lightBorder || 'border-border';
+                        
+                        if (isPrimary) {
+                          return `${borderColor} border-t-border border-r-border border-b-border shadow-2xl scale-[1.05] ring-2 ring-primary/20`;
+                        } else {
+                          return `${lightBorder} border-t-border border-r-border border-b-border shadow-sm opacity-75 scale-95`;
+                        }
+                      })()}
                     `}>
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
