@@ -4,6 +4,9 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import type { Meal } from '@/server/db/schema';
 import { useEffect, useRef, useState } from 'react';
+import { CookModeModal } from './cook-mode/cook-mode-modal';
+import { generateCookingSteps } from '@/lib/generate-cooking-steps';
+import type { CookModeState } from '@/types/cook-mode';
 
 type DayFocusPanelProps = {
   open: boolean;
@@ -49,6 +52,8 @@ export function DayFocusPanel({
 
   // State
   const [showHint, setShowHint] = useState(false);
+  const [cookModeState, setCookModeState] = useState<CookModeState | null>(null);
+  const [isCookModeOpen, setIsCookModeOpen] = useState(false);
 
   // Format date for display
   const dayDate = new Date(weekStartDate);
@@ -379,7 +384,25 @@ export function DayFocusPanel({
                             <Button
                               variant="default"
                               size={isPrimary ? 'lg' : 'default'}
-                              onClick={() => onOpenRecipe(meal)}
+                              onClick={() => {
+                                // Generate cooking steps and open Cook Mode
+                                const { steps, ingredients } = generateCookingSteps(meal);
+                                const initialState: CookModeState = {
+                                  mealId: meal.recipeId || meal.name,
+                                  mealName: meal.name,
+                                  emoji: meal.emoji || '🍽️',
+                                  steps,
+                                  ingredients,
+                                  currentStep: 0,
+                                  currentView: 'intro',
+                                  ingredientsChecked: new Set(),
+                                  timerState: null,
+                                  startedAt: Date.now(),
+                                  lastUpdatedAt: Date.now(),
+                                };
+                                setCookModeState(initialState);
+                                setIsCookModeOpen(true);
+                              }}
                               className={`w-full mb-3 ${isPrimary ? 'shadow-lg' : ''}`}
                             >
                               🍳 Start cooking
@@ -428,6 +451,19 @@ export function DayFocusPanel({
           </Button>
         </div>
       </div>
+
+      {/* Cook Mode Modal */}
+      {cookModeState && (
+        <CookModeModal
+          isOpen={isCookModeOpen}
+          onClose={() => setIsCookModeOpen(false)}
+          initialState={cookModeState}
+          onComplete={() => {
+            setIsCookModeOpen(false);
+            setCookModeState(null);
+          }}
+        />
+      )}
     </div>
   );
 }
