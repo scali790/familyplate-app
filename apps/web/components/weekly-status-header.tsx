@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import type { MealPlan } from '@/server/db/schema';
 
 interface WeeklyStatusHeaderProps {
   mealPlan: {
@@ -26,8 +25,6 @@ export function WeeklyStatusHeader({
 }: WeeklyStatusHeaderProps) {
   // Calculate meal plan status
   const totalMeals = mealPlan.meals?.length || 0;
-  const expectedMeals = 7 * 3; // 7 days * 3 meal types (max)
-  const mealsPlanned = `${totalMeals} / ${expectedMeals} meals planned`;
 
   // Determine primary CTA
   const getPrimaryCTA = () => {
@@ -56,72 +53,56 @@ export function WeeklyStatusHeader({
 
   const primaryCTA = getPrimaryCTA();
 
-  // Format week label
-  const formatWeekLabel = (weekStartDate: string) => {
-    const startDate = new Date(weekStartDate);
-    const month = startDate.toLocaleDateString('en-US', { month: 'short' });
-    const day = startDate.getDate();
-    return `Week of ${month} ${day}`;
-  };
-
   return (
-    <Card className="sticky top-0 z-10 bg-surface border-border shadow-md mb-6">
-      <div className="p-4 md:p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* Left: Status Info */}
-          <div className="flex-1">
-            <h2 className="text-lg md:text-xl font-bold text-foreground mb-3">
-              {formatWeekLabel(mealPlan.weekStartDate)}
-            </h2>
-            
-            <div className="flex flex-wrap gap-4 text-sm">
-              {/* Meal Plan Status */}
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🍽️</span>
-                <span className="text-muted">{mealsPlanned}</span>
-              </div>
+    <Card className="bg-surface border-border mb-4">
+      <div className="p-3 md:p-4">
+        <div className="flex items-center justify-between gap-3">
+          {/* Left: Status Icons */}
+          <div className="flex items-center gap-3 md:gap-4 text-sm flex-1 min-w-0">
+            {/* Meal Plan Status */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xl">🍽️</span>
+              <span className="text-muted text-xs md:text-sm whitespace-nowrap">
+                {totalMeals} meals
+              </span>
+            </div>
 
-              {/* Voting Status */}
-              {votingSession && (
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🗳️</span>
-                  <span className="text-muted">
-                    <span className="text-primary font-medium">Voting Active</span>
-                  </span>
-                </div>
-              )}
-
-              {/* Shopping List Status */}
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">📝</span>
-                <span className="text-muted">
-                  {totalMeals > 0 ? (
-                    <span className="text-green-600 dark:text-green-400 font-medium">Ready</span>
-                  ) : (
-                    <span className="text-muted-foreground">Not generated</span>
-                  )}
+            {/* Voting Status */}
+            {votingSession && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl">🗳️</span>
+                <span className="text-primary font-medium text-xs md:text-sm whitespace-nowrap">
+                  Voting
                 </span>
               </div>
+            )}
+
+            {/* Shopping List Status */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xl">📝</span>
+              <span className={`text-xs md:text-sm font-medium whitespace-nowrap ${
+                totalMeals > 0 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-muted-foreground'
+              }`}>
+                {totalMeals > 0 ? 'Ready' : 'Not ready'}
+              </span>
             </div>
           </div>
 
           {/* Right: Primary CTA */}
           {primaryCTA && (
-            <div className="flex flex-col items-start md:items-end gap-2">
-              <Button
-                onClick={primaryCTA.action}
-                variant={primaryCTA.variant}
-                size="lg"
-                className="w-full md:w-auto"
-              >
-                {primaryCTA.label}
-              </Button>
-              {primaryCTA.description && (
-                <p className="text-sm text-muted italic">
-                  {primaryCTA.description}
-                </p>
-              )}
-            </div>
+            <Button
+              onClick={primaryCTA.action}
+              variant={primaryCTA.variant}
+              size="sm"
+              className="flex-shrink-0"
+            >
+              <span className="hidden sm:inline">{primaryCTA.label}</span>
+              <span className="sm:hidden">
+                {primaryCTA.label.includes('voting') ? '📢' : '🛒'}
+              </span>
+            </Button>
           )}
         </div>
       </div>
