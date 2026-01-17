@@ -504,7 +504,6 @@ export default function DashboardPage() {
       {showShoppingList && mealPlan && (
         <ShoppingListModal
           meals={mealPlan.meals}
-          weekStartDate={mealPlan.weekStartDate}
           onClose={() => setShowShoppingList(false)}
         />
       )}
