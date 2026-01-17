@@ -542,6 +542,20 @@ export default function DashboardPage() {
             // TODO: Implement meal regeneration
             alert(`Regenerate meal: ${meal.name}`);
           }}
+          onSwipeLeft={() => {
+            // Next day
+            if (focusedDayIndex < 6) {
+              setFocusedDayIndex(focusedDayIndex + 1);
+            }
+          }}
+          onSwipeRight={() => {
+            // Previous day
+            if (focusedDayIndex > 0) {
+              setFocusedDayIndex(focusedDayIndex - 1);
+            }
+          }}
+          canSwipeLeft={focusedDayIndex < 6}
+          canSwipeRight={focusedDayIndex > 0}
         />
       )}
     </div>
