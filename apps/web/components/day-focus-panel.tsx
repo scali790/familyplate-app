@@ -342,19 +342,19 @@ export function DayFocusPanel({
 
                     {/* Meal Card - Strong Primary emphasis + Secondary de-emphasis */}
                     <Card className={`
-                      border-t border-r border-b border-l-4
+                      border-4
                       transition-all duration-300
                       ${isPrimary ? 'shadow-2xl scale-[1.05] ring-2 ring-primary/20' : 'shadow-sm opacity-75 scale-95'}
                       ${(() => {
-                        // Static classes for Tailwind compilation
+                        // Static classes for Tailwind compilation (full 4px border like Voting Page)
                         if (mealType === 'breakfast') {
-                          return isPrimary ? 'border-l-orange-400 border-t-border border-r-border border-b-border' : 'border-l-orange-200 border-t-border border-r-border border-b-border';
+                          return isPrimary ? 'border-orange-400' : 'border-orange-200';
                         }
                         if (mealType === 'lunch') {
-                          return isPrimary ? 'border-l-blue-400 border-t-border border-r-border border-b-border' : 'border-l-blue-200 border-t-border border-r-border border-b-border';
+                          return isPrimary ? 'border-blue-400' : 'border-blue-200';
                         }
                         if (mealType === 'dinner') {
-                          return isPrimary ? 'border-l-purple-400 border-t-border border-r-border border-b-border' : 'border-l-purple-200 border-t-border border-r-border border-b-border';
+                          return isPrimary ? 'border-purple-400' : 'border-purple-200';
                         }
                         return 'border-border';
                       })()}

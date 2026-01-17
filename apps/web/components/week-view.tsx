@@ -158,12 +158,12 @@ export function WeekView({ meals, mealTypes, weekStartDate, onMealClick, onGener
                 dayNames.map(day => {
                   const meal = mealsByDayAndType[day.toLowerCase()][mealType];
                   
-                  // Get border color class based on meal type
+                  // Get border color class based on meal type (full 4px border like Voting Page)
                   const getBorderClass = () => {
-                    if (mealType === 'breakfast') return 'border-l-orange-400';
-                    if (mealType === 'lunch') return 'border-l-blue-400';
-                    if (mealType === 'dinner') return 'border-l-purple-400';
-                    return 'border-l-border';
+                    if (mealType === 'breakfast') return 'border-orange-400';
+                    if (mealType === 'lunch') return 'border-blue-400';
+                    if (mealType === 'dinner') return 'border-purple-400';
+                    return 'border-border';
                   };
                   
                   const getHoverClass = () => {
@@ -178,7 +178,7 @@ export function WeekView({ meals, mealTypes, weekStartDate, onMealClick, onGener
                     <Card
                       key={`${day}-${mealType}`}
                       className={`
-                        bg-surface border-l-4 transition-colors
+                        bg-surface border-4 transition-colors
                         ${meal ? 'cursor-pointer' : 'opacity-50'}
                         ${getBorderClass()}
                         ${getHoverClass()}
