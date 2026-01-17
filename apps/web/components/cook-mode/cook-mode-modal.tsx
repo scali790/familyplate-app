@@ -332,10 +332,10 @@ export function CookModeModal({
               <AlertDescription className="space-y-6">
                 <div className="text-center">
                   <p className="text-lg font-semibold text-foreground">
-                    Kochen wirklich abbrechen?
+                    Really stop cooking?
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Dein Fortschritt wird gespeichert und du kannst später weitermachen.
+                    Your progress will be saved and you can continue later.
                   </p>
                 </div>
 

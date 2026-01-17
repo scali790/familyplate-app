@@ -39,17 +39,17 @@ export function DoneScreen({
         {/* Success Message */}
         <div className="space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-            Fertig!
+            Done!
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground">
-            {mealName} ist bereit
+            {mealName} is ready
           </p>
         </div>
 
         {/* Encouragement */}
         <div className="text-2xl md:text-3xl font-semibold text-primary">
-          Guten Appetit! 🍽️
+          Enjoy your meal! 🍽️
         </div>
 
         {/* Return Button */}
