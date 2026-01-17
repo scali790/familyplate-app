@@ -63,7 +63,7 @@ export function WeeklyStatusHeader({
             <div className="flex items-center gap-1.5">
               <span className="text-xl">🍽️</span>
               <span className="text-muted text-xs md:text-sm whitespace-nowrap">
-                {totalMeals} meals
+                {totalMeals} meals planned
               </span>
             </div>
 

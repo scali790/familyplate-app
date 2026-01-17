@@ -301,30 +301,38 @@ export default function DashboardPage() {
               />
 
               {/* Action Buttons */}
-              <div className="mb-6 flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={handleGenerateNew}
-                  disabled={generateMutation.isPending}
-                >
-                  🪤 {generateMutation.isPending ? 'Generating...' : 'Generate new plan'}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowShoppingList(true)}
-                >
-                  🛒 Shopping list
-                </Button>
+              <div className="mb-6 space-y-3">
+                {/* Primary CTA: Share for voting */}
                 <Button
                   variant="default"
-                  className="flex-1"
+                  size="lg"
+                  className="w-full"
                   onClick={handleShareForVoting}
                   disabled={createVotingSessionMutation.isPending}
                 >
                   👥 {createVotingSessionMutation.isPending ? 'Creating...' : 'Share for voting'}
                 </Button>
+                
+                {/* Secondary CTAs */}
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setShowShoppingList(true)}
+                  >
+                    🛒 Shopping list
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleGenerateNew}
+                    disabled={generateMutation.isPending}
+                  >
+                    🪤 {generateMutation.isPending ? 'Generating...' : 'Generate new plan'}
+                  </Button>
+                </div>
               </div>
 
               {/* Week View is the only view - Day Focus handles day details */}
