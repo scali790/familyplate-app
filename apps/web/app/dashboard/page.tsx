@@ -383,10 +383,9 @@ export default function DashboardPage() {
 
                     return (
                       <div key={mealType} className="grid grid-cols-8 gap-2">
-                        {/* Meal Type Label */}
-                        <div className="col-span-1 flex flex-col items-center justify-center">
-                          <div className={`text-2xl mb-1 ${!isEnabled ? 'opacity-30' : ''}`}>{mealTypeIcons[mealType]}</div>
-                          <div className={`text-sm font-semibold capitalize ${!isEnabled ? 'text-muted-foreground opacity-40' : 'text-foreground'}`}>
+                        {/* Meal Type Label - Text only, no icon */}
+                        <div className="col-span-1 flex items-center justify-center">
+                          <div className={`text-xs font-semibold capitalize ${!isEnabled ? 'text-muted-foreground opacity-40' : 'text-foreground'}`}>
                             {mealType}
                             {!isEnabled && <div className="text-[10px] text-muted-foreground">disabled</div>}
                           </div>
@@ -409,22 +408,22 @@ export default function DashboardPage() {
                                 mealType
                               })}
                             >
-                              <CardContent className="p-3">
-                                {/* Emoji - Visual Anchor */}
-                                <div className={`text-2xl mb-2 text-center ${!isEnabled ? 'grayscale' : ''}`}>
+                              <CardContent className="p-2 min-h-24 flex flex-col items-center justify-center">
+                                {/* Emoji - Smaller for more text space */}
+                                <div className={`text-xl mb-1.5 text-center ${!isEnabled ? 'grayscale' : ''}`}>
                                   {meal.emoji || '🍽️'}
                                 </div>
                                 
-                                {/* Meal Name - Max 2 lines */}
-                                <div className={`text-xs font-medium text-center line-clamp-2 mb-1 ${
+                                {/* Meal Name - Smaller font, fully readable */}
+                                <div className={`text-[10px] leading-tight font-medium text-center line-clamp-3 mb-1 ${
                                   isEnabled ? 'text-foreground' : 'text-muted-foreground'
                                 }`}>
                                   {meal.name}
                                 </div>
                                 
-                                {/* Prep Time - Small, optional */}
+                                {/* Prep Time - Tiny */}
                                 {meal.prepTime && (
-                                  <div className="text-[10px] text-muted text-center">
+                                  <div className="text-[9px] text-muted text-center">
                                     {meal.prepTime}
                                   </div>
                                 )}
