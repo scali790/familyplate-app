@@ -28,6 +28,56 @@ const getIconsForTags = (tags: string[]): string[] => {
   return tags.map(tag => iconMap[tag.toLowerCase()] || '').filter(Boolean);
 };
 
+// Clean, deduplicate, and limit tags
+const cleanAndLimitTags = (tags: string[], maxTags: number = 3): string[] => {
+  if (!tags || tags.length === 0) return [];
+
+  // Fix common typos
+  const fixTypos = (tag: string): string => {
+    const typoMap: Record<string, string> = {
+      'healt!': 'healthy',
+      'healt': 'healthy',
+      'vegetaria': 'vegetarian',
+      'italia': 'italian',
+    };
+    return typoMap[tag.toLowerCase()] || tag;
+  };
+
+  // Clean and normalize tags
+  const cleanedTags = tags
+    .map(tag => fixTypos(tag.trim()))
+    .filter(tag => tag.length > 0);
+
+  // Remove duplicates (case-insensitive)
+  const uniqueTags = Array.from(
+    new Map(cleanedTags.map(tag => [tag.toLowerCase(), tag])).values()
+  );
+
+  // Prioritize tags: cuisine > protein > dietary
+  const cuisines = ['italian', 'mediterranean', 'middle-eastern', 'mexican', 'asian', 'indian'];
+  const proteins = ['chicken', 'beef', 'fish', 'seafood', 'pork'];
+  const dietary = ['vegetarian', 'vegan', 'healthy', 'gluten-free'];
+
+  const sortedTags = uniqueTags.sort((a, b) => {
+    const aLower = a.toLowerCase();
+    const bLower = b.toLowerCase();
+    
+    const aIsCuisine = cuisines.includes(aLower);
+    const bIsCuisine = cuisines.includes(bLower);
+    if (aIsCuisine && !bIsCuisine) return -1;
+    if (!aIsCuisine && bIsCuisine) return 1;
+    
+    const aIsProtein = proteins.includes(aLower);
+    const bIsProtein = proteins.includes(bLower);
+    if (aIsProtein && !bIsProtein) return -1;
+    if (!aIsProtein && bIsProtein) return 1;
+    
+    return 0;
+  });
+
+  return sortedTags.slice(0, maxTags);
+};
+
 // Meal Type Icons
 const mealTypeIcons: Record<string, string> = {
   breakfast: '🌅',
@@ -365,7 +415,7 @@ export default function DashboardPage() {
                                 {/* Tags */}
                                 {meal.tags && meal.tags.length > 0 && (
                                   <div className="flex flex-wrap gap-1 justify-center mb-1">
-                                    {meal.tags.slice(0, 2).map((tag, i) => (
+                                    {cleanAndLimitTags(meal.tags, 3).map((tag, i) => (
                                       <span key={i} className="text-[9px] px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded-full">
                                         {tag}
                                       </span>
