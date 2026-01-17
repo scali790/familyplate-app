@@ -351,20 +351,24 @@ export default function DashboardPage() {
                             setFocusedDayIndex(index);
                             setIsDayFocusOpen(true);
                           }}
-                          className={`text-center rounded-lg p-2 transition-all hover:scale-105 hover:shadow-md cursor-pointer group ${
-                            isToday ? 'bg-gradient-to-br from-orange-100 to-amber-100 border-2 border-orange-400' : 'hover:bg-surface'
+                          className={`text-center rounded-lg p-3 transition-all hover:scale-105 hover:shadow-lg cursor-pointer group ${
+                            isToday 
+                              ? 'bg-gradient-to-br from-orange-100 to-amber-100 border-2 border-orange-400 shadow-md' 
+                              : 'bg-surface/50 border border-border hover:border-primary/50'
                           }`}
                         >
-                          <div className={`font-semibold flex items-center justify-center gap-1 ${
+                          <div className={`font-bold text-sm flex flex-col items-center gap-0.5 ${
                             isToday ? 'text-orange-600' : 'text-foreground'
                           }`}>
                             {day}
-                            <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">›</span>
-                            {isToday && <div className="text-[10px] font-bold text-orange-600 w-full">TODAY</div>}
+                            {isToday && <div className="text-[9px] font-bold text-orange-600 uppercase tracking-wide">Today</div>}
                           </div>
-                          <div className={`text-xs ${
-                            isToday ? 'text-orange-500 font-medium' : 'text-muted'
+                          <div className={`text-xs mt-1 ${
+                            isToday ? 'text-orange-500 font-semibold' : 'text-muted'
                           }`}>{getDayDate(mealPlan.weekStartDate, index).split(' ')[1]}</div>
+                          <div className="text-[9px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
+                            View day ›
+                          </div>
                         </button>
                       );
                     })}
@@ -406,39 +410,24 @@ export default function DashboardPage() {
                               })}
                             >
                               <CardContent className="p-3">
-                                <div className={`text-2xl mb-1 text-center ${!isEnabled ? 'grayscale' : ''}`}>{meal.emoji || '🍽️'}</div>
-                                <div className={`text-xs font-medium text-center line-clamp-1 mb-1 ${
+                                {/* Emoji - Visual Anchor */}
+                                <div className={`text-2xl mb-2 text-center ${!isEnabled ? 'grayscale' : ''}`}>
+                                  {meal.emoji || '🍽️'}
+                                </div>
+                                
+                                {/* Meal Name - Max 2 lines */}
+                                <div className={`text-xs font-medium text-center line-clamp-2 mb-1 ${
                                   isEnabled ? 'text-foreground' : 'text-muted-foreground'
                                 }`}>
                                   {meal.name}
                                 </div>
                                 
-                                {/* Prep Time */}
+                                {/* Prep Time - Small, optional */}
                                 {meal.prepTime && (
-                                  <div className="text-[10px] text-muted text-center mb-1">
-                                    ⏱️ {meal.prepTime}
+                                  <div className="text-[10px] text-muted text-center">
+                                    {meal.prepTime}
                                   </div>
                                 )}
-                                
-                                {/* Tags */}
-                                {meal.tags && meal.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 justify-center mb-1">
-                                    {cleanAndLimitTags(meal.tags, 3).map((tag, i) => (
-                                      <span key={i} className="text-[9px] px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded-full">
-                                        {tag}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                                
-                                {/* Voting Results */}
-                                {((meal.upVotes ?? 0) > 0 || (meal.neutralVotes ?? 0) > 0 || (meal.downVotes ?? 0) > 0) ? (
-                                  <div className="flex gap-1 justify-center text-[10px] mt-1">
-                                    {(meal.upVotes ?? 0) > 0 && <span>👍{meal.upVotes}</span>}
-                                    {(meal.neutralVotes ?? 0) > 0 && <span>😐{meal.neutralVotes}</span>}
-                                    {(meal.downVotes ?? 0) > 0 && <span>👎{meal.downVotes}</span>}
-                                  </div>
-                                ) : null}
                               </CardContent>
                             </Card>
                           ))

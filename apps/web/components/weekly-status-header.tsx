@@ -135,6 +135,54 @@ export function WeeklyStatusHeader({
             {nextStepHint}
           </p>
         </div>
+
+        {/* Weekly Insights - Aggregated Tags */}
+        {totalMeals > 0 && (() => {
+          // Aggregate tags from all meals
+          const tagCounts: Record<string, number> = {};
+          mealPlan.meals.forEach(meal => {
+            meal.tags?.forEach((tag: string) => {
+              tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+            });
+          });
+
+          // Get top 4 tags
+          const topTags = Object.entries(tagCounts)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 4);
+
+          if (topTags.length === 0) return null;
+
+          // Tag emoji mapping
+          const tagEmojis: Record<string, string> = {
+            vegetarian: '🥦',
+            vegan: '🌱',
+            quick: '⚡',
+            family: '👨‍👩‍👧',
+            healthy: '🥗',
+            italian: '🇮🇹',
+            mediterranean: '🌍',
+            asian: '🍜',
+            mexican: '🌯',
+            protein: '🥩',
+          };
+
+          return (
+            <div className="mt-3 pt-3 border-t border-border/50">
+              <div className="flex flex-wrap gap-2">
+                {topTags.map(([tag, count]) => (
+                  <div
+                    key={tag}
+                    className="flex items-center gap-1.5 px-2 py-1 bg-surface rounded-full text-xs text-muted-foreground"
+                  >
+                    <span>{tagEmojis[tag.toLowerCase()] || '🍽️'}</span>
+                    <span className="font-medium">{count}× {tag}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </Card>
   );
