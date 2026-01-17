@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RecipeModal } from '@/components/recipe-modal';
 import VotingResultsModal from '@/components/voting-results-modal';
-import { ShoppingListModal } from '@/components/shopping-list-modal';
+import { ShoppingListModalV2 as ShoppingListModal } from '@/components/shopping-list-modal-v2';
 import { DayFocusPanel } from '@/components/day-focus-panel';
 import { trpc } from '@/lib/trpc';
 import type { Meal } from '@/server/db/schema';
