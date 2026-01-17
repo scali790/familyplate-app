@@ -53,6 +53,29 @@ export function WeeklyStatusHeader({
 
   const primaryCTA = getPrimaryCTA();
 
+  // Get contextual Next Step hint
+  const getNextStepHint = () => {
+    // Priority 1: Voting session exists → encourage checking results
+    if (votingSession) {
+      return "Next step: Check how your family voted 🗳️";
+    }
+
+    // Priority 2: Plan exists but no voting → encourage sharing
+    if (totalMeals > 0 && !votingSession) {
+      return "Next step: Share the plan with your family for voting 🗳️";
+    }
+
+    // Priority 3: Shopping list ready (after voting) → encourage shopping
+    if (totalMeals > 0) {
+      return "Ready to shop! Open your list and get cooking 🛒";
+    }
+
+    // Fallback: All set
+    return "You're all set for a smooth week ✨";
+  };
+
+  const nextStepHint = getNextStepHint();
+
   return (
     <Card className="bg-surface border-border mb-4">
       <div className="p-3 md:p-4">
@@ -104,6 +127,13 @@ export function WeeklyStatusHeader({
               </span>
             </Button>
           )}
+        </div>
+
+        {/* Next Step Hint - Narrative Flow */}
+        <div className="mt-3 pt-3 border-t border-border/50">
+          <p className="text-xs md:text-sm text-muted-foreground italic">
+            {nextStepHint}
+          </p>
         </div>
       </div>
     </Card>
