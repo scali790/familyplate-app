@@ -327,15 +327,14 @@ export function DayFocusPanel({
                       <div className="flex-1 h-px bg-border" />
                     </div>
 
-                    {/* Meal Card - Primary emphasis + Breakfast de-emphasis */}
+                    {/* Meal Card - Strong Primary emphasis + Secondary de-emphasis */}
                     <Card className={`
                       border-2 
-                      transition-all
+                      transition-all duration-300
                       ${isPrimary 
-                        ? 'border-primary/30 shadow-lg scale-[1.02]' 
-                        : 'border-border hover:border-primary/50 shadow'
+                        ? 'border-primary shadow-2xl scale-[1.05] ring-2 ring-primary/20' 
+                        : 'border-border shadow-sm opacity-75 scale-95'
                       }
-                      ${mealType === 'breakfast' && !isPrimary ? 'scale-95 shadow-sm' : ''}
                     `}>
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
@@ -345,7 +344,7 @@ export function DayFocusPanel({
                           </div>
 
                           {/* Content */}
-                          <div className="flex-1 min-w-0">
+                          <div className={`flex-1 min-w-0 ${isPrimary ? '' : 'opacity-90'}`}>
                             {/* Name */}
                             <h3 className="text-xl font-bold text-foreground mb-2">
                               {meal.name}
@@ -376,12 +375,12 @@ export function DayFocusPanel({
                               </div>
                             )}
 
-                            {/* Primary CTA - Warmer copy + compact for breakfast */}
+                            {/* Primary CTA - Prominent for primary meal */}
                             <Button
                               variant="default"
-                              size={mealType === 'breakfast' ? 'default' : 'lg'}
+                              size={isPrimary ? 'lg' : 'default'}
                               onClick={() => onOpenRecipe(meal)}
-                              className="w-full mb-3"
+                              className={`w-full mb-3 ${isPrimary ? 'shadow-lg' : ''}`}
                             >
                               🍳 Start cooking
                             </Button>
