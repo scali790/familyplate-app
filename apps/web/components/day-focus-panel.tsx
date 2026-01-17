@@ -342,18 +342,21 @@ export function DayFocusPanel({
 
                     {/* Meal Card - Strong Primary emphasis + Secondary de-emphasis */}
                     <Card className={`
-                      border-l-4 border-t border-r border-b
+                      border-t border-r border-b border-l-4
                       transition-all duration-300
+                      ${isPrimary ? 'shadow-2xl scale-[1.05] ring-2 ring-primary/20' : 'shadow-sm opacity-75 scale-95'}
                       ${(() => {
-                        const config = getMealTypeConfig(mealType);
-                        const borderColor = config?.borderColor || 'border-border';
-                        const lightBorder = config?.lightBorder || 'border-border';
-                        
-                        if (isPrimary) {
-                          return `${borderColor} border-t-border border-r-border border-b-border shadow-2xl scale-[1.05] ring-2 ring-primary/20`;
-                        } else {
-                          return `${lightBorder} border-t-border border-r-border border-b-border shadow-sm opacity-75 scale-95`;
+                        // Static classes for Tailwind compilation
+                        if (mealType === 'breakfast') {
+                          return isPrimary ? 'border-l-orange-400 border-t-border border-r-border border-b-border' : 'border-l-orange-200 border-t-border border-r-border border-b-border';
                         }
+                        if (mealType === 'lunch') {
+                          return isPrimary ? 'border-l-blue-400 border-t-border border-r-border border-b-border' : 'border-l-blue-200 border-t-border border-r-border border-b-border';
+                        }
+                        if (mealType === 'dinner') {
+                          return isPrimary ? 'border-l-purple-400 border-t-border border-r-border border-b-border' : 'border-l-purple-200 border-t-border border-r-border border-b-border';
+                        }
+                        return 'border-border';
                       })()}
                     `}>
                       <CardContent className="p-6">
