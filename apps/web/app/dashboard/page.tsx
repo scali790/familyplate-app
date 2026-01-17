@@ -421,12 +421,12 @@ export default function DashboardPage() {
                                     {/* Gradient Badge like Day View */}
                                     <div className="flex justify-center">
                                       <div className={`
-                                        inline-flex items-center gap-1.5 px-3 py-1
+                                        inline-flex items-center gap-1 px-2.5 py-0.5
                                         bg-gradient-to-r ${config.badgeGradient}
-                                        text-white text-[10px] font-bold uppercase tracking-wide
+                                        text-white text-[9px] font-bold uppercase tracking-wide
                                         rounded-3xl shadow-md
                                       `}>
-                                        <span className="text-sm">{config.emoji}</span>
+                                        <span className="text-xs">{config.emoji}</span>
                                         <span>{config.label}</span>
                                       </div>
                                     </div>
