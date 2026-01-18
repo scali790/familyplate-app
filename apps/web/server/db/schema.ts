@@ -198,8 +198,7 @@ export const events = pgTable("events", {
 });
 
 export const kpiDailySnapshot = pgTable("kpi_daily_snapshot", {
-  id: serial("id").primaryKey(),
-  date: timestamp("date").notNull().unique(),
+  date: date("date").primaryKey(),
   dau: integer("dau").notNull().default(0),
   wau: integer("wau").notNull().default(0),
   mau: integer("mau").notNull().default(0),
