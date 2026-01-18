@@ -327,7 +327,7 @@ export async function aggregateKpisForDate(targetDate: Date) {
   // ========================================
 
   const snapshot = {
-    date: startOfDay,
+    date: startOfDay.toISOString().split('T')[0],
     dau,
     wau,
     mau,
