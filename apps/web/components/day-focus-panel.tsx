@@ -2,6 +2,8 @@
 
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
+import { trpc } from '@/lib/trpc';
+import { EventName } from '@/lib/events';
 import type { Meal } from '@/server/db/schema';
 import { useEffect } from 'react';
 
@@ -33,6 +35,7 @@ export function DayFocusPanel({
   onOpenRecipe,
   onRegenerateMeal,
 }: DayFocusPanelProps) {
+  const trackEventMutation = trpc.events.track.useMutation();
   // Format date for display
   const dayDate = new Date(weekStartDate);
   dayDate.setDate(dayDate.getDate() + dayIndex);
@@ -179,7 +182,13 @@ export function DayFocusPanel({
                               <Button
                                 variant="default"
                                 size="sm"
-                                onClick={() => onOpenRecipe(meal)}
+                                onClick={() => {
+                                  trackEventMutation.mutate({
+                                    eventName: EventName.COOK_CTA_USED,
+                                    properties: { mealName: meal.name },
+                                  });
+                                  onOpenRecipe(meal);
+                                }}
                                 className="flex-1"
                               >
                                 📖 View Full Recipe

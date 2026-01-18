@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 import { createSession } from "@/server/auth/sessionStore";
 import { getSessionCookieOptions } from "@/server/auth/session";
 import { validateRedirectUrl } from "@/server/auth/redirectValidation";
+import { trackEvent } from "@/server/lib/events";
+import { EventName } from "@/lib/events";
 
 export const runtime = "nodejs";
 
@@ -55,24 +57,40 @@ export async function GET(request: NextRequest) {
     // Create or get user
     const openId = `magic-${tokenData.email}`;
 
-    await db
-      .insert(users)
-      .values({
+    let userResult = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+    let user = userResult[0];
+    let isNewUser = false;
+
+    if (user) {
+      // User exists, update last sign-in time
+      await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, user.id));
+    } else {
+      // User does not exist, create them
+      isNewUser = true;
+      const newUserResult = await db.insert(users).values({
         openId,
         email: tokenData.email,
         name: tokenData.name || tokenData.email.split("@")[0],
         loginMethod: "magic-link",
-      })
-      .onConflictDoUpdate({
-        target: users.openId,
-        set: {
-          name: tokenData.name || tokenData.email.split("@")[0],
-          lastSignedIn: new Date(),
+      }).returning();
+      user = newUserResult[0];
+    }
+
+    if (!user) {
+      return NextResponse.json({ error: "Failed to create or find user" }, { status: 500 });
+    }
+
+    // Track event if it's a new user
+    if (isNewUser) {
+      await trackEvent({
+        eventName: EventName.USER_CREATED,
+        userId: user.id,
+        properties: {
+          loginMethod: "magic-link",
+          email: user.email,
         },
       });
-
-    const userResult = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-    const user = userResult[0];
+    }
 
     if (!user) {
       return NextResponse.json({ error: "Failed to create user" }, { status: 500 });

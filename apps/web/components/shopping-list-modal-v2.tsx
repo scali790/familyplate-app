@@ -3,6 +3,7 @@
 import { Button } from './ui/button';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { trpc } from '@/lib/trpc';
+import { EventName } from '@/lib/events';
 import type { Meal } from '@/server/db/schema';
 import { parseIngredient, aggregateIngredients, formatQuantity } from '@/lib/ingredient-parser';
 import { assignCategory, getCategoryConfig, sortByCategory, type IngredientCategory } from '@/lib/ingredient-categories';
@@ -34,6 +35,11 @@ const CONCURRENCY_LIMIT = 3;
 const STORAGE_KEY = 'familyplate_shopping_list_checked';
 
 export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) {
+  useEffect(() => {
+    trackEventMutation.mutate({
+      eventName: EventName.SHOPPING_LIST_OPENED,
+    });
+  }, []);
   const [mealsList, setMealsList] = useState<MealWithIngredients[]>([]);
   const [loadedCount, setLoadedCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
@@ -44,6 +50,8 @@ export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) 
   );
   const [viewMode, setViewMode] = useState<'consolidated' | 'by-meal'>('consolidated');
   const abortControllerRef = useRef<AbortController | null>(null);
+  const trackEventMutation = trpc.events.track.useMutation();
+  const hasTrackedGeneration = useRef(false);
 
   const getRecipeDetailsMutation = trpc.mealPlanning.getRecipeDetails.useMutation();
 
@@ -215,7 +223,20 @@ export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) 
     });
 
     // Sort by category
-    return sortByCategory(items);
+    const sortedItems = sortByCategory(items);
+
+    if (!hasTrackedGeneration.current && sortedItems.length > 0) {
+      trackEventMutation.mutate({
+        eventName: EventName.SHOPPING_LIST_GENERATED,
+        properties: {
+          itemCount: sortedItems.length,
+          mealCount: filteredMeals.length,
+        },
+      });
+      hasTrackedGeneration.current = true;
+    }
+
+    return sortedItems;
   }, [mealsList, selectedMealTypes, checkedItems]);
 
   // Group by category
@@ -257,6 +278,13 @@ export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) 
   };
 
   const copyConsolidatedList = () => {
+    trackEventMutation.mutate({
+      eventName: EventName.SHOPPING_LIST_EXPORTED,
+      properties: {
+        format: 'clipboard',
+        itemCount: consolidatedList.length,
+      },
+    });
     const lines: string[] = [];
     
     itemsByCategory.forEach((items, category) => {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { EventName } from "@/lib/events";
 
 type Meal = {
   recipeId: string;
@@ -42,6 +43,7 @@ export default function VotePage() {
 
   // Vote mutation
   const voteMutation = trpc.publicVotes.upsert.useMutation();
+  const trackEventMutation = trpc.events.track.useMutation();
 
   // Load voter name from localStorage on mount
   useEffect(() => {
@@ -74,6 +76,13 @@ export default function VotePage() {
   };
 
   const handleVote = async (reaction: Reaction) => {
+    trackEventMutation.mutate({
+      eventName: EventName.TASTE_VOTE_CAST,
+      properties: {
+        reaction,
+        mealName: meals[currentMealIndex].name,
+      },
+    });
     if (!meals || currentMealIndex >= meals.length) return;
 
     const meal = meals[currentMealIndex];
