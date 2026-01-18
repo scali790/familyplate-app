@@ -54,7 +54,7 @@ const kpiRouter = router({
       const snapshots = await db
         .select()
         .from(kpiDailySnapshot)
-        .where(and(gte(kpiDailySnapshot.date, startDate), lte(kpiDailySnapshot.date, endDate)))
+        .where(and(gte(kpiDailySnapshot.date, startDate.toISOString().split('T')[0]), lte(kpiDailySnapshot.date, endDate.toISOString().split('T')[0])))
         .orderBy(desc(kpiDailySnapshot.date));
 
       if (snapshots.length === 0) {
@@ -163,11 +163,11 @@ const kpiRouter = router({
       const snapshots = await db
         .select()
         .from(kpiDailySnapshot)
-        .where(and(gte(kpiDailySnapshot.date, startDate), lte(kpiDailySnapshot.date, endDate)))
+        .where(and(gte(kpiDailySnapshot.date, startDate.toISOString().split('T')[0]), lte(kpiDailySnapshot.date, endDate.toISOString().split('T')[0])))
         .orderBy(kpiDailySnapshot.date);
 
       const timeseries = snapshots.map((s) => ({
-        date: s.date.toISOString(),
+        date: s.date,
         value: s[input.kpiKey],
       }));
 
