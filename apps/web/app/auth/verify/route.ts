@@ -148,10 +148,15 @@ export async function GET(request: NextRequest) {
       return response;
     }
     
-    // For web redirects, use NextResponse.redirect() with manual Set-Cookie
-    // This ensures browser processes cookie BEFORE following redirect
-    const response = NextResponse.redirect(new URL(safeRedirectUrl, request.url));
-    response.headers.append("Set-Cookie", cookieString);
+    // Redirect to auth bridge with sessionId
+    // Bridge will call /api/auth/establish to set cookie with credentials: "include"
+    const bridgeUrl = new URL("/auth/bridge", request.url);
+    bridgeUrl.searchParams.set("sessionId", sessionId);
+    bridgeUrl.searchParams.set("next", safeRedirectUrl);
+    
+    console.log('[auth/verify] Redirecting to bridge:', bridgeUrl.toString());
+    
+    const response = NextResponse.redirect(bridgeUrl);
     return response;
    
   } catch (error) {
