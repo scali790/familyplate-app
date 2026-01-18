@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, timestamp, text, integer, jsonb, boolean, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, timestamp, text, integer, jsonb, boolean, index, uniqueIndex, real } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -186,3 +186,39 @@ export interface Meal {
   neutralVotes?: number;
   voters?: Array<{ name: string; vote: string }>;
 }
+
+// Admin Dashboard Tables
+
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  eventName: varchar("event_name", { length: 100 }).notNull(),
+  userId: integer("user_id").references(() => users.id),
+  properties: jsonb("properties").default({}),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const kpiDailySnapshot = pgTable("kpi_daily_snapshot", {
+  id: serial("id").primaryKey(),
+  date: timestamp("date").notNull().unique(),
+  dau: integer("dau").notNull().default(0),
+  wau: integer("wau").notNull().default(0),
+  mau: integer("mau").notNull().default(0),
+  newUsers: integer("new_users").notNull().default(0),
+  activationRate: real("activation_rate").notNull().default(0),
+  mealPlansGenerated: integer("meal_plans_generated").notNull().default(0),
+  mealsPlanned: integer("meals_planned").notNull().default(0),
+  cookCtaUsage: integer("cook_cta_usage").notNull().default(0),
+  votesCast: integer("votes_cast").notNull().default(0),
+  votingParticipation: real("voting_participation").notNull().default(0),
+  positiveVoteRatio: real("positive_vote_ratio").notNull().default(0),
+  shoppingListOpens: integer("shopping_list_opens").notNull().default(0),
+  shoppingListGenerated: integer("shopping_list_generated").notNull().default(0),
+  shoppingListExported: integer("shopping_list_exported").notNull().default(0),
+  errorRate: real("error_rate").notNull().default(0),
+  tokensIn: integer("tokens_in").notNull().default(0),
+  tokensOut: integer("tokens_out").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type Event = typeof events.$inferSelect;
+export type KpiDailySnapshot = typeof kpiDailySnapshot.$inferSelect;

@@ -8,9 +8,8 @@ import { RecipeModal } from '@/components/recipe-modal';
 import VotingResultsModal from '@/components/voting-results-modal';
 import { ShoppingListModalV2 as ShoppingListModal } from '@/components/shopping-list-modal-v2';
 import { DayFocusPanel } from '@/components/day-focus-panel';
-import { WeeklyStatusHeader } from '@/components/weekly-status-header';
-import { getMealTypeConfig } from '@/lib/meal-type-config';
 import { trpc } from '@/lib/trpc';
+import { EventName } from '@/lib/events';
 import type { Meal } from '@/server/db/schema';
 
 // Food category icons mapping
@@ -29,56 +28,6 @@ const getIconsForTags = (tags: string[]): string[] => {
   return tags.map(tag => iconMap[tag.toLowerCase()] || '').filter(Boolean);
 };
 
-// Clean, deduplicate, and limit tags
-const cleanAndLimitTags = (tags: string[], maxTags: number = 3): string[] => {
-  if (!tags || tags.length === 0) return [];
-
-  // Fix common typos
-  const fixTypos = (tag: string): string => {
-    const typoMap: Record<string, string> = {
-      'healt!': 'healthy',
-      'healt': 'healthy',
-      'vegetaria': 'vegetarian',
-      'italia': 'italian',
-    };
-    return typoMap[tag.toLowerCase()] || tag;
-  };
-
-  // Clean and normalize tags
-  const cleanedTags = tags
-    .map(tag => fixTypos(tag.trim()))
-    .filter(tag => tag.length > 0);
-
-  // Remove duplicates (case-insensitive)
-  const uniqueTags = Array.from(
-    new Map(cleanedTags.map(tag => [tag.toLowerCase(), tag])).values()
-  );
-
-  // Prioritize tags: cuisine > protein > dietary
-  const cuisines = ['italian', 'mediterranean', 'middle-eastern', 'mexican', 'asian', 'indian'];
-  const proteins = ['chicken', 'beef', 'fish', 'seafood', 'pork'];
-  const dietary = ['vegetarian', 'vegan', 'healthy', 'gluten-free'];
-
-  const sortedTags = uniqueTags.sort((a, b) => {
-    const aLower = a.toLowerCase();
-    const bLower = b.toLowerCase();
-    
-    const aIsCuisine = cuisines.includes(aLower);
-    const bIsCuisine = cuisines.includes(bLower);
-    if (aIsCuisine && !bIsCuisine) return -1;
-    if (!aIsCuisine && bIsCuisine) return 1;
-    
-    const aIsProtein = proteins.includes(aLower);
-    const bIsProtein = proteins.includes(bLower);
-    if (aIsProtein && !bIsProtein) return -1;
-    if (!aIsProtein && bIsProtein) return 1;
-    
-    return 0;
-  });
-
-  return sortedTags.slice(0, maxTags);
-};
-
 // Meal Type Icons
 const mealTypeIcons: Record<string, string> = {
   breakfast: '🌅',
@@ -86,28 +35,34 @@ const mealTypeIcons: Record<string, string> = {
   dinner: '🌙',
 };
 
-// Group meals by day
-const groupMealsByDay = (meals: Meal[], mealTypes: string[], dayNames: string[]) => {
-  const grouped: Record<string, Record<string, Meal | undefined>> = {};
-  
-  dayNames.forEach(day => {
-    grouped[day.toLowerCase()] = {};
-    mealTypes.forEach(type => {
-      grouped[day.toLowerCase()][type] = undefined;
-    });
-  });
+// Group meals by mealType and day
+const groupMealsByType = (meals: Meal[]) => {
+  const grouped: Record<string, Meal[]> = {
+    breakfast: [],
+    lunch: [],
+    dinner: [],
+  };
 
   meals.forEach(meal => {
-    if (meal.day && meal.mealType && grouped[meal.day]) {
-      grouped[meal.day][meal.mealType] = meal;
+    const mealType = meal.mealType?.toLowerCase() || 'dinner';
+    if (grouped[mealType]) {
+      grouped[mealType].push(meal);
     }
+  });
+
+  // Sort by day
+  Object.keys(grouped).forEach(type => {
+    grouped[type].sort((a, b) => {
+      const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      return dayOrder.indexOf(a.day?.toLowerCase() || '') - dayOrder.indexOf(b.day?.toLowerCase() || '');
+    });
   });
 
   return grouped;
 };
 
 export default function DashboardPage() {
-  const [selectedMeal, setSelectedMeal] = useState<{ meal: Meal; index: number; day: string; mealType: string } | null>(null);
+  const [selectedMeal, setSelectedMeal] = useState<{ meal: Meal; mealIndex: number; day: string; mealType: string } | null>(null);
   // viewMode removed - Week View is the only view, Day Focus handles day details
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0); // 0 = Monday
@@ -124,6 +79,8 @@ export default function DashboardPage() {
   const generateMutation = trpc.mealPlanning.generatePlan.useMutation();
   const generatePartialMutation = trpc.mealPlanning.generatePartialPlan.useMutation();
   const createVotingSessionMutation = trpc.voteSessions.create.useMutation();
+  // const regenerateMealMutation = trpc.mealPlanning.regenerateMeal.useMutation(); // Not implemented yet
+  const trackEventMutation = trpc.events.track.useMutation();
 
   const handleGeneratePartial = async (mealType: 'breakfast' | 'lunch' | 'dinner') => {
     try {
@@ -136,8 +93,17 @@ export default function DashboardPage() {
   };
 
   const handleGenerateNew = async () => {
+    trackEventMutation.mutate({
+      eventName: EventName.MEALPLAN_GENERATE_CLICKED,
+    });
     try {
-      await generateMutation.mutateAsync({});
+      const result = await generateMutation.mutateAsync({});
+      trackEventMutation.mutate({
+        eventName: EventName.MEALPLAN_GENERATED,
+        properties: {
+          mealCount: result?.meals?.length || 0,
+        },
+      });
       await refetch();
     } catch (error) {
       console.error('Failed to generate meal plan:', error);
@@ -180,28 +146,15 @@ export default function DashboardPage() {
     return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
   };
 
-  // Get day date and today status
-  const getDayInfo = (weekStartDate: string, dayIndex: number) => {
+  // Get day date
+  const getDayDate = (weekStartDate: string, dayIndex: number) => {
     const startDate = new Date(weekStartDate);
     const mealDate = new Date(startDate);
     mealDate.setDate(startDate.getDate() + dayIndex);
-    
-    const today = new Date();
-    const isToday = mealDate.getDate() === today.getDate() && 
-                    mealDate.getMonth() === today.getMonth() && 
-                    mealDate.getFullYear() === today.getFullYear();
-    
-    // Get actual weekday name from date
-    const dayName = mealDate.toLocaleDateString('en-US', { weekday: 'long' });
-    const dayShortName = mealDate.toLocaleDateString('en-US', { weekday: 'short' });
-    
-    return {
-      date: mealDate.getDate(),
-      month: mealDate.toLocaleDateString('en-US', { month: 'short' }),
-      dayName,
-      dayShortName,
-      isToday
-    };
+
+    const month = mealDate.toLocaleDateString('en-US', { month: 'short' });
+    const day = mealDate.getDate();
+    return `${month} ${day}`;
   };
 
   const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -213,12 +166,14 @@ export default function DashboardPage() {
     return (preferences.mealTypes as string[]).includes(mealType);
   };
 
-  // Get meal types from preferences and ensure chronological order
-  const MEAL_TYPE_ORDER = ['breakfast', 'lunch', 'dinner'];
-  const rawMealTypes = (preferences?.mealTypes as string[]) || ['breakfast', 'lunch', 'dinner'];
-  const mealTypes = rawMealTypes.sort((a, b) => {
-    return MEAL_TYPE_ORDER.indexOf(a) - MEAL_TYPE_ORDER.indexOf(b);
-  });
+  // Get today's day index (0 = Monday, 6 = Sunday)
+  const getTodayIndex = (weekStartDate: string) => {
+    const today = new Date();
+    const startDate = new Date(weekStartDate);
+    const diffTime = today.getTime() - startDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays < 7 ? diffDays : -1; // Return -1 if not in current week
+  };
 
   if (isLoading) {
     return (
@@ -235,35 +190,27 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-surface">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-2">
-            {/* Left: Logo + Title */}
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="flex items-center gap-2">
                 <span className="text-2xl">🍽️</span>
-                <span className="text-lg md:text-xl font-bold text-foreground hidden sm:inline">FamilyPlate</span>
+                <span className="text-xl font-bold text-foreground">FamilyPlate</span>
               </Link>
-              <span className="text-muted hidden sm:inline">|</span>
-              <span className="text-sm md:text-base text-foreground truncate">
-                {preferences?.familyName ? `${preferences.familyName} family` : 'Meal Plan'}
+              <span className="text-muted">|</span>
+              <span className="text-lg text-foreground">
+                {preferences?.familyName ? `${preferences.familyName}'s Meal Plan` : 'Meal Plan'}
               </span>
             </div>
-            {/* Right: Actions */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-3">
               <Link href="/preferences">
-                <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-                  ⚙️ Preferences
-                </Button>
-                <Button variant="outline" size="sm" className="sm:hidden">
-                  ⚙️
+                <Button variant="outline" size="sm">
+                  Edit Preferences
                 </Button>
               </Link>
-              <Link href="/api/auth/logout" prefetch={false}>
-                <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
-                  👋 Sign out
-                </Button>
-                <Button variant="ghost" size="sm" className="sm:hidden">
-                  👋
+              <Link href="/api/auth/logout">
+                <Button variant="ghost" size="sm">
+                  Logout
                 </Button>
               </Link>
             </div>
@@ -278,14 +225,14 @@ export default function DashboardPage() {
             /* Empty State */
             <div className="text-center py-16">
               <div className="text-6xl mb-4">🍽️</div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Let’s plan your week!</h2>
-              <p className="text-muted mb-6">Tell us what your family loves, and we’ll create a week of delicious meals</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">No Meal Plan Yet</h2>
+              <p className="text-muted mb-6">Generate your first personalized meal plan!</p>
               <Button
                 onClick={handleGenerateNew}
                 disabled={generateMutation.isPending}
                 size="lg"
               >
-                {generateMutation.isPending ? 'Generating...' : '🪤 Generate meal plan'}
+                {generateMutation.isPending ? 'Generating...' : '🪄 Generate Meal Plan'}
               </Button>
             </div>
           ) : (
@@ -298,169 +245,99 @@ export default function DashboardPage() {
                 {/* View toggle removed - Day Focus is the only day view */}
               </div>
 
-              {/* Weekly Status Header */}
-              <WeeklyStatusHeader
-                mealPlan={mealPlan}
-                votingSession={votingSession}
-                onOpenShoppingList={() => setShowShoppingList(true)}
-                onOpenVotingResults={() => setShowVotingModal(true)}
-              />
-
               {/* Action Buttons */}
-              <div className="mb-6 space-y-3">
-                {/* Primary CTA: Share for voting */}
+              <div className="mb-6 flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleGenerateNew}
+                  disabled={generateMutation.isPending}
+                >
+                  🪄 {generateMutation.isPending ? 'Generating...' : 'Generate New Plan'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowShoppingList(true)}
+                >
+                  📝 Shopping List
+                </Button>
                 <Button
                   variant="default"
-                  size="lg"
-                  className="w-full"
+                  className="flex-1"
                   onClick={handleShareForVoting}
                   disabled={createVotingSessionMutation.isPending}
                 >
-                  👥 {createVotingSessionMutation.isPending ? 'Creating...' : 'Share for voting'}
+                  👥 {createVotingSessionMutation.isPending ? 'Creating...' : 'Share for Voting'}
                 </Button>
-                
-                {/* Secondary CTAs */}
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setShowShoppingList(true)}
-                  >
-                    🛒 Shopping list
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={handleGenerateNew}
-                    disabled={generateMutation.isPending}
-                  >
-                    🪤 {generateMutation.isPending ? 'Generating...' : 'Generate new plan'}
-                  </Button>
-                </div>
               </div>
 
               {/* Week View is the only view - Day Focus handles day details */}
               {
-                /* Day-based Grid */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {dayNames.map((day, dayIndex) => {
-                    const dayInfo = getDayInfo(mealPlan.weekStartDate, dayIndex);
-                    const dayMeals = groupMealsByDay(mealPlan.meals, mealTypes, dayNames)[day.toLowerCase()];
-                    
+                /* Week View - Grid Layout */
+                <div className="space-y-6">
+                  {/* Day Headers */}
+                  <div className="grid grid-cols-8 gap-2">
+                    <div className="col-span-1"></div>
+                    {dayShortNames.map((day, index) => {
+                      const isToday = getTodayIndex(mealPlan.weekStartDate) === index;
+                      return (
+                        <button
+                          key={day}
+                          onClick={() => {
+                            setFocusedDayIndex(index);
+                            setIsDayFocusOpen(true);
+                          }}
+                          className={`text-center rounded-lg p-2 transition-all hover:scale-105 hover:shadow-md cursor-pointer group ${
+                            isToday
+                              ? 'bg-primary/10 border-2 border-primary'
+                              : 'bg-surface border border-border'
+                          }`}
+                        >
+                          <p className="font-bold text-foreground text-sm">{day}</p>
+                          <p className="text-xs text-muted">{getDayDate(mealPlan.weekStartDate, index)}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Meal Grid */}
+                  {Object.entries(groupMealsByType(mealPlan.meals)).map(([mealType, meals]) => {
+                    if (!isMealTypeEnabled(mealType)) return null;
+
                     return (
-                      <Card
-                        key={day}
-                        className={`
-                          border-2 transition-all cursor-pointer
-                          hover:shadow-lg hover:scale-[1.02]
-                          ${dayInfo.isToday 
-                            ? 'bg-gradient-to-br from-orange-50 to-amber-50 border-orange-400 ring-2 ring-orange-400/20' 
-                            : 'bg-surface border-border hover:border-primary/50'
-                          }
-                        `}
-                        onClick={() => {
-                          setFocusedDayIndex(dayIndex);
-                          setIsDayFocusOpen(true);
-                        }}
-                      >
-                        <CardContent className="p-4">
-                          <div className="mb-3 pb-3 border-b border-border">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className={`font-bold text-lg ${
-                                  dayInfo.isToday ? 'text-orange-700' : 'text-foreground'
-                                }`}>
-                                  {dayInfo.dayShortName}
-                                </div>
-                                <div className={`text-xs ${
-                                  dayInfo.isToday ? 'text-orange-600' : 'text-muted'
-                                }`}>
-                                  {dayInfo.date}
-                                </div>
-                              </div>
-                              {dayInfo.isToday && (
-                                <div className="bg-gradient-to-r from-orange-400 to-amber-400 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                  TODAY
+                      <div key={mealType} className="grid grid-cols-8 gap-2 items-start">
+                        <div className="col-span-1 flex items-center justify-center h-full">
+                          <div className="text-center">
+                            <p className="text-2xl">{mealTypeIcons[mealType]}</p>
+                            <p className="text-xs font-bold text-muted capitalize">{mealType}</p>
+                          </div>
+                        </div>
+                        {dayNames.map((day, dayIndex) => {
+                          const meal = meals.find(m => m.day?.toLowerCase() === day.toLowerCase());
+                          return (
+                            <div key={day} className="col-span-1">
+                              {meal ? (
+                                <Card
+                                  className="h-full cursor-pointer hover:shadow-lg transition-shadow bg-surface"
+                                  onClick={() => setSelectedMeal({ meal, mealIndex: dayIndex, day, mealType })}
+                                >
+                                  <CardContent className="p-3 text-center flex flex-col items-center justify-center h-full">
+                                    <div className="text-3xl mb-2">{meal.emoji || '🍽️'}</div>
+                                    <p className="text-xs font-semibold text-foreground leading-tight line-clamp-2">
+                                      {meal.name}
+                                    </p>
+                                  </CardContent>
+                                </Card>
+                              ) : (
+                                <div className="h-full flex items-center justify-center bg-background rounded-lg border border-dashed border-border/50">
+                                  <span className="text-muted text-xs">Empty</span>
                                 </div>
                               )}
                             </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            {mealTypes.map(mealType => {
-                              const meal = dayMeals[mealType];
-                              const config = getMealTypeConfig(mealType);
-                              if (!config) return null;
-
-                              const getBorderClass = () => {
-                                if (mealType === 'breakfast') return 'border-l-orange-400';
-                                if (mealType === 'lunch') return 'border-l-blue-400';
-                                if (mealType === 'dinner') return 'border-l-purple-400';
-                                return 'border-l-border';
-                              };
-
-                              return (
-                                <div
-                                  key={mealType}
-                                  className={`
-                                    border-l-4 bg-background/50 rounded-r-lg p-2
-                                    ${getBorderClass()}
-                                    ${meal ? 'opacity-100' : 'opacity-40'}
-                                  `}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (meal) {
-                                      setSelectedMeal({
-                                        meal,
-                                        index: dayIndex,
-                                        day: day.toLowerCase(),
-                                        mealType
-                                      });
-                                    }
-                                  }}
-                                >
-                                  <div className="space-y-1.5">
-                                    {/* Gradient Badge like Day View */}
-                                    <div className="flex justify-center">
-                                      <div className={`
-                                        inline-flex items-center gap-1 px-2.5 py-0.5
-                                        bg-gradient-to-r ${config.badgeGradient}
-                                        text-white text-[9px] font-bold uppercase tracking-wide
-                                        rounded-3xl shadow-md
-                                      `}>
-                                        <span className="text-xs">{config.emoji}</span>
-                                        <span>{config.label}</span>
-                                      </div>
-                                    </div>
-                                    
-                                    {/* Meal Content */}
-                                    <div className="flex-1 min-w-0">
-                                      {meal ? (
-                                        <>
-                                          <div className="text-xs text-foreground truncate text-center">
-                                            {meal.name}
-                                          </div>
-                                          {meal.prepTime && (
-                                            <div className="text-[10px] text-muted text-center">
-                                              {meal.prepTime}
-                                            </div>
-                                          )}
-                                        </>
-                                      ) : (
-                                        <div className="text-xs text-muted text-center">
-                                          No meal
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </CardContent>
-                      </Card>
+                          );
+                        })}
+                      </div>
                     );
                   })}
                 </div>
@@ -470,90 +347,61 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Recipe Modal */}
       {selectedMeal && (
         <RecipeModal
           meal={selectedMeal.meal}
-          mealIndex={selectedMeal.index}
+          mealIndex={selectedMeal.mealIndex}
           day={selectedMeal.day}
           mealType={selectedMeal.mealType}
           onClose={() => setSelectedMeal(null)}
           onMealRegenerated={(newMeal) => {
-            refetch(); // Refresh meal plan
-            setSelectedMeal(null); // Close modal
+            trackEventMutation.mutate({
+              eventName: EventName.MEAL_REGENERATED,
+              properties: { mealName: newMeal.name, mealType: newMeal.mealType },
+            });
+            refetch();
+            setSelectedMeal(null);
           }}
         />
       )}
 
-      {/* Voting Results Modal */}
-      {showVotingModal && votingSession && mealPlan && (
-        <VotingResultsModal
-          sessionId={votingSession.sessionId}
-          shareUrl={votingSession.shareUrl}
-          familyName={preferences?.familyName}
-          weekStartDate={mealPlan.weekStartDate}
-          onClose={() => setShowVotingModal(false)}
-          onGenerateShoppingList={() => {
-            setShowVotingModal(false);
-            setShowShoppingList(true);
-          }}
-        />
-      )}
-
-      {/* Shopping List Modal */}
       {showShoppingList && mealPlan && (
         <ShoppingListModal
           meals={mealPlan.meals}
-          mealPlanId={mealPlan.id}
           onClose={() => setShowShoppingList(false)}
         />
       )}
-      {/* Day Focus Panel */}
+
+      {votingSession && (
+        <VotingResultsModal
+          sessionId={votingSession.sessionId}
+          shareUrl={votingSession.shareUrl}
+          weekStartDate={mealPlan?.weekStartDate || ''}
+          onClose={() => setVotingSession(null)}
+        />
+      )}
+
       {isDayFocusOpen && focusedDayIndex !== null && mealPlan && (
         <DayFocusPanel
           open={isDayFocusOpen}
           dayIndex={focusedDayIndex}
           dayName={dayNames[focusedDayIndex]}
           weekStartDate={mealPlan.weekStartDate}
-          meals={mealPlan.meals.filter((m) => {
-            // Filter meals for the selected day
+          meals={mealPlan.meals.filter(m => {
             if (!m.day) return false;
-            const mealDayIndex = dayNames.findIndex(d => d.toLowerCase() === m.day!.toLowerCase());
+            const mealDayIndex = (dayNames.indexOf(m.day.charAt(0).toUpperCase() + m.day.slice(1).toLowerCase()) - new Date(mealPlan.weekStartDate).getUTCDay() + 7) % 7;
             return mealDayIndex === focusedDayIndex;
           })}
-          onClose={() => {
-            setIsDayFocusOpen(false);
-            setFocusedDayIndex(null);
-          }}
-          onOpenRecipe={(meal) => {
-            if (!meal.day || !meal.mealType) return;
-            const mealDayIndex = dayNames.findIndex(d => d.toLowerCase() === meal.day!.toLowerCase());
-            setSelectedMeal({
-              meal,
-              index: mealDayIndex,
-              day: meal.day!,
-              mealType: meal.mealType!,
-            });
-            setIsDayFocusOpen(false);
-          }}
+          onClose={() => setIsDayFocusOpen(false)}
+          onOpenRecipe={(meal) => setSelectedMeal({ meal, mealIndex: focusedDayIndex || 0, day: dayNames[focusedDayIndex || 0], mealType: meal.mealType! })}
           onRegenerateMeal={(meal) => {
-            // TODO: Implement meal regeneration
-            alert(`Regenerate meal: ${meal.name}`);
+            trackEventMutation.mutate({
+              eventName: EventName.MEAL_SWAPPED,
+              properties: { mealName: meal.name, mealType: meal.mealType },
+            });
+            // TODO: Implement regeneration logic
+            refetch();
           }}
-          onSwipeLeft={() => {
-            // Next day
-            if (focusedDayIndex < 6) {
-              setFocusedDayIndex(focusedDayIndex + 1);
-            }
-          }}
-          onSwipeRight={() => {
-            // Previous day
-            if (focusedDayIndex > 0) {
-              setFocusedDayIndex(focusedDayIndex - 1);
-            }
-          }}
-          canSwipeLeft={focusedDayIndex < 6}
-          canSwipeRight={focusedDayIndex > 0}
         />
       )}
     </div>

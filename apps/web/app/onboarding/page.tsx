@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { trpc } from '@/lib/trpc';
+import { EventName } from '@/lib/events';
 import { getData } from 'country-list';
 import { detectUserCountry, getCountryFlag } from '@/lib/geolocation';
 
@@ -143,6 +144,8 @@ export default function OnboardingPage() {
   const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const [isDetecting, setIsDetecting] = useState(true);
   const [sortedCuisines, setSortedCuisines] = useState(ALL_CUISINES);
+  const { data: user } = trpc.auth.me.useQuery();
+  const trackEventMutation = trpc.events.track.useMutation();
 
   // Auto-detect user's country on mount
   useEffect(() => {
@@ -162,7 +165,13 @@ export default function OnboardingPage() {
       .finally(() => {
         setIsDetecting(false);
       });
-  }, []);
+
+    if (user) {
+      trackEventMutation.mutate({
+        eventName: EventName.ONBOARDING_STARTED,
+      });
+    }
+  }, [user]);
 
   // Re-sort cuisines when country changes
   useEffect(() => {
@@ -219,6 +228,17 @@ export default function OnboardingPage() {
   };
 
   const handleSubmit = async () => {
+    trackEventMutation.mutate({
+      eventName: EventName.PREFERENCES_SAVED,
+      properties: {
+        familySize: formData.familySize,
+        mealTypes: formData.mealTypes,
+        cuisines: formData.cuisines,
+        flavors: formData.flavors,
+        dietaryRestrictions: formData.dietaryRestrictions,
+        country: formData.country,
+      },
+    });
     try {
       await savePreferences.mutateAsync(formData);
     } catch (error) {

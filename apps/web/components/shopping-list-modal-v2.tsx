@@ -3,13 +3,13 @@
 import { Button } from './ui/button';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { trpc } from '@/lib/trpc';
+import { EventName } from '@/lib/events';
 import type { Meal } from '@/server/db/schema';
 import { parseIngredient, aggregateIngredients, formatQuantity } from '@/lib/ingredient-parser';
 import { assignCategory, getCategoryConfig, sortByCategory, type IngredientCategory } from '@/lib/ingredient-categories';
 
 type ShoppingListModalProps = {
   meals: Meal[];
-  mealPlanId: number;
   onClose: () => void;
 };
 
@@ -34,7 +34,12 @@ interface ShoppingItem {
 const CONCURRENCY_LIMIT = 3;
 const STORAGE_KEY = 'familyplate_shopping_list_checked';
 
-export function ShoppingListModalV2({ meals, mealPlanId, onClose }: ShoppingListModalProps) {
+export function ShoppingListModalV2({ meals, onClose }: ShoppingListModalProps) {
+  useEffect(() => {
+    trackEventMutation.mutate({
+      eventName: EventName.SHOPPING_LIST_OPENED,
+    });
+  }, []);
   const [mealsList, setMealsList] = useState<MealWithIngredients[]>([]);
   const [loadedCount, setLoadedCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
@@ -45,9 +50,10 @@ export function ShoppingListModalV2({ meals, mealPlanId, onClose }: ShoppingList
   );
   const [viewMode, setViewMode] = useState<'consolidated' | 'by-meal'>('consolidated');
   const abortControllerRef = useRef<AbortController | null>(null);
+  const trackEventMutation = trpc.events.track.useMutation();
+  const hasTrackedGeneration = useRef(false);
 
   const getRecipeDetailsMutation = trpc.mealPlanning.getRecipeDetails.useMutation();
-  const createShareLinkMutation = trpc.shoppingList.createShareLink.useMutation();
 
   // Load checked state from localStorage
   useEffect(() => {
@@ -217,7 +223,20 @@ export function ShoppingListModalV2({ meals, mealPlanId, onClose }: ShoppingList
     });
 
     // Sort by category
-    return sortByCategory(items);
+    const sortedItems = sortByCategory(items);
+
+    if (!hasTrackedGeneration.current && sortedItems.length > 0) {
+      trackEventMutation.mutate({
+        eventName: EventName.SHOPPING_LIST_GENERATED,
+        properties: {
+          itemCount: sortedItems.length,
+          mealCount: filteredMeals.length,
+        },
+      });
+      hasTrackedGeneration.current = true;
+    }
+
+    return sortedItems;
   }, [mealsList, selectedMealTypes, checkedItems]);
 
   // Group by category
@@ -259,6 +278,13 @@ export function ShoppingListModalV2({ meals, mealPlanId, onClose }: ShoppingList
   };
 
   const copyConsolidatedList = () => {
+    trackEventMutation.mutate({
+      eventName: EventName.SHOPPING_LIST_EXPORTED,
+      properties: {
+        format: 'clipboard',
+        itemCount: consolidatedList.length,
+      },
+    });
     const lines: string[] = [];
     
     itemsByCategory.forEach((items, category) => {
@@ -273,20 +299,6 @@ export function ShoppingListModalV2({ meals, mealPlanId, onClose }: ShoppingList
     
     navigator.clipboard.writeText(lines.join('\n'));
     alert('Shopping list copied to clipboard!');
-  };
-
-  const handleShareLink = async () => {
-    try {
-      const result = await createShareLinkMutation.mutateAsync({
-        mealPlanId,
-        mode: 'check', // Default to checkable mode
-      });
-      navigator.clipboard.writeText(result.url);
-      alert('Share link copied to clipboard!');
-    } catch (err) {
-      console.error('Failed to create share link:', err);
-      alert('Failed to create share link. Please try again.');
-    }
   };
 
   const retryFailed = () => {
@@ -422,7 +434,7 @@ export function ShoppingListModalV2({ meals, mealPlanId, onClose }: ShoppingList
                 return (
                   <div key={category}>
                     {/* Category Header (Sticky) */}
-                    <div className="sticky top-0 z-10 bg-background backdrop-blur-sm py-3 mb-3 border-b border-border -mx-6 px-6">
+                    <div className="sticky top-0 bg-background/95 backdrop-blur-sm py-2 mb-3 border-b border-border">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">{config.emoji}</span>
                         <h3 className="font-bold text-foreground">{config.name}</h3>
@@ -512,23 +524,13 @@ export function ShoppingListModalV2({ meals, mealPlanId, onClose }: ShoppingList
         {mealsWithIngredients.length > 0 && !isStillLoading && (
           <div className="px-6 py-4 border-t border-border flex gap-3">
             {viewMode === 'consolidated' && (
-              <>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={copyConsolidatedList}
-                >
-                  📋 Copy List
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={handleShareLink}
-                  disabled={createShareLinkMutation.isPending}
-                >
-                  {createShareLinkMutation.isPending ? 'Sharing...' : '🔗 Share Link'}
-                </Button>
-              </>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={copyConsolidatedList}
+              >
+                📋 Copy Shopping List
+              </Button>
             )}
             <Button
               variant="default"
@@ -539,8 +541,6 @@ export function ShoppingListModalV2({ meals, mealPlanId, onClose }: ShoppingList
             </Button>
           </div>
         )}
-
-
       </div>
     </div>
   );

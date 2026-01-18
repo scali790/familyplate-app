@@ -1,4 +1,6 @@
 import { publicProcedure, protectedProcedure, router } from "./init";
+import { eventsRouter } from "./routers/events";
+import { adminRouter } from "./routers/admin";
 import { getDb } from "../db/client";
 import { mealPlans, mealVotes, userPreferences, users, magicLinkTokens, mealRegenerationQuota, mealHistory, type Meal } from "../db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -13,6 +15,8 @@ import { invokeLLM } from "../services/llm";
 const COOKIE_NAME = "manus_session";
 
 export const appRouter = router({
+  events: eventsRouter,
+  admin: adminRouter,
   auth: router({
     // Get current user
     me: publicProcedure.query((opts) => opts.ctx.user),

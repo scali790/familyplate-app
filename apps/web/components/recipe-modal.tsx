@@ -2,7 +2,8 @@
 
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
-import { trpc } from '@/lib/trpc';
+import { trpc } from "@/lib/trpc";
+import { EventName } from "@/lib/events";
 
 import type { Meal } from '@/server/db/schema';
 
@@ -32,11 +33,20 @@ const getIconsForTags = (tags: string[]): string[] => {
 };
 
 export function RecipeModal({ meal, mealIndex, day, mealType, onClose, onMealRegenerated }: RecipeModalProps) {
+  useEffect(() => {
+    if (meal) {
+      trackEventMutation.mutate({
+        eventName: EventName.RECIPE_VIEWED,
+        properties: { mealName: meal.name },
+      });
+    }
+  }, [meal]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showQuotaExceeded, setShowQuotaExceeded] = useState(false);
   const [recipeDetails, setRecipeDetails] = useState<{ ingredients: string[]; instructions: string[] } | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
+  const trackEventMutation = trpc.events.track.useMutation();
   
   const { data: quota } = trpc.mealPlanning.checkRegenerationQuota.useQuery();
   const getRecipeDetailsMutation = trpc.mealPlanning.getRecipeDetails.useMutation();
